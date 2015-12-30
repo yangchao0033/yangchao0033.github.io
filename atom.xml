@@ -4,7 +4,7 @@
   <title><![CDATA[SuperYang`s Blog House]]></title>
   <link href="http://yangchao0033.github.io/atom.xml" rel="self"/>
   <link href="http://yangchao0033.github.io/"/>
-  <updated>2015-12-30T15:36:01+08:00</updated>
+  <updated>2015-12-30T15:40:30+08:00</updated>
   <id>http://yangchao0033.github.io/</id>
   <author>
     <name><![CDATA[Super Yang]]></name>
@@ -147,15 +147,6 @@
 <p>总之，这让我们省去了很多处理逻辑的代码。</p>
 
 <p>参考文章：<a href="http://codego.net/513617/">UITableView的：在处理混合cell表视图的静态和动态的cell小区选择</a></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Title]]></title>
-    <link href="http://yangchao0033.github.io/blog/2015/12/30/title/"/>
-    <updated>2015-12-30T15:15:30+08:00</updated>
-    <id>http://yangchao0033.github.io/blog/2015/12/30/title</id>
-    <content type="html"><![CDATA[
 ]]></content>
   </entry>
   
