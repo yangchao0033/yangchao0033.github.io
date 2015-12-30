@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[Category: Ib开发 | My Octopress Blog]]></title>
+  <title><![CDATA[Category: Ib开发 | SuperYang`s Blog House]]></title>
   <link href="http://yangchao0033.github.io/blog/categories/ibkai-fa/atom.xml" rel="self"/>
   <link href="http://yangchao0033.github.io/"/>
-  <updated>2015-12-30T15:31:35+08:00</updated>
+  <updated>2015-12-30T15:36:01+08:00</updated>
   <id>http://yangchao0033.github.io/</id>
   <author>
-    <name><![CDATA[Your Name]]></name>
+    <name><![CDATA[Super Yang]]></name>
     
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
