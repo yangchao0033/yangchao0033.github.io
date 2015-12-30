@@ -1,24 +1,90 @@
-<?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[My Octopress Blog]]></title>
-  <link href="http://yangchao0033.github.io/atom.xml" rel="self"/>
-  <link href="http://yangchao0033.github.io/"/>
-  <updated>2015-12-30T15:31:35+08:00</updated>
-  <id>http://yangchao0033.github.io/</id>
-  <author>
-    <name><![CDATA[Your Name]]></name>
-    
-  </author>
-  <generator uri="http://octopress.org/">Octopress</generator>
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>关于在storyboard中使用静态cell的注意事项 - My Octopress Blog</title>
+  <meta name="author" content="Your Name">
 
   
-  <entry>
-    <title type="html"><![CDATA[关于在storyboard中使用静态cell的注意事项]]></title>
-    <link href="http://yangchao0033.github.io/blog/2015/12/30/guan-yu-zai-storyboardzhong-shi-yong-jing-tai-cellde-zhu-yi-shi-xiang/"/>
-    <updated>2015-12-30T15:26:05+08:00</updated>
-    <id>http://yangchao0033.github.io/blog/2015/12/30/guan-yu-zai-storyboardzhong-shi-yong-jing-tai-cellde-zhu-yi-shi-xiang</id>
-    <content type="html"><![CDATA[<h1>关于在<em>storyboard</em>中使用静态TableViewCell的可变高度的使用技巧</h1>
+  <meta name="description" content="关于在storyboard中使用静态TableViewCell的可变高度的使用技巧 起因：在storyboard使用之前，创建tableView视图，通常是采用代码控制数据源，通过数据源数据的长度来决定tableView中cell的个数， &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://yangchao0033.github.io/blog/2015/12/30/guan-yu-zai-storyboardzhong-shi-yong-jing-tai-cellde-zhu-yi-shi-xiang/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="My Octopress Blog" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">My Octopress Blog</a></h1>
+  
+    <h2>A blogging framework for hackers.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="yangchao0033.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">关于在storyboard中使用静态cell的注意事项</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2015-12-30T15:26:05+08:00'><span class='date'><span class='date-month'>Dec</span> <span class='date-day'>30</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>3:26 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><h1>关于在<em>storyboard</em>中使用静态TableViewCell的可变高度的使用技巧</h1>
 
 <blockquote><p><code>起因：</code>在<code>storyboard</code>使用之前，创建<code>tableView</code>视图，通常是采用代码控制数据源，通过数据源数据的长度来决定<code>tableView</code>中<code>cell</code>的个数，而这样做的好处还有就是可以通过将已经在界面中展示的cell放入缓存池中，以供后续数据展示再从缓存池中取出进行复用。这样做的好处是为了防止数据过大时创建大量的cell浪费不必要的空间。显而易见，<code>tableView</code>就是为了进行批量数据的展示。 <br/>
 然而，在现实开发中，会出现一种需求：展示的数据长度是确定的，而且需要向<code>tableView</code>一样实现视图上下滚动，单个<code>cell</code>视图可点击响应。这种情况下，继续使用原来的代码数据源控制一样可以实现，这时的数据源个数是确定的。即便如此，你也需要考虑处理<code>cell</code>滚动时发生的重用所带来的影响。而且当数据源确定时，你的产品经理绝对不甘于像平常一样每条数据都展示为同一个尺寸内容。而是会尽可能地在每个<code>cell</code>中加入丰富的控件，时间相应来是有限的<code>tableView</code>实现最为复杂的用户交互事件。此时，你会在自己的数据源拼命地书写if语句来保证视图的正确显示，又要避免发生未知的<code>cell</code>重用问题。<br/>
@@ -147,16 +213,107 @@
 <p>总之，这让我们省去了很多处理逻辑的代码。</p>
 
 <p>参考文章：<a href="http://codego.net/513617/">UITableView的：在处理混合cell表视图的静态和动态的cell小区选择</a></p>
-]]></content>
-  </entry>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
   
-  <entry>
-    <title type="html"><![CDATA[Title]]></title>
-    <link href="http://yangchao0033.github.io/blog/2015/12/30/title/"/>
-    <updated>2015-12-30T15:15:30+08:00</updated>
-    <id>http://yangchao0033.github.io/blog/2015/12/30/title</id>
-    <content type="html"><![CDATA[
-]]></content>
-  </entry>
+
+<span class="byline author vcard">Posted by <span class="fn">Your Name</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2015-12-30T15:26:05+08:00'><span class='date'><span class='date-month'>Dec</span> <span class='date-day'>30</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>3:26 pm</span></time>
+      
+
+<span class="categories">
   
-</feed>
+    <a class='category' href='/blog/categories/ibkai-fa/'>ib开发</a>, <a class='category' href='/blog/categories/ios/'>ios</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://yangchao0033.github.io/blog/2015/12/30/guan-yu-zai-storyboardzhong-shi-yong-jing-tai-cellde-zhu-yi-shi-xiang/" data-via="" data-counturl="http://yangchao0033.github.io/blog/2015/12/30/guan-yu-zai-storyboardzhong-shi-yong-jing-tai-cellde-zhu-yi-shi-xiang/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2015/12/30/title/" title="Previous Post: title">&laquo; title</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2015/12/30/guan-yu-zai-storyboardzhong-shi-yong-jing-tai-cellde-zhu-yi-shi-xiang/">关于在storyboard中使用静态cell的注意事项</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/30/title/">Title</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2015 - Your Name -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>
