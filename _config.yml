@@ -3,7 +3,7 @@
 # ----------------------- #
 
 url: http://yangchao0033.github.io
-title: SuperYang`s Blog House
+title: SuperYang`s Blog 
 subtitle: Coding Everything.
 author: Super Yang 
 simple_search: https://www.google.com/search
@@ -17,7 +17,7 @@ date_format: "ordinal"
 
 # RSS / Email (optional) subscription links (change if using something like Feedburner)
 subscribe_rss: /atom.xml
-subscribe_email: 757097678@qq.com
+subscribe_email: 
 # RSS feeds can list your email address if you like
 email: 757097678@qq.com
 
@@ -51,13 +51,14 @@ titlecase: true       # Converts page and post titles to titlecase
 
 # list each of the sidebar modules you want to include, in the order you want them to appear.
 # To add custom asides, create files in /source/_includes/custom/asides/ and add them to the list like 'custom/asides/custom_aside_name.html'
-default_asides: [asides/weibo.html,asides/recent_posts.html, asides/github.html, asides/delicious.html, asides/pinboard.html, asides/googleplus.html]
+default_asides: [asides/weibo.html,asides/category_list.html,asides/recent_posts.html, asides/github.html, asides/earth.html,custom/asides/blog_link.html]
 
 # Each layout uses the default asides, but they can have their own asides instead. Simply uncomment the lines below
 # and add an array with the asides you want to use.
-# blog_index_asides:
-# post_asides:
-# page_asides:
+#default_asides: [asides/recent_posts.html]
+#blog_index_asides: [asides/weibo.html]
+#post_asides: [asides/weibo.html]
+#page_asides: [asides/weibo.html]
 
 # ----------------------- #
 #   3rd Party Settings    #
@@ -100,8 +101,9 @@ google_analytics_tracking_id: UA-71812998-1
 # Facebook Like
 facebook_like: false
 
-
+# 多说配置
 duoshuo_comments: true
 duoshuo_short_name: yangchao0033 
 
+# 社会化配置
 bshare: true
