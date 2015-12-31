@@ -5,7 +5,7 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>SuperYang`s Blog</title>
+  <title>关于@autoreleasepool的测试及使用 - SuperYang`s Blog</title>
   <meta name="author" content="Super Yang">
 
   
@@ -19,7 +19,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://yangchao0033.github.io/">
+  <link rel="canonical" href="http://yangchao0033.github.io/blog/2015/12/31/guan-yu-at-autoreleasepoolde-ce-shi-ji-shi-yong/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="SuperYang`s Blog" type="application/atom+xml">
@@ -88,15 +88,12 @@
 </nav>
   <div id="main">
     <div id="content">
-      <div class="blog-index">
+      <div>
+<article class="hentry" role="article">
   
-  
-  
-    <article>
-      
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2015/12/31/guan-yu-at-autoreleasepoolde-ce-shi-ji-shi-yong/">关于@autoreleasepool的测试及使用</a></h1>
+      <h1 class="entry-title">关于@autoreleasepool的测试及使用</h1>
     
     
       <p class="meta">
@@ -112,56 +109,95 @@
   </header>
 
 
-  <div class="entry-content">
+<div class="entry-content">
 </div>
-  
-  
 
 
-    </article>
-  
-  
-    <article>
+  <footer>
+    <p class="meta">
       
-  <header>
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Super Yang</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2015-12-31T11:47:01+08:00'><span class='date'><span class='date-month'>Dec</span> <span class='date-day'>31</span><span class='date-suffix'>st</span>, <span class='date-year'>2015</span></span> <span class='time'>11:47 am</span></time>
+      
+
+
+      
+
+<DIV style="font-size:12px;BORDER-BOTTOM: #bbbbbb 1px solid; BORDER-LEFT: #bbbbbb 1px solid; BACKGROUND: #f6f6f6; HEIGHT: 120px; BORDER-TOP: #bbbbbb 1px solid; BORDER-RIGHT: #bbbbbb 1px solid" class=oec2003right> 
+<DIV style="MARGIN-TOP: 10px; FLOAT: left; MARGIN-LEFT: 5px; MARGIN-RIGHT: 10px"> 
+<IMG alt="" src="http://ww2.sinaimg.cn/thumb150/c2abdfa9jw8ez7appr3p2j20g40a2t91.jpg" width=90 height=100></DIV> 
+<DIV style="LINE-HEIGHT: 200%; MARGIN-TOP: 10px; COLOR: #000000"> 
+作者： <A href="http://yangchao0033.github.io/">杨超</A> <BR> 
+出处： <A href="http://yangchao0033.github.io/">http://yangchao0033.github.io/</A> 
+<BR>本文基于<a target="_blank" title="Creative Commons Attribution 2.5 China Mainland License" href="http://creativecommons.org/licenses/by/2.5/cn/"> 
+署名 2.5 中国大陆</a>许可协议发布，欢迎转载，演绎或用于商业目的，但是必须保留本文的署名 
+<a href="http://yangchao0033.github.io/">杨超</a>（包含链接）。 </DIV></DIV> 
+
+
+
+    </p>
     
-      <h1 class="entry-title"><a href="/blog/2015/12/30/guan-yu-zai-storyboardzhong-shi-yong-jing-tai-cellde-zhu-yi-shi-xiang/">关于在storyboard中使用静态cell的注意事项</a></h1>
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://yangchao0033.github.io/blog/2015/12/31/guan-yu-at-autoreleasepoolde-ce-shi-ji-shi-yong/" data-via="" data-counturl="http://yangchao0033.github.io/blog/2015/12/31/guan-yu-at-autoreleasepoolde-ce-shi-ji-shi-yong/" >Tweet</a>
+  
+  
+  
+</div>
+<div class="bshare-custom"><a title="分享到QQ空间" class="bshare-qzone"></a><a title="分享到新浪微博" class="bshare-sinaminiblog"></a><a title="分享到人人网" class="bshare-renren"></a><a title="分享到腾讯微博" class="bshare-qqmb"></a><a title="分享到网易微博" class="bshare-neteasemb"></a><a title="更多平台" class="bshare-more bshare-more-icon more-style-addthis"></a><span class="BSHARE_COUNT bshare-share-count">0</span></div><script type="text/javascript" charset="utf-8" src="http://static.bshare.cn/b/buttonLite.js#style=-1&amp;uuid=&amp;pophcol=2&amp;lang=zh"></script><script type="text/javascript" charset="utf-8" src="http://static.bshare.cn/b/bshareC0.js"></script>
+
     
-    
-      <p class="meta">
-        
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2015/12/30/guan-yu-zai-storyboardzhong-shi-yong-jing-tai-cellde-zhu-yi-shi-xiang/" title="Previous Post: 关于在storyboard中使用静态cell的注意事项">&laquo; 关于在storyboard中使用静态cell的注意事项</a>
+      
+      
+    </p>
+  </footer>
+</article>
 
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><!-- Duoshuo Comment BEGIN -->
 
+<div class="ds-thread"></div>
 
+<script type="text/javascript">
 
-<time class='entry-date' datetime='2015-12-30T15:26:05+08:00'><span class='date'><span class='date-month'>Dec</span> <span class='date-day'>30</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>3:26 pm</span></time>
-        
-      </p>
-    
-  </header>
+var duoshuoQuery = {short_name:"yangchao0033"};
 
+(function() {
 
-  <div class="entry-content"><p> &ndash;关于在<em>storyboard</em>中使用静态TableViewCell的可变高度的使用技巧</p>
+var ds = document.createElement('script');
 
-<p>起因:在storyboard使用之前，创建tableView视图，通常是采用代码控制数据源，通过数据源数据的长度来决定tableView中cell的个数，而这样做的好处还有就是可以通过将已经在界面中展示的cell放入缓存池中，以供后续数据展示再从缓存池中取出进行复用。这样做的好处是为了防止数据过大时创建大量的cell浪费不必要的空间。显而易见，tableView就是为了进行批量数据的展示。</p>
+ds.type = 'text/javascript';ds.async = true;
+
+ds.src = 'http://static.duoshuo.com/embed.js';
+
+ds.charset = 'UTF-8';
+
+(document.getElementsByTagName('head')[0] 
+
+|| document.getElementsByTagName('body')[0]).appendChild(ds);
+
+})();
+
+</script>
+
+<!-- Duoshuo Comment END -->
+</div>
+  </section>
 
 </div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/12/30/guan-yu-zai-storyboardzhong-shi-yong-jing-tai-cellde-zhu-yi-shi-xiang/">阅读全文 &rarr;</a>
-    </footer>
-  
 
-
-    </article>
-  
-  <div class="pagination">
-    
-    <a href="/blog/archives">Blog Archives</a>
-    
-  </div>
-</div>
 <aside class="sidebar">
   
     <section>
@@ -257,6 +293,8 @@
 
   
 </aside>
+
+
 
     </div>
   </div>
