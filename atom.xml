@@ -4,7 +4,7 @@
   <title><![CDATA[SuperYang`s Blog]]></title>
   <link href="http://yangchao0033.github.io/atom.xml" rel="self"/>
   <link href="http://yangchao0033.github.io/"/>
-  <updated>2016-01-01T02:54:50+08:00</updated>
+  <updated>2016-01-01T03:09:33+08:00</updated>
   <id>http://yangchao0033.github.io/</id>
   <author>
     <name><![CDATA[Super Yang]]></name>
@@ -18,8 +18,12 @@
     <link href="http://yangchao0033.github.io/blog/2015/12/31/guan-yu-at-autoreleasepoolde-ce-shi-ji-shi-yong/"/>
     <updated>2015-12-31T11:47:01+08:00</updated>
     <id>http://yangchao0033.github.io/blog/2015/12/31/guan-yu-at-autoreleasepoolde-ce-shi-ji-shi-yong</id>
-    <content type="html"><![CDATA[<p>首先，我们先对使用autoreleasepool的场景进行性能对比。
-* 不用autoreleasepool</p>
+    <content type="html"><![CDATA[<p>首先，我们先对使用autoreleasepool的场景进行性能对比。</p>
+
+<ul>
+<li>不用autoreleasepool</li>
+</ul>
+
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -40,8 +44,13 @@
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>
-<img src="https://github.com/yangchao0033/yangchao0033.github.io/blob/source/source/images/blog_image/2015/11/image/Snip20151108_8.png" alt="不使用" /></p>
+<p></p>
+
+<!--more-->
+
+
+<p>不使用性能如下如所示：
+<img src="http://lypxcnc-dl.yunpan.360.cn/intf.php?method=Preview.outputPic&amp;qid=246165388&amp;fname=%2Fmac%E5%A4%87%E4%BB%BD%2Fios%2F2015%2F11%2Fimage%2FSnip20151108_8.png&amp;fhash=f9b9a5146857df0e674211b4a81405c7bf0c5193&amp;dt=71.386154716d9b80a7a2c5b7517e7424a0&amp;v=1.0.1&amp;rtick=14515884295186&amp;open_app_id=0&amp;devtype=web&amp;sign=b2a0f819bcdc8ee3f2368017ba09df85&amp;" alt="不使用" /></p>
 
 <ul>
 <li>使用autoreleasepool</li>
@@ -72,7 +81,8 @@
 
 
 <p>
-<img src="https://github.com/yangchao0033/blog/blob/gh-pages/ios/2015/11/image/Snip20151108_9.png" alt="使用autoreleasepool" /></p>
+使用效果如下图所示：
+<img src="http://d.pcs.baidu.com/thumbnail/2430b3c52659ed6040d1bd1b0caf00f4?fid=3643355266-250528-153089275883599&amp;time=1451588400&amp;rt=pr&amp;sign=FDTAER-DCb740ccc5511e5e8fedcff06b081203-OOQTgjpbAx1aDaa9nBURvIsmtmY%3d&amp;expires=8h&amp;chkbd=0&amp;chkv=0&amp;dp-logid=2964101469645371&amp;dp-callid=0&amp;size=c10000_u10000&amp;quality=90" alt="使用autoreleasepool" /></p>
 
 <p>综上，当需要在程序中创建大量的临时变量时（大量也可指数量多，不确定，比如从数据库中读取数据时）,很容易使内存产生峰值又回到内存低谷，这样对程序的性能会产生很大影响，而使用自动释放池后，峰值明显有所下降。<br/>
 <code>原因：</code>由于在mian函数中已经为我们添加了自动释放池，如下所示：</p>
