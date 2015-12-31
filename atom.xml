@@ -4,7 +4,7 @@
   <title><![CDATA[SuperYang`s Blog]]></title>
   <link href="http://yangchao0033.github.io/atom.xml" rel="self"/>
   <link href="http://yangchao0033.github.io/"/>
-  <updated>2016-01-01T03:09:33+08:00</updated>
+  <updated>2016-01-01T03:43:34+08:00</updated>
   <id>http://yangchao0033.github.io/</id>
   <author>
     <name><![CDATA[Super Yang]]></name>
@@ -12,6 +12,70 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[MPMovieplayerviewcontroller播放结束后自动消失的解决方案]]></title>
+    <link href="http://yangchao0033.github.io/blog/2016/01/01/mpmovieplayerviewcontrollerbo-fang-jie-shu-hou-zi-dong-xiao-shi-de-jie-jue-fang-an/"/>
+    <updated>2016-01-01T03:30:11+08:00</updated>
+    <id>http://yangchao0033.github.io/blog/2016/01/01/mpmovieplayerviewcontrollerbo-fang-jie-shu-hou-zi-dong-xiao-shi-de-jie-jue-fang-an</id>
+    <content type="html"><![CDATA[<hr />
+
+<p>你可以使用这段代码来阻止控制器播放在播放结束后自动dismissing（消失），并且捕捉到用户点击完成的按钮事件去自己定义并处理让你的MPMoviePlayerViewController播放器的消失（dismiss）的时机</p>
+
+<!--more-->
+
+
+<hr />
+
+<p>步骤 1. - 创建并初始化一个MPMoviePlayerViewController（videoPlayer）</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="bp">MPMoviePlayerViewController</span> <span class="o">*</span><span class="n">videoPlayer</span> <span class="o">=</span> <span class="p">[[</span><span class="bp">MPMoviePlayerViewController</span> <span class="n">alloc</span><span class="p">]</span> <span class="nl">initWithContentURL</span><span class="p">:[[</span><span class="bp">NSURL</span> <span class="n">alloc</span> <span class="p">]</span><span class="nl">initWithString</span><span class="p">:[</span><span class="n">aURL</span><span class="p">];</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>步骤 2. - 移除videoPlayer默认的通知事件并且加入自己的通知事件。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="p">[[</span><span class="bp">NSNotificationCenter</span> <span class="n">defaultCenter</span><span class="p">]</span> <span class="nl">removeObserver</span><span class="p">:</span><span class="n">videoPlayer</span>
+</span><span class='line'><span class="nl">name</span><span class="p">:</span><span class="n">MPMoviePlayerPlaybackDidFinishNotification</span> <span class="nl">object</span><span class="p">:</span><span class="n">videoPlayer</span><span class="p">.</span><span class="n">moviePlayer</span><span class="p">];</span>
+</span><span class='line'><span class="p">[[</span><span class="bp">NSNotificationCenter</span> <span class="n">defaultCenter</span><span class="p">]</span> <span class="nl">addObserver</span><span class="p">:</span><span class="nb">self</span>
+</span><span class='line'><span class="nl">selector</span><span class="p">:</span><span class="k">@selector</span><span class="p">(</span><span class="nl">videoFinished</span><span class="p">:)</span> <span class="nl">name</span><span class="p">:</span><span class="n">MPMoviePlayerPlaybackDidFinishNotification</span> <span class="nl">object</span><span class="p">:</span><span class="n">videoPlayer</span><span class="p">.</span><span class="n">moviePlayer</span><span class="p">];</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>步骤 3. - 手动显示你的videoPlayer控制器</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="p">[</span><span class="nb">self</span> <span class="nl">presentMoviePlayerViewControllerAnimated</span><span class="p">:</span><span class="n">videoPlayer</span><span class="p">];</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>步骤 4. - 添加 videoFinish: 方法处理通知事件</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="p">-(</span><span class="kt">void</span><span class="p">)</span><span class="nf">videoFinished:</span><span class="p">(</span><span class="bp">NSNotification</span><span class="o">*</span><span class="p">)</span><span class="nv">aNotification</span><span class="p">{</span>
+</span><span class='line'>    <span class="kt">int</span> <span class="n">value</span> <span class="o">=</span> <span class="p">[[</span><span class="n">aNotification</span><span class="p">.</span><span class="n">userInfo</span> <span class="nl">valueForKey</span><span class="p">:</span><span class="n">MPMoviePlayerPlaybackDidFinishReasonUserInfoKey</span><span class="p">]</span> <span class="n">intValue</span><span class="p">];</span>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="n">value</span> <span class="o">==</span> <span class="n">MPMovieFinishReasonUserExited</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>        <span class="p">[</span><span class="nb">self</span> <span class="n">dismissMoviePlayerViewControllerAnimated</span><span class="p">];</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<hr />
+
+<p>参考:<a href="http://stackoverflow.com/a/19596598">http://stackoverflow.com/a/19596598</a></p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[关于@autoreleasepool的性能测试及手动释放自动释放池]]></title>

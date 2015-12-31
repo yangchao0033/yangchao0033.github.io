@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Ios | SuperYang`s Blog]]></title>
   <link href="http://yangchao0033.github.io/blog/categories/ios/atom.xml" rel="self"/>
   <link href="http://yangchao0033.github.io/"/>
-  <updated>2016-01-01T03:09:33+08:00</updated>
+  <updated>2016-01-01T03:43:34+08:00</updated>
   <id>http://yangchao0033.github.io/</id>
   <author>
     <name><![CDATA[Super Yang]]></name>
@@ -12,6 +12,52 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[MPMovieplayerviewcontroller播放结束后自动消失的解决方案]]></title>
+    <link href="http://yangchao0033.github.io/blog/2016/01/01/mpmovieplayerviewcontrollerbo-fang-jie-shu-hou-zi-dong-xiao-shi-de-jie-jue-fang-an/"/>
+    <updated>2016-01-01T03:30:11+08:00</updated>
+    <id>http://yangchao0033.github.io/blog/2016/01/01/mpmovieplayerviewcontrollerbo-fang-jie-shu-hou-zi-dong-xiao-shi-de-jie-jue-fang-an</id>
+    <content type="html"><![CDATA[<hr />
+
+<p>你可以使用这段代码来阻止控制器播放在播放结束后自动dismissing（消失），并且捕捉到用户点击完成的按钮事件去自己定义并处理让你的MPMoviePlayerViewController播放器的消失（dismiss）的时机</p>
+
+<!--more-->
+
+
+<hr />
+
+<p>步骤 1. - 创建并初始化一个MPMoviePlayerViewController（videoPlayer）</p>
+
+<pre><code class="objc">MPMoviePlayerViewController *videoPlayer = [[MPMoviePlayerViewController alloc] initWithContentURL:[[NSURL alloc ]initWithString:[aURL];
+</code></pre>
+
+<p>步骤 2. - 移除videoPlayer默认的通知事件并且加入自己的通知事件。
+<code>objc
+[[NSNotificationCenter defaultCenter] removeObserver:videoPlayer
+name:MPMoviePlayerPlaybackDidFinishNotification object:videoPlayer.moviePlayer];
+[[NSNotificationCenter defaultCenter] addObserver:self
+selector:@selector(videoFinished:) name:MPMoviePlayerPlaybackDidFinishNotification object:videoPlayer.moviePlayer];
+</code>
+步骤 3. - 手动显示你的videoPlayer控制器
+<code>objc
+[self presentMoviePlayerViewControllerAnimated:videoPlayer];
+</code>
+步骤 4. - 添加 videoFinish: 方法处理通知事件</p>
+
+<pre><code class="objc">-(void)videoFinished:(NSNotification*)aNotification{
+    int value = [[aNotification.userInfo valueForKey:MPMoviePlayerPlaybackDidFinishReasonUserInfoKey] intValue];
+    if (value == MPMovieFinishReasonUserExited) {
+        [self dismissMoviePlayerViewControllerAnimated];
+    }
+}
+</code></pre>
+
+<hr />
+
+<p>参考:<a href="http://stackoverflow.com/a/19596598">http://stackoverflow.com/a/19596598</a></p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[关于在storyboard中使用静态cell的注意事项]]></title>
