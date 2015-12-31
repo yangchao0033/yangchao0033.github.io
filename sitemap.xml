@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>http://yangchao0033.github.io/blog/2016/01/01/wei-harpy(ban-ben-geng-xin-gong-ju-zhi-zuo-jian-rong-ban-ben-)/</loc>
+    <lastmod>2016-01-01T03:58:09+08:00</lastmod>
+  </url>
+  <url>
     <loc>http://yangchao0033.github.io/blog/2016/01/01/mpmovieplayerviewcontrollerbo-fang-jie-shu-hou-zi-dong-xiao-shi-de-jie-jue-fang-an/</loc>
     <lastmod>2016-01-01T03:30:11+08:00</lastmod>
   </url>
@@ -20,12 +24,6 @@
   </url>
   <url>
     <loc>http://yangchao0033.github.io/blog/categories/ios/</loc>
-  </url>
-  <url>
-    <loc>http://yangchao0033.github.io/blog/categories/ibkai-fa/</loc>
-  </url>
-  <url>
-    <loc>http://yangchao0033.github.io/blog/categories/yin-shi-pin/</loc>
   </url>
   <url>
     <loc>http://yangchao0033.github.io/blog/index.html</loc>

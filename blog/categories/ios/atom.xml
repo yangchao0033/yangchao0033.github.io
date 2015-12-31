@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Ios | SuperYang`s Blog]]></title>
   <link href="http://yangchao0033.github.io/blog/categories/ios/atom.xml" rel="self"/>
   <link href="http://yangchao0033.github.io/"/>
-  <updated>2016-01-01T03:49:56+08:00</updated>
+  <updated>2016-01-01T04:14:58+08:00</updated>
   <id>http://yangchao0033.github.io/</id>
   <author>
     <name><![CDATA[Super Yang]]></name>
@@ -12,6 +12,410 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[为Harpy（版本更新工具)制做兼容版本]]></title>
+    <link href="http://yangchao0033.github.io/blog/2016/01/01/wei-harpy(ban-ben-geng-xin-gong-ju-zhi-zuo-jian-rong-ban-ben-)/"/>
+    <updated>2016-01-01T03:58:09+08:00</updated>
+    <id>http://yangchao0033.github.io/blog/2016/01/01/wei-harpy(ban-ben-geng-xin-gong-ju-zhi-zuo-jian-rong-ban-ben-)</id>
+    <content type="html"><![CDATA[<p><strong>中文版：</strong></p>
+
+<h1>Harpy（兼容版）</h1>
+
+<h3>(iOS5-9适配版本,基于<a href="https://github.com/ArtSabintsev/Harpy">ArtSabintsev/Harpy v3.4.5</a>)</h3>
+
+<h3>提醒用户你的应用有新的可用版本，并且及时的跳转到App Store进行更新。</h3>
+
+<h2>关于</h2>
+
+<p><strong>Harpy</strong> 将用户手机上已安装的iOS app版本与当前App Store最新可用版本进行检查对比。如果有新的可用版本时，使用弹窗及时提醒用户最新版本信息，并然用户选择是否需要进一步操作。</p>
+
+<!--more-->
+
+
+<p>Harry是基于<a href="Semantic%20Versioning">http://www.semver.org</a>版本号系统标准执行。
+- <code>Semantic Versioning</code>是一个三位数的版本号系统（例如:1.0.0）
+- Harry同样支持2位数的版本号(例如:1.0)
+- Harpy同时支持4位数的版本号（例如:1.0.0.0）</p>
+
+<h2>Swift 支持</h2>
+
+<p>当前兼容版本（iOS5-9）暂时不支持swift</p>
+
+<h2>特点</h2>
+
+<!--- [x] CocoaPods Support-->
+
+
+<ul>
+<li>[x] 支持三种类型的弹框样式 (详见 <strong>截图 &amp; Alert Types</strong>)</li>
+<li>[x] 提供可选的代理方法 (详见 <strong>Optional Delegate</strong> section)</li>
+<li>[x] 本地化支持超过20+语言</li>
+</ul>
+
+
+<h2>屏幕截图</h2>
+
+<ul>
+<li><strong>左图：</strong>强制用户更新app</li>
+<li><strong>中图：</strong>提供可选项是否前往更新</li>
+<li><strong>右图：</strong>提供跳过当前版本更新的选项</li>
+<li>这些样式全部可以通过<code>HarpyAletType</code>枚举进行控制，详见<code>Harpy.h</code></li>
+</ul>
+
+
+<p><img src="https://github.com/yangchao0033/Harpy/blob/master/samplePictures/4.pic.jpg?raw=true" title="Forced Update" alt="Forced Update" />
+<img src="https://github.com/yangchao0033/Harpy/blob/master/samplePictures/5.pic.jpg?raw=true" title="Optional Update" alt="Optional Update" />
+<img src="https://github.com/yangchao0033/Harpy/blob/master/samplePictures/3.pic.jpg?raw=true" title="Optional Update" alt="Skipped Update" /></p>
+
+<h2>安装</h2>
+
+<h3>手动安装（正在准备CocoaPods）</h3>
+
+<p>将‘Harpy’文件夹拖入到你的项目中，并选择'copy if needed',包括 <code>Harpy.h</code> 和 <code>Harpy.m</code> 文件</p>
+
+<h2>配置</h2>
+
+<ol>
+<li>import <strong>Harpy.h</strong> 导入到 AppDelefate 类中 或者 Pre-Complier Header(.pch)文件中</li>
+<li>在你的<code>Appdelegate</code>中设置<strong>appID</strong>（必要），设置你的<strong>alertType</strong>（可选）</li>
+<li>在你的<code>Appdelegate</code>中调用<code>checkVersion</code>方法，三个检测方法调用位置分别位于Appdelegate的启动的代理方法中，可以自行选择使用
+
+<ul>
+<li>在 <code>application:didFinishLaunchingWithOptions:</code> 中调用 <code>checkVersion</code></li>
+<li>在 <code>applicationDidBecomeActive:</code> 中调用 <code>checkVersionDaily</code></li>
+<li>在 <code>applicationDidBecomeActive:</code> 中调用 <code>checkVersionWeekly</code> .</li>
+</ul>
+</li>
+</ol>
+
+
+<pre><code class="obj-c">- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
+{
+
+    // 启用Harpy之前确保你的window可用
+    [self.window makeKeyAndVisible];
+
+    // 为你的应用设置app id
+    [[Harpy sharedInstance] setAppID:@"&lt;#app_id#&gt;"];
+
+    // 设置 UIAlertController 将要基于哪个控制器显示 （适配iOS8+）
+    [[Harpy sharedInstance] setPresentingViewController:_window.rootViewController];
+
+  // (可选)设置代理来追踪用户点击事件，活着的使用自定义的界面来展示你的信息
+      [[Harpy sharedInstance] setDelegate:self];
+
+    // (可选) 设置alertController的tincolor（iOS8+可用）
+    [[Harpy sharedInstance] setAlertControllerTintColor:@"&lt;#alert_controller_tint_color#&gt;"];
+
+    // (可选) 设置你的应用名
+    [[Harpy sharedInstance] setAppName:@"&lt;#app_name#&gt;"];
+
+     /* （可选）设置弹框类型 默认为HarpyAlertTypeOption */
+    [[Harpy sharedInstance] setAlertType:&lt;#alert_type#&gt;];
+
+     /* (可选)如果你的应用只在某些国家或地区可用，你必须使用两个字符的country code来设置应用的可用区域 */
+    [[Harpy sharedInstance] setCountryCode:@"&lt;#country_code#&gt;"];
+
+    /* (可选) 强制指定应用显示语言, 请使用 Harpy.h 中定义的 HarpyLanguage 进行设置。*/
+    [[Harpy sharedInstance] setForceLanguageLocalization:&lt;#HarpyLanguageConstant#&gt;];
+
+    // 执行版本检测
+    [[Harpy sharedInstance] checkVersion];
+}
+
+- (void)applicationDidBecomeActive:(UIApplication *)application
+{
+
+    /*
+        执行每天检测你的app是否需要更新版本，需要在`applicationDidBecomeActive:`执行最合适
+        因为这对于的你的应用进如后台很长时间后非常有用。
+
+        同时，也会在应用第一次启动时执行版本检测
+    */
+    [[Harpy sharedInstance] checkVersionDaily];
+
+    /*
+        执行每周检测你的app新版本。同理需要将此代码放置在`applicationDidBecomeActive:`中执行。
+
+        同时，也会在应用第一次启动时执行版本检测
+     */
+    [[Harpy sharedInstance] checkVersionWeekly];
+
+}
+
+- (void)applicationWillEnterForeground:(UIApplication *)application
+{
+    /*
+     执行app新版本检测，放在此是为了让用户从App Sore跳转回来并重新从后台进入你的
+     app，并且没有在从App Store中跳转回来之前更新他们app的时候调用
+
+     注意：只有当你使用*HarpyAlertTypeForce*样式弹框类型是才使用这种方法
+
+    并且会在你第一次启动应用时检测。
+    */
+    [[Harpy sharedInstance] checkVersion];
+}
+</code></pre>
+
+<p>至此设置全部完成！</p>
+
+<h2>为不同的升级类型设置弹窗样式</h2>
+
+<p>如果你喜欢为不同的升级类型比如修改(revision)，补丁(patch)，轻微改动(minor)，重大修改(major)等升级类型仅仅添加下面的几行可选代码即可，添加位置必须在调用版本检查的方法（checkVersion）之前</p>
+
+<pre><code class="obj-c">    /* 默认情况下Harpy会设置所有的版本升级样式为HarpyAlertTypeOption */
+    [[Harpy sharedInstance] setPatchUpdateAlertType:&lt;#alert_type#&gt;];
+    [[Harpy sharedInstance] setMinorUpdateAlertType:&lt;#alert_type#&gt;];
+    [[Harpy sharedInstance] setMajorUpdateAlertType:&lt;#alert_type#&gt;];
+    [[Harpy sharedInstance] setRevisionUpdateAlertType:&lt;#alert_type#&gt;];
+</code></pre>
+
+<h2>可选的代理和代理方法</h2>
+
+<p>如果你想要个处理或者追踪终端用户的的行为，Harpy会为你提供四个代理方法进行监控</p>
+
+<pre><code class="obj-c">    // 用户界面展示升级提示对话框
+    - (void)harpyDidShowUpdateDialog;
+
+    // 用户已经点击升级按钮并且进入到App Sotore
+    - (void)harpyUserDidLaunchAppStore;
+
+    // 用户已经点击跳过此次版本更新
+    - (void)harpyUserDidSkipVersion;
+
+    // 用户已经点击取消更行对话框
+    - (void)harpyUserDidCancel;
+</code></pre>
+
+<p>If you would like to use your own UI, please use the following delegate method to obtain the localized update message if a new version is available:
+如果你想使用自己的UI，如果有可用的新版本，使用下面的代理来获得本地化的升级信息（需要设置AlertTpye为HarpyAlertTypeNone）</p>
+
+<pre><code class="obj-c">- (void)harpyDidDetectNewVersionWithoutAlert:(NSString *)message;
+</code></pre>
+
+<h2>强制本地化</h2>
+
+<p>Harpy 已经本地化了的语言包括 Arabic, Basque, 简体中文, 繁体中文, Danish, Dutch, English, Estonian, French, German, Hebrew, Hungarian, Italian, Japanese, Korean, Latvian, Lithuanian, Malay, Polish, Portuguese (Brazil), Portuguese (Portugal), Russian, Slovenian, Swedish, Spanish, Thai, and Turkish.</p>
+
+<p>你可能想要你的升级对话框<em>永远</em>显示正确的语言，而忽略iOS的语言设置（比如在指定国家发行的app）</p>
+
+<p>你可以使用以下代码实现强制本地化</p>
+
+<pre><code class="obj-c">[[Harpy sharedInstance] setForceLanguageLocalization&lt;#HarpyLanguageConstant#&gt;];
+</code></pre>
+
+<h2>在App Store上提交的重要注意事项</h2>
+
+<p>App Store 审核人员将不会看到升级弹框</p>
+
+<p><strong>English</strong>：</p>
+
+<h1>Harpy（Compatible version Base On <a href="https://github.com/ArtSabintsev/Harpy">ArtSabintsev/Harpy v3.4.5</a>）</h1>
+
+<h3>Notify users when a new version of your app is available, and prompt them with the App Store link.</h3>
+
+<hr />
+
+<h2>About</h2>
+
+<p><strong>Harpy</strong> checks a user&rsquo;s currently installed version of your iOS app against the version that is currently available in the App Store. If a new version is available, an alert can be presented to the user informing them of the newer version, and giving them the option to update the application.</p>
+
+<p>Harpy is built to work with the <a href="Semantic%20Versioning">http://www.semver.org</a> system.
+- Semantic Versioning is a three number versioning system (e.g., 1.0.0)
+- Harpy also supports two-number versioning (e.g., 1.0)
+- Harpy also supports four-number versioning (e.g., 1.0.0.0)</p>
+
+<h2>Swift Support</h2>
+
+<ul>
+<li>not support yet</li>
+</ul>
+
+
+<h2>Features</h2>
+
+<!--- [x] CocoaPods Support-->
+
+
+<ul>
+<li>[x] Three types of alerts (see <strong>Screenshots &amp; Alert Types</strong>)</li>
+<li>[x] Optional delegate methods (see <strong>Optional Delegate</strong> section)</li>
+<li>[x] Localized for 20+ languages</li>
+</ul>
+
+
+<h2>Screenshots</h2>
+
+<ul>
+<li>The <strong>left picture</strong> forces the user to update the app.</li>
+<li>The <strong>center picture</strong> gives the user the option to update the app.</li>
+<li>The <strong>right picture</strong> gives the user the option to skip the current update.</li>
+<li>These options are controlled by the <code>HarpyAlertType</code> typede that is found in <code>Harpy.h</code>.</li>
+</ul>
+
+
+<p><img src="https://github.com/ArtSabintsev/Harpy/blob/master/samplePictures/picForcedUpdate.png?raw=true" title="Forced Update" alt="Forced Update" />
+<img src="https://github.com/ArtSabintsev/Harpy/blob/master/samplePictures/picOptionalUpdate.png?raw=true" title="Optional Update" alt="Optional Update" />
+<img src="https://github.com/ArtSabintsev/Harpy/blob/master/samplePictures/picSkippedUpdate.png?raw=true" title="Optional Update" alt="Skipped Update" /></p>
+
+<h2>Installation Instructions</h2>
+
+<!--### CocoaPods Installation
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>pod 'Harpy'</span></code></pre></td></tr></table></div></figure>-->
+
+
+<h3>Manual Installation</h3>
+
+<p>Copy the &lsquo;Harpy&rsquo; folder into your Xcode project. It contains the Harpy.h and Harpy.m files.</p>
+
+<h2>Setup</h2>
+
+<ol>
+<li>Import <strong>Harpy.h</strong> into your AppDelegate or Pre-Compiler Header (.pch)</li>
+<li>In your <code>AppDelegate</code>, set the <strong>appID</strong>, and optionally, you can set the <strong>alertType</strong>.</li>
+<li>In your <code>AppDelegate</code>, call <strong>only one</strong> of the <code>checkVersion</code> methods, as all three perform a check on your application&rsquo;s first launch. Use either:
+
+<ul>
+<li><code>checkVersion</code> in <code>application:didFinishLaunchingWithOptions:</code></li>
+<li><code>checkVersionDaily</code> in <code>applicationDidBecomeActive:</code>.</li>
+<li><code>checkVersionWeekly</code> in <code>applicationDidBecomeActive:</code>.</li>
+</ul>
+</li>
+</ol>
+
+
+<pre><code class="obj-c">- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
+{
+
+    // Present Window before calling Harpy
+    [self.window makeKeyAndVisible];
+
+    // Set the App ID for your app
+    [[Harpy sharedInstance] setAppID:@"&lt;#app_id#&gt;"];
+
+    // Set the UIViewController that will present an instance of UIAlertController
+    [[Harpy sharedInstance] setPresentingViewController:_window.rootViewController];
+
+  // (Optional) Set the Delegate to track what a user clicked on, or to use a custom UI to present your message.
+      [[Harpy sharedInstance] setDelegate:self];
+
+    // (Optional) The tintColor for the alertController
+    [[Harpy sharedInstance] setAlertControllerTintColor:@"&lt;#alert_controller_tint_color#&gt;"];
+
+    // (Optional) Set the App Name for your app
+    [[Harpy sharedInstance] setAppName:@"&lt;#app_name#&gt;"];
+
+    /* (Optional) Set the Alert Type for your app
+     By default, Harpy is configured to use HarpyAlertTypeOption */
+    [[Harpy sharedInstance] setAlertType:&lt;#alert_type#&gt;];
+
+    /* (Optional) If your application is not available in the U.S. App Store, you must specify the two-letter
+     country code for the region in which your applicaiton is available. */
+    [[Harpy sharedInstance] setCountryCode:@"&lt;#country_code#&gt;"];
+
+    /* (Optional) Overrides system language to predefined language.
+     Please use the HarpyLanguage constants defined in Harpy.h. */
+    [[Harpy sharedInstance] setForceLanguageLocalization:&lt;#HarpyLanguageConstant#&gt;];
+
+    // Perform check for new version of your app
+    [[Harpy sharedInstance] checkVersion];
+}
+
+- (void)applicationDidBecomeActive:(UIApplication *)application
+{
+
+    /*
+     Perform daily check for new version of your app
+     Useful if user returns to you app from background after extended period of time
+     Place in applicationDidBecomeActive:
+
+     Also, performs version check on first launch.
+    */
+    [[Harpy sharedInstance] checkVersionDaily];
+
+    /*
+     Perform weekly check for new version of your app
+     Useful if you user returns to your app from background after extended period of time
+     Place in applicationDidBecomeActive:
+
+     Also, performs version check on first launch.
+     */
+    [[Harpy sharedInstance] checkVersionWeekly];
+
+}
+
+- (void)applicationWillEnterForeground:(UIApplication *)application
+{
+    /*
+     Perform check for new version of your app
+     Useful if user returns to you app from background after being sent tot he App Store,
+     but doesn't update their app before coming back to your app.
+
+     ONLY USE THIS IF YOU ARE USING *HarpyAlertTypeForce*
+
+     Also, performs version check on first launch.
+    */
+    [[Harpy sharedInstance] checkVersion];
+}
+</code></pre>
+
+<p>And you&rsquo;re all set!</p>
+
+<h2>Differentiated Alerts for Patch, Minor, and Major Updates</h2>
+
+<p>If you would like to set a different type of alert for revision, patch, minor, and/or major updates, simply add one or all of the following <em>optional</em> lines to your setup <em>before</em> calling any of the <code>checkVersion</code> methods:</p>
+
+<pre><code class="obj-c">    /* By default, Harpy is configured to use HarpyAlertTypeOption for all version updates */
+    [[Harpy sharedInstance] setPatchUpdateAlertType:&lt;#alert_type#&gt;];
+    [[Harpy sharedInstance] setMinorUpdateAlertType:&lt;#alert_type#&gt;];
+    [[Harpy sharedInstance] setMajorUpdateAlertType:&lt;#alert_type#&gt;];
+    [[Harpy sharedInstance] setRevisionUpdateAlertType:&lt;#alert_type#&gt;];
+</code></pre>
+
+<h2>Optional Delegate and Delegate Methods</h2>
+
+<p>If you&rsquo;d like to handle or track the end-user&rsquo;s behavior, four delegate methods have been made available to you:</p>
+
+<pre><code class="obj-c">    // User presented with update dialog
+    - (void)harpyDidShowUpdateDialog;
+
+    // User did click on button that launched App Store.app
+    - (void)harpyUserDidLaunchAppStore;
+
+    // User did click on button that skips version update
+    - (void)harpyUserDidSkipVersion;
+
+    // User did click on button that cancels update dialog
+    - (void)harpyUserDidCancel;
+</code></pre>
+
+<p>If you would like to use your own UI, please use the following delegate method to obtain the localized update message if a new version is available:</p>
+
+<pre><code class="obj-c">- (void)harpyDidDetectNewVersionWithoutAlert:(NSString *)message;
+</code></pre>
+
+<h2>Force Localization</h2>
+
+<p>Harpy has localizations for Arabic, Basque, Chinese (Simplified), Chinese (Traditional), Danish, Dutch, English, Estonian, French, German, Hebrew, Hungarian, Italian, Japanese, Korean, Latvian, Lithuanian, Malay, Polish, Portuguese (Brazil), Portuguese (Portugal), Russian, Slovenian, Swedish, Spanish, Thai, and Turkish.</p>
+
+<p>You may want the update dialog to <em>always</em> appear in a certain language, ignoring iOS&rsquo;s language setting (e.g. apps released in a specific country).</p>
+
+<p>You can enable it like this:</p>
+
+<pre><code class="obj-c">[[Harpy sharedInstance] setForceLanguageLocalization&lt;#HarpyLanguageConstant#&gt;];
+</code></pre>
+
+<h2>Important Note on App Store Submissions</h2>
+
+<p>The App Store reviewer will <strong>not</strong> see the alert.</p>
+
+<h2>Created and maintained by</h2>
+
+<p><a href="http://www.sabintsev.com/">Arthur Ariel Sabintsev</a></p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[MPMovieplayerviewcontroller播放结束后自动消失的解决方案]]></title>
