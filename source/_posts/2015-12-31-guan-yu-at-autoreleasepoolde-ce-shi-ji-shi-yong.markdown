@@ -2,9 +2,12 @@
 layout: post
 title: "关于@autoreleasepool的性能测试及手动释放自动释放池"
 date: 2015-12-31 11:47:01 +0800
-comments: true
 categories:
+comments: true
+keywords: ios, 性能检测,autoreleasepool
+ 
 ---
+
 首先，我们先对使用autoreleasepool的场景进行性能对比。
 
 * 不用autoreleasepool
