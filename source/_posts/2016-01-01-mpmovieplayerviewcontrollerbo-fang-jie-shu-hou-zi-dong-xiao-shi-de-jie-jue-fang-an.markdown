@@ -3,7 +3,7 @@ layout: post
 title: "MPMovieplayerviewcontroller播放结束后自动消失的解决方案"
 date: 2016-01-01 03:30:11 +0800
 comments: true
-categories: [ios, 音视频]
+categories: ios
 keywords: ios,MPMovieplayerviewcontroller
 description: 解决MPMovieplayerviewcontroller播放结束后自动消失的解决方案
 

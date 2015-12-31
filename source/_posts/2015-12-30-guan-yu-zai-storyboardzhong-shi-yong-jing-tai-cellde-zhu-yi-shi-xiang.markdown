@@ -5,7 +5,7 @@ date: 2015-12-30 15:26:05 +0800
 comments: true
 sharing:	true
 footer: true
-categories: [ios, IB开发]
+categories: ios
 
 ---
 
