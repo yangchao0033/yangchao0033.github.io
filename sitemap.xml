@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>http://yangchao0033.github.io/blog/2016/01/02/happy-new-year/</loc>
+    <lastmod>2016-01-02T01:15:36+08:00</lastmod>
+  </url>
+  <url>
     <loc>http://yangchao0033.github.io/blog/2016/01/01/wei-harpy(ban-ben-geng-xin-gong-ju-zhi-zuo-jian-rong-ban-ben-)/</loc>
     <lastmod>2016-01-01T03:58:09+08:00</lastmod>
   </url>
@@ -26,7 +30,10 @@
     <loc>http://yangchao0033.github.io/blog/categories/ios/</loc>
   </url>
   <url>
+    <loc>http://yangchao0033.github.io/blog/categories/shi-guang-liu-sheng-ji/</loc>
+  </url>
+  <url>
     <loc>http://yangchao0033.github.io/blog/index.html</loc>
-    <lastmod>2016-01-02T00:39:38+08:00</lastmod>
+    <lastmod>2015-12-31T14:50:05+08:00</lastmod>
   </url>
 </urlset>
