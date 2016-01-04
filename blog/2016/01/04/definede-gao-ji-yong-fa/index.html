@@ -5,12 +5,15 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>MPMovieplayerviewcontroller播放结束后自动消失的解决方案 - SuperYang`s Blog</title>
+  <title>宏定义的高级用法 - SuperYang`s Blog</title>
   <meta name="author" content="Super Yang">
 
   
-  <meta name="description" content="解决MPMovieplayerviewcontroller播放结束后自动消失的解决方案">
-  <meta name="keywords" content="ios,MPMovieplayerviewcontroller">
+  <meta name="description" content="1、# （stringizing）字符串化操作符。其作用是：将宏定义中的传入参数名转换成用一对双引号括起来参数名字符串。其只能用于有传入参数的宏定义中，且必须置于宏定义体中的参数名前。
+如： 1
+2
+#define example(instr) printf(&quot;the input &hellip;">
+  <meta name="keywords" content="宏定义,高级用法">
 
   <!-- http://t.co/dKP3o1e -->
   <meta name="HandheldFriendly" content="True">
@@ -18,7 +21,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://yangchao0033.github.io/blog/2016/01/01/mpmovieplayerviewcontrollerbo-fang-jie-shu-hou-zi-dong-xiao-shi-de-jie-jue-fang-an/">
+  <link rel="canonical" href="http://yangchao0033.github.io/blog/2016/01/04/definede-gao-ji-yong-fa/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="SuperYang`s Blog" type="application/atom+xml">
@@ -97,7 +100,7 @@
   
   <header>
     
-      <h1 class="entry-title">MPMovieplayerviewcontroller播放结束后自动消失的解决方案</h1>
+      <h1 class="entry-title">宏定义的高级用法</h1>
     
     
       <p class="meta">
@@ -106,50 +109,84 @@
 
 
 
-<time class='entry-date' datetime='2016-01-01T03:30:11+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>1</span><span class='date-suffix'>st</span>, <span class='date-year'>2016</span></span> <span class='time'>3:30 am</span></time>
+<time class='entry-date' datetime='2016-01-04T11:44:51+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>4</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>11:44 am</span></time>
         
       </p>
     
   </header>
 
 
-<div class="entry-content"><hr />
+<div class="entry-content"><p>1、# （stringizing）字符串化操作符。其作用是：将宏定义中的传入参数名转换成用一对双引号括起来参数名字符串。其只能用于有传入参数的宏定义中，且必须置于宏定义体中的参数名前。
+如：</p>
 
-<p>你可以使用这段代码来阻止控制器播放在播放结束后自动dismissing（消失），并且捕捉到用户点击完成的按钮事件去自己定义并处理让你的MPMoviePlayerViewController播放器的消失（dismiss）的时机</p>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='c'><span class='line'><span class="cp">#define example(instr) printf(&quot;the input string is:\t%s\n&quot;,#instr)</span>
+</span><span class='line'><span class="cp">#define example1(instr) #instr</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>当使用该宏定义时：</p>
 
 <!--more-->
 
 
-<hr />
-
-<p>步骤 1. - 创建并初始化一个MPMoviePlayerViewController（videoPlayer）</p>
-
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="bp">MPMoviePlayerViewController</span> <span class="o">*</span><span class="n">videoPlayer</span> <span class="o">=</span> <span class="p">[[</span><span class="bp">MPMoviePlayerViewController</span> <span class="n">alloc</span><span class="p">]</span> <span class="nl">initWithContentURL</span><span class="p">:[[</span><span class="bp">NSURL</span> <span class="n">alloc</span> <span class="p">]</span><span class="nl">initWithString</span><span class="p">:[</span><span class="n">aURL</span><span class="p">];</span>
+</pre></td><td class='code'><pre><code class='c'><span class='line'><span class="n">example</span><span class="p">(</span><span class="n">abc</span><span class="p">)</span><span class="err">；</span>
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>步骤 2. - 移除videoPlayer默认的通知事件并且加入自己的通知事件。</p>
+<p> 在编译时将会展开成：</p>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="p">[[</span><span class="bp">NSNotificationCenter</span> <span class="n">defaultCenter</span><span class="p">]</span> <span class="nl">removeObserver</span><span class="p">:</span><span class="n">videoPlayer</span>
-</span><span class='line'><span class="nl">name</span><span class="p">:</span><span class="n">MPMoviePlayerPlaybackDidFinishNotification</span> <span class="nl">object</span><span class="p">:</span><span class="n">videoPlayer</span><span class="p">.</span><span class="n">moviePlayer</span><span class="p">];</span>
-</span><span class='line'><span class="p">[[</span><span class="bp">NSNotificationCenter</span> <span class="n">defaultCenter</span><span class="p">]</span> <span class="nl">addObserver</span><span class="p">:</span><span class="nb">self</span>
-</span><span class='line'><span class="nl">selector</span><span class="p">:</span><span class="k">@selector</span><span class="p">(</span><span class="nl">videoFinished</span><span class="p">:)</span> <span class="nl">name</span><span class="p">:</span><span class="n">MPMoviePlayerPlaybackDidFinishNotification</span> <span class="nl">object</span><span class="p">:</span><span class="n">videoPlayer</span><span class="p">.</span><span class="n">moviePlayer</span><span class="p">];</span>
+</pre></td><td class='code'><pre><code class='c'><span class='line'><span class="n">printf</span><span class="p">(</span><span class="s">&quot;the input string is:</span><span class="se">\t</span><span class="s">%s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="s">&quot;abc&quot;</span><span class="p">);</span>
+</span><span class='line'><span class="n">string</span> <span class="n">str</span><span class="o">=</span><span class="n">example1</span><span class="p">(</span><span class="n">abc</span><span class="p">);</span>
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>步骤 3. - 手动显示你的videoPlayer控制器</p>
+<p></p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="p">[</span><span class="nb">self</span> <span class="nl">presentMoviePlayerViewControllerAnimated</span><span class="p">:</span><span class="n">videoPlayer</span><span class="p">];</span>
-</span></code></pre></td></tr></table></div></figure>
+<p>将会展成：</p>
 
+<p><code>string str="abc";</code></p>
 
-<p>步骤 4. - 添加 videoFinish: 方法处理通知事件</p>
+<p>注意：
+对空格的处理
+a。忽略传入参数名前面和后面的空格。</p>
+
+<p>   如：<code>str=example1(   abc )</code>； 将会被扩展成<code>str="abc"</code>；</p>
+
+<p>b.当传入参数名间存在空格时，编译器将会自动连接各个子字符串，用每个子字符串中只以一个空格连接，忽略其中多余一个的空格。</p>
+
+<p>   如：<code>str=exapme( abc    def)</code>; 将会被扩展成 <code>str="abc def"</code>；</p>
+
+<p>2、## （token-pasting）符号连接操作符(让参数值转换为参数名)
+宏定义中：参数名，即为形参，如#define sum(a,b) (a+b)；中a和b均为某一参数的代表符号，即形式参数。
+而##的作用则是将宏定义的多个形参成一个实际参数名。</p>
+
+<p>如：</p>
+
+<p><code>#define exampleNum(n) num##n
+</code></p>
+
+<p><code>int num9=9</code>;</p>
+
+<p>使用：</p>
+
+<p><code>int num=exampleNum(9)</code>;</p>
+
+<p>将会扩展成 <code>int num=num9</code>;</p>
+
+<p>注意：</p>
+
+<p>1.当用##连接形参时，##前后的空格可有可无。</p>
+
+<p>如：<code>#define exampleNum(n) num ## n</code>相当于 <code>#define exampleNum(n) num##n</code></p>
+
+<p>2.连接后的实际参数名，必须为实际存在的参数名或是编译器已知的宏定义</p>
+
+<p>// preprocessor_token_pasting.cpp</p>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -157,18 +194,37 @@
 <span class='line-number'>4</span>
 <span class='line-number'>5</span>
 <span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="p">-(</span><span class="kt">void</span><span class="p">)</span><span class="nf">videoFinished:</span><span class="p">(</span><span class="bp">NSNotification</span><span class="o">*</span><span class="p">)</span><span class="nv">aNotification</span><span class="p">{</span>
-</span><span class='line'>    <span class="kt">int</span> <span class="n">value</span> <span class="o">=</span> <span class="p">[[</span><span class="n">aNotification</span><span class="p">.</span><span class="n">userInfo</span> <span class="nl">valueForKey</span><span class="p">:</span><span class="n">MPMoviePlayerPlaybackDidFinishReasonUserInfoKey</span><span class="p">]</span> <span class="n">intValue</span><span class="p">];</span>
-</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="n">value</span> <span class="o">==</span> <span class="n">MPMovieFinishReasonUserExited</span><span class="p">)</span> <span class="p">{</span>
-</span><span class='line'>        <span class="p">[</span><span class="nb">self</span> <span class="n">dismissMoviePlayerViewControllerAnimated</span><span class="p">];</span>
-</span><span class='line'>    <span class="p">}</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='c'><span class='line'><span class="cp">#include </span>
+</span><span class='line'><span class="cp">#define paster( n ) printf_s( &quot;token&quot; #n &quot; = %d&quot;, token##n )</span>
+</span><span class='line'><span class="kt">int</span> <span class="n">token9</span> <span class="o">=</span> <span class="mi">9</span><span class="p">;</span>
+</span><span class='line'><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>   <span class="n">paster</span><span class="p">(</span><span class="mi">9</span><span class="p">);</span>
 </span><span class='line'><span class="p">}</span>
 </span></code></pre></td></tr></table></div></figure>
 
 
-<hr />
+<p>运行结果：</p>
 
-<p>参考:<a href="http://stackoverflow.com/a/19596598">http://stackoverflow.com/a/19596598</a></p>
+<p><code>token9 = 9</code></p>
+
+<p>3、@# （charizing）字符化操作符。
+只能用于有传入参数的宏定义中，且必须置于宏定义体中的参数名前。作用是将传的单字符参数名转换成字符，以一对单引用括起来。</p>
+
+<p><code>#define makechar(x)  #@x
+a = makechar(b);</code></p>
+
+<p>展开后变成了：</p>
+
+<p><code>a= 'b';</code></p>
+
+<p>4、\ 行继续操作符
+当定义的宏不能用一行表达完整时，可以用"\&ldquo;表示下一行继续此宏的定义。</p>
+
+<p><a href="http://blog.csdn.net/hjmhz/article/details/8667185">更多高级用法&hellip;</a></p>
+
+<p><a href="http://blog.chinaunix.net/uid-23254875-id-341055.html">转自http://blog.chinaunix.net/uid-23254875-id-341055.html</a></p>
 </div>
 
 
@@ -184,7 +240,7 @@
 
 
 
-<time class='entry-date' datetime='2016-01-01T03:30:11+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>1</span><span class='date-suffix'>st</span>, <span class='date-year'>2016</span></span> <span class='time'>3:30 am</span></time>
+<time class='entry-date' datetime='2016-01-04T11:44:51+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>4</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>11:44 am</span></time>
       
 
 <span class="categories">
@@ -220,10 +276,8 @@
     
     <p class="meta">
       
-        <a class="basic-alignment left" href="/blog/2015/12/31/guan-yu-at-autoreleasepoolde-ce-shi-ji-shi-yong/" title="Previous Post: 关于@autoreleasepool的性能测试及手动释放自动释放池">&laquo; 关于@autoreleasepool的性能测试及手动释放自动释放池</a>
+        <a class="basic-alignment left" href="/blog/2016/01/04/guan-yu-blockshi-yong-de-5dian-zhu-yi-shi-xiang-d/" title="Previous Post: 关于block使用的5点注意事项">&laquo; 关于block使用的5点注意事项</a>
       
-      
-        <a class="basic-alignment right" href="/blog/2016/01/01/wei-harpy(ban-ben-geng-xin-gong-ju-zhi-zuo-jian-rong-ban-ben-)/" title="Next Post: 为Harpy（版本更新工具)制做兼容版本">为Harpy（版本更新工具)制做兼容版本 &raquo;</a>
       
     </p>
   </footer>

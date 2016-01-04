@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Ios | SuperYang`s Blog]]></title>
   <link href="http://yangchao0033.github.io/blog/categories/ios/atom.xml" rel="self"/>
   <link href="http://yangchao0033.github.io/"/>
-  <updated>2016-01-02T17:33:29+08:00</updated>
+  <updated>2016-01-04T11:56:59+08:00</updated>
   <id>http://yangchao0033.github.io/</id>
   <author>
     <name><![CDATA[Super Yang]]></name>
@@ -12,6 +12,349 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[宏定义的高级用法]]></title>
+    <link href="http://yangchao0033.github.io/blog/2016/01/04/definede-gao-ji-yong-fa/"/>
+    <updated>2016-01-04T11:44:51+08:00</updated>
+    <id>http://yangchao0033.github.io/blog/2016/01/04/definede-gao-ji-yong-fa</id>
+    <content type="html"><![CDATA[<p>1、# （stringizing）字符串化操作符。其作用是：将宏定义中的传入参数名转换成用一对双引号括起来参数名字符串。其只能用于有传入参数的宏定义中，且必须置于宏定义体中的参数名前。
+如：</p>
+
+<pre><code class="c">#define example(instr) printf("the input string is:\t%s\n",#instr)
+#define example1(instr) #instr
+</code></pre>
+
+<p>当使用该宏定义时：</p>
+
+<!--more-->
+
+
+<pre><code class="c">example(abc)；
+</code></pre>
+
+<p> 在编译时将会展开成：</p>
+
+<pre><code>printf("the input string is:\t%s\n","abc");
+string str=example1(abc);
+</code></pre>
+
+<p>将会展成：</p>
+
+<p><code>string str="abc";</code></p>
+
+<p>注意：
+对空格的处理
+a。忽略传入参数名前面和后面的空格。</p>
+
+<p>   如：<code>str=example1(   abc )</code>； 将会被扩展成<code>str="abc"</code>；</p>
+
+<p>b.当传入参数名间存在空格时，编译器将会自动连接各个子字符串，用每个子字符串中只以一个空格连接，忽略其中多余一个的空格。</p>
+
+<p>   如：<code>str=exapme( abc    def)</code>; 将会被扩展成 <code>str="abc def"</code>；</p>
+
+<p>2、## （token-pasting）符号连接操作符(让参数值转换为参数名)
+宏定义中：参数名，即为形参，如#define sum(a,b) (a+b)；中a和b均为某一参数的代表符号，即形式参数。
+而##的作用则是将宏定义的多个形参成一个实际参数名。</p>
+
+<p>如：</p>
+
+<p><code>#define exampleNum(n) num##n
+</code></p>
+
+<p><code>int num9=9</code>;</p>
+
+<p>使用：</p>
+
+<p><code>int num=exampleNum(9)</code>;</p>
+
+<p>将会扩展成 <code>int num=num9</code>;</p>
+
+<p>注意：</p>
+
+<p>1.当用##连接形参时，##前后的空格可有可无。</p>
+
+<p>如：<code>#define exampleNum(n) num ## n</code>相当于 <code>#define exampleNum(n) num##n</code></p>
+
+<p>2.连接后的实际参数名，必须为实际存在的参数名或是编译器已知的宏定义</p>
+
+<p>// preprocessor_token_pasting.cpp</p>
+
+<pre><code>#include 
+#define paster( n ) printf_s( "token" #n " = %d", token##n )
+int token9 = 9;
+int main()
+{
+   paster(9);
+}
+</code></pre>
+
+<p>运行结果：</p>
+
+<p><code>token9 = 9</code></p>
+
+<p>3、@# （charizing）字符化操作符。
+只能用于有传入参数的宏定义中，且必须置于宏定义体中的参数名前。作用是将传的单字符参数名转换成字符，以一对单引用括起来。</p>
+
+<p><code>#define makechar(x)  #@x
+a = makechar(b);</code></p>
+
+<p>展开后变成了：</p>
+
+<p><code>a= 'b';</code></p>
+
+<p>4、\ 行继续操作符
+当定义的宏不能用一行表达完整时，可以用"\&ldquo;表示下一行继续此宏的定义。</p>
+
+<p><a href="http://blog.csdn.net/hjmhz/article/details/8667185">更多高级用法&hellip;</a></p>
+
+<p><a href="http://blog.chinaunix.net/uid-23254875-id-341055.html">转自http://blog.chinaunix.net/uid-23254875-id-341055.html</a></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[关于block使用的5点注意事项]]></title>
+    <link href="http://yangchao0033.github.io/blog/2016/01/04/guan-yu-blockshi-yong-de-5dian-zhu-yi-shi-xiang-d/"/>
+    <updated>2016-01-04T11:24:25+08:00</updated>
+    <id>http://yangchao0033.github.io/blog/2016/01/04/guan-yu-blockshi-yong-de-5dian-zhu-yi-shi-xiang-d</id>
+    <content type="html"><![CDATA[<p><div class="post">
+        <div class="clear"></div>
+        <div class="postBody">
+            <div id="cnblogs_post_body"><div id="main-content" class="wiki-content">
+<p>1、在使用block前需要对block指针做判空处理。</p>
+<p>不判空直接使用，一旦指针为空直接产生崩溃。</p>
+</div>
+<div class="wiki-content">
+<pre><span style="color: #0000ff;">if</span> (!<span style="color: #000000;">self.isOnlyNet) {
+    </span><span style="color: #0000ff;">if</span> (succBlock == NULL) { <span style="color: #008000;">//</span><span style="color: #008000;">后面使用block之前要先做判空处理</span>
+        <span style="color: #0000ff;">return</span><span style="color: #000000;">;
+    }
+    </span><span style="color: #0000ff;">id</span> data =<span style="color: #000000;"> [NSKeyedUnarchiver unarchiveObjectWithFile:[self favoriteFile]];
+    </span><span style="color: #0000ff;">if</span> ([data isKindOfClass:[NSMutableArray <span style="color: #0000ff;">class</span><span style="color: #000000;">]]) {
+        succBlock(data,YES);
+    }</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{
+        succBlock(nil,YES);
+    }
+}</span></pre>
+<p>&nbsp;</p>
+</div>
+<!--more-->
+<div class="wiki-content">2、在MRC的编译环境下，block如果作为成员参数要copy一下将栈上的block拷贝到堆上（示例见下，<a class="external-link" href="http://www.cnblogs.com/biosli/archive/2013/05/29/iOS_Objective-C_Block.html" rel="nofollow">原因参考</a>）
+<p>3、在block使用之后要对，block指针做赋空值处理，如果是MRC的编译环境下，要先release掉block对象。</p>
+<p>block作为类对象的成员变量，使用block的人有可能用类对象参与block中的运算而产生循环引用。</p>
+<p>将block赋值为空，是解掉循环引用的重要方法。（不能只在dealloc里面做赋空值操作，这样已经产生的循环引用不会被破坏掉）</p>
+<pre>typedef <span style="color: #0000ff;">void</span>(^SuccBlock)(<span style="color: #0000ff;">id</span><span style="color: #000000;"> data);
+</span><span style="color: #0000ff;">@interface</span><span style="color: #000000;"> NetworkClass {
+    SuccessBlock _sucBlock;
+}
+@property (nonatomic,assign)BOOL propertyUseInCallBack;
+</span>- (<span style="color: #0000ff;">void</span><span style="color: #000000;">) requestWithSucBlock: (SuccessBlock) callbackBlock;
+</span><span style="color: #0000ff;">@end</span></p>
+
+<p><span style="color: #0000ff;">@implementation</span><span style="color: #000000;"> NetworkClass
+</span>- (<span style="color: #0000ff;">void</span><span style="color: #000000;">) requestWithSucBlock: (SuccessBlock) callbackBlock {
+    <em>sucBlock </span>= callbackBlock;<span style="color: #008000;">//</span><span style="color: #008000;">MRC下：</em>sucBlock = [callbackBlock copy]; 不copy block会在栈上被回收。</span>
+<span style="color: #000000;">}</p>
+
+<p></span>- (<span style="color: #0000ff;">void</span>) netwrokDataBack: (<span style="color: #0000ff;">id</span><span style="color: #000000;">) data {
+    </span><span style="color: #0000ff;">if</span> (data != nil &amp;&amp; <em>sucBlock !=<span style="color: #000000;"> NULL) {
+        </em>sucBlock(data);
+    }
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">MRC下：要先将[<em>sucBlock release];（之前copy过）</span>
+    </em>sucBlock = nil; <span style="color: #008000;">//</span><span style="color: #008000;">Importent: 在使用之后将Block赋空值，解引用 !!!</span>
+<span style="color: #000000;">}
+</span><span style="color: #0000ff;">@end</span></p>
+
+<p><span style="color: #008000;">//</span><span style="color: #008000;">=======================以下是使用方===========================</span>
+<span style="color: #0000ff;">@implementation</span><span style="color: #000000;"> UserCode
+</span>- (<span style="color: #0000ff;">void</span><span style="color: #000000;">) temporaryNetworkCall
+{
+    NetworkClass </span><em>netObj =<span style="color: #000000;"> [[NetworkClass alloc] init];
+    netObj.propertyUseInCallBack </span>=<span style="color: #000000;"> NO;
+    [netObj requestWithSucBlock: </span>^(<span style="color: #0000ff;">id</span><span style="color: #000000;"> data) {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">由于block里面引用netObj的指针所以这里产生了循环引用，且由于这个block是作为参数传入对象的，编译器不会报错。
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">因此，NetworkClass使用完block之后一定要将作为成员变量的block赋空值。</span>
+        <span style="color: #0000ff;">if</span> (netObj.propertyUseInCallBack ==<span style="color: #000000;"> YES) {
+            </span><span style="color: #008000;">//</span><span style="color: #008000;">Do Something&hellip;</span>
+<span style="color: #000000;">        }
+    }];
+}
+</span><span style="color: #0000ff;">@end</span></pre>
+<p>&nbsp;</p>
+<p>还有一种改法，在block接口设计时，将可能需要的变量作为形参传到block中，从设计上解决循环引用的问题。</p>
+<p>如果上面Network类设计成这个样子：</p>
+<div class="code panel pdl" style="border-width: 1px;">
+<div class="codeHeader panelHeader pdl" style="border-bottom-width: 1px;">
+<pre><span style="color: #0000ff;">@class</span><span style="color: #000000;"> NetowrkClass;
+typedef </span><span style="color: #0000ff;">void</span>(^SuccBlock)(NetworkClass </em>aNetworkObj, <span style="color: #0000ff;">id</span><span style="color: #000000;"> data);
+</span><span style="color: #0000ff;">@interface</span><span style="color: #000000;"> NetworkClass
+</span><span style="color: #008000;">//</span><span style="color: #008000;">&hellip;</span>
+<span style="color: #0000ff;">@end</span>
+<span style="color: #0000ff;">@implementation</span><span style="color: #000000;"> NetworkClass
+</span><span style="color: #0000ff;">@end</span></p>
+
+<p><span style="color: #0000ff;">@implementation</span><span style="color: #000000;"> UserCode
+</span>- (<span style="color: #0000ff;">void</span><span style="color: #000000;">) temporaryNetworkCall
+{
+    NetworkClass </span><em>netObj =<span style="color: #000000;"> [[NetworkClass alloc] init];
+    netObj.propertyUseInCallBack </span>=<span style="color: #000000;"> NO;
+    [netObj requestWithSucBlock: </span>^(NetworkClass </em>aNetworkObj, <span style="color: #0000ff;">id</span><span style="color: #000000;"> data) {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">这里参数中已经有netObj的对象了，使用者不用再从block外引用指针了。</span>
+        <span style="color: #0000ff;">if</span> (aNetworkObj.propertyUseInCallBack ==<span style="color: #000000;"> YES) {
+            </span><span style="color: #008000;">//</span><span style="color: #008000;">Do Something&hellip;</span>
+<span style="color: #000000;">        }
+    }];
+}
+</span><span style="color: #0000ff;">@end</span></pre>
+<p>&nbsp;</p>
+</div>
+</div>
+<p>4、使用方将self或成员变量加入block之前要先将self变为<strong>weak</p>
+<p>5、在多线程环境下（block中的weakSelf有可能被析构的情况下），需要先将self转为strong指针，避免在运行到某个关键步骤时self对象被析构。</p>
+<p>第四、第五条合起来有个名词叫weak–strong dance，来自于<a class="external-link" style="text-decoration: none;" href="https://www.google.com.hk/url?sa=t&amp;rct=j&amp;q=&amp;esrc=s&amp;source=web&amp;cd=1&amp;ved=0CDkQFjAA&amp;url=%68%74%74%70%3a%2f%2f%64%65%76%65%6c%6f%70%65%72%2e%61%70%70%6c%65%2e%63%6f%6d%2f%76%69%64%65%6f%73%2f%77%77%64%63%2f%32%30%31%31%2f&amp;ei=mDl_UcKaEtDZkgXG14GoDg&amp;usg=AFQjCNENM0Mbw7vrvpPYNzjg2R9u6IUiEA&amp;sig2=wwwajZBQ62fO7EsU4RvSOg&amp;bvm=bv.45645796,d.dGI&amp;cad=rjt" rel="nofollow">2011 WWDC Session #322 (Objective-C Advancements in Depth）</a></p>
+<p>以下代码来自AFNetworking，堪称使用weak–strong dance的经典。</p>
+<div class="code panel pdl" style="border-width: 1px;">
+<div class="codeHeader panelHeader pdl" style="border-bottom-width: 1px;">
+<pre></strong>weak <strong>typeof(self)weakSelf =<span style="color: #000000;"> self;
+AFNetworkReachabilityStatusBlock callback </span>= ^<span style="color: #000000;">(AFNetworkReachabilityStatus status) {
+    </strong>strong <strong>typeof(weakSelf)strongSelf </span>=<span style="color: #000000;"> weakSelf;
+    strongSelf.networkReachabilityStatus </span>=<span style="color: #000000;"> status;
+    </span><span style="color: #0000ff;">if</span><span style="color: #000000;"> (strongSelf.networkReachabilityStatusBlock) {
+        strongSelf.networkReachabilityStatusBlock(status);
+    }
+};</span></pre>
+</div>
+<div class="codeHeader panelHeader pdl" style="border-bottom-width: 1px;">Review一下上面这段代码，里面玄机不少。</div>
+</div>
+<p>第一行：</strong>weak <strong>typeof(self)weakSelf = self;</p>
+<p>如之前第四条所说，为防止callback内部对self强引用，weak一下。</p>
+<p>其中用到了</strong>typeof(self)，这里涉及几个知识点：</p>
+<p>a. <strong>typeof、</strong>typeof<strong>、typeof的区别</p>
+<p>恩~~他们没有区别，但是这牵扯一段往事，在早期C语言中没有typeof这个关键字，</strong>typeof、<strong>typeof</strong>是在C语言的扩展关键字的时候出现的。</p>
+<p>typeof是现代GNU C++的关键字，从Objective-C的根源说，他其实来自于C语言，所以AFNetworking使用了继承自C的关键字。</p>
+<p>b.对于老的LLVM编译器上面这句话会编译报错，所以在很早的ARC使用者中流行<strong>typeof(&amp;*self)这种写法，<a class="external-link" href="http://stackoverflow.com/questions/10892361/generic-typeof-for-weak-self-references/" rel="nofollow">原因如下</a></p>
+<p>大致说法是老LLVM编译器会将</strong>typeof转义为 XXX类名 <em>const <strong>strong的</strong>strong和前面的__weak关键字对指针的修饰又冲突了，所以加上&amp;</em>对指针的修饰。</p>
+<p>第三行：<strong>strong </strong>typeof(weakSelf)strongSelf = weakSelf;</p>
+<p>按照之前第五条的说法给转回strong了，这里__typeof()里面写的是weakSelf，里面写self也没有问题，因为typeof是编译时确定变量类型，所以这里写self 不会被循环引用。</p>
+<p>第四、五、六行，如果不转成strongSelf而使用weakSelf，后面几句话中，有可能在第四句执行之后self的对象可能被析构掉，然后后面的StausBlock没有执行，导致逻辑错误。</p>
+<p>最后第五行，使用前对block判空。</p>
+<p>&nbsp;</p>
+<p>写在最后，阅读好的开源库源码是提高个人水平的一个很好途径，看见不懂的地方去查去摸索会得到更多。</p>
+<p>&nbsp;</p>
+<p>参考：</p>
+<p><a class="external-link" href="http://blog.csdn.net/fhbystudy/article/details/17350951" rel="nofollow"><a href="http://blog.csdn.net/fhbystudy/article/details/17350951">http://blog.csdn.net/fhbystudy/article/details/17350951</a></a></p>
+<p><a class="external-link" href="http://stackoverflow.com/questions/10892361/generic-typeof-for-weak-self-references" rel="nofollow"><a href="http://stackoverflow.com/questions/10892361/generic-typeof-for-weak-self-references">http://stackoverflow.com/questions/10892361/generic-typeof-for-weak-self-references</a></a></p>
+<p><a class="external-link" href="http://stackoverflow.com/questions/14877415/difference-between-typeof-typeof-and-typeof-objective-c" rel="nofollow"><a href="http://stackoverflow.com/questions/14877415/difference-between-typeof-typeof-and-typeof-objective-c">http://stackoverflow.com/questions/14877415/difference-between-typeof-typeof-and-typeof-objective-c</a></a></p>
+<p><a class="external-link" href="http://rocry.com/2012/12/18/objective-c-type-of/" rel="nofollow"><a href="http://rocry.com/2012/12/18/objective-c-type-of/">http://rocry.com/2012/12/18/objective-c-type-of/</a></a></p>
+<p><a class="external-link" href="http://fuckingblocksyntax.com/" rel="nofollow"><a href="http://fuckingblocksyntax.com/">http://fuckingblocksyntax.com/</a></a> 这是个工具网站，我每次写block的时候都会用到。</p>
+        <h4 class="title2">
+            <a id="cb_post_title_url" class="postTitle3" href="http://www.cnblogs.com/biosli/p/block_usage.html">原文链接(<a href="http://www.cnblogs.com/biosli/p/block_usage.html">http://www.cnblogs.com/biosli/p/block_usage.html</a>)</a>
+        </h4>
+</div>
+<div id="xunlei_com_thunder_helper_plugin_d462f475-c18e-46be-bd10-327458d045bd">&nbsp;</div></div><div id="MySignature"></div>
+<div class="clear"></div></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Objective-C错误模型]]></title>
+    <link href="http://yangchao0033.github.io/blog/2016/01/04/objective-ccuo-wu-mo-xing/"/>
+    <updated>2016-01-04T11:04:51+08:00</updated>
+    <id>http://yangchao0033.github.io/blog/2016/01/04/objective-ccuo-wu-mo-xing</id>
+    <content type="html"><![CDATA[<h2>为什么不使用异常处理机制？</h2>
+
+<p>事实上，OC是具备异常处理机制的，但是具体情况下不会启用该机制。原因是ARC下默认不是“异常安全”的。
+    理由是,如果抛出异常，那么本应该在作用域末尾释放的对象在现在不能自动释放了。 如果想生成“异常安全”的代码，需要设置编译标志“-fobjc-arc-exceptions”，并且需要引入额外的代码，在不抛出异常时，也照样执行这段代码。
+及时不适用ARC，也很难在抛出异常后不会导致内存泄露。例如：
+<code>objc
+    id resource = [YCResource alloc] init] retain];
+    if (/*有异常发生*/) {
+    @throw [NSException exceptionWithName:@"/*异常名称*/" reason@"/*异常原因*/" userInfo:nil];
+    }
+    [resource callSomeMethod];
+    [resource release];
+</code></p>
+
+<!--more-->
+
+
+<p>以上代码：如果一旦有异常抛出，那么之后的代码都不会被执行，资源resource对象也就无法被释放。
+虽然可以在异常发生前释放资源对象，但是如果需要释放的资源对象非常多，之后又有新的资源加入，往往会忘了在异常前释放新加入的资源。
+OC现在所采取的方法是只有在极其罕见的异常下，才抛出异常，异常抛出后不必考虑恢复问题，此时程序应该直接退出，这样就不用在编写复杂的“异常安全”代码了。
+现在异常只用于及其严重的错误（致命错误）。
+其中一个用途：OC中没有抽象类，所以无法定义抽象方法，此时，如果你想定义一套抽象 的API，那么可以在方法的实现中抛出异常，告诉使用者需要覆写该方法：
+<code>objc
+- (void)absructMethd {
+    NSString exceptionReason = [NSString stringWithFormat:@"%@ must be overridden", NSStringFromSelector(_cmd)];
+    @throw [NSException exceptionWithName:NSInternalInnconsistencyException reson:exceptionReason userInfo:nil];
+}
+</code></p>
+
+<h2>如何处理“不那么严重（非致命）”的错误？</h2>
+
+<p>OC的范式是：另方法返回0/nil，或者使用NSError。</p>
+
+<h2>如何使用<code>NSError</code>？</h2>
+
+<p>NSErrow使用起来非常灵活，我们使用它告诉调用者发生了什么错误。
+NSError构成：
+* Error domain(错误范围)
+描述错误发生的范围。例如处理URL的子系统，当url解析出现错误，就可以使用<code>NSURLErrorDomain</code>来表示错误范围。
+* Error code（错误码）
+独有的错误代码，用以表明具体发生了何种错误，一般用枚举定义，HTTP请求中可以存储状态码。
+* User info（用户信息）
+有关错误的额外附加信息，可以是一段本地化描述，也可能是用来存储该错误是由其他错误引起的，最终生成一条完整的错误链。</p>
+
+<p>其应用场景类型：
+* 在代理协议中返回NSError错误。
+<code>objc
+- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError - *)error;
+</code>
+这样，接口定义者和使用者都可以选择是否输入并处理该错误。
+* 在方法中用对象指针来监测错误。
+<code>objc
+- (BOOL)doSomething:(NSError **)error;
+/*使用方法*/
+NSError *error = nil;
+BOOL ret = [slef doSomething:&amp;error];
+if (ret) {
+        // 处理错误
+}
+</code>
+这种方法一般都会返回BOOL值，用来判断是否操作成功，如果只是判断成功状态，则只要判断返回值并且error参数传为nil就行，而error指针可以用来输出错误信息。
+<code>
+笔记：实际上ARC时，编译器会把NSError**转换为NSError*__autorelease*</code>,当doSomething方法执行完毕后，会将调用者创建的对象自动释放掉。这是为了防止调用者不一定能确保会释放掉NSError对象，必须要求他自己可以自动释放掉，所以加入autorelease。这样就与打部分返回值具备的语义相同了。</p>
+
+<p>doSomething方法的实现原理：
+<code>objc
+- (BOOL)doSomething:(NSError *)error {
+        if(/*发生error*/) {
+                if(error) {
+                /*给外部传入参数初始化*/
+                *error = [NSError errorWithDomain:domain code:code userinfo:userInfo];
+                }
+                return NO;
+        } else {
+                return YES;
+        }
+}
+</code>
+在给error解引用&ndash;<code>*error</code>之前，必须保证error不为空。</p>
+
+<p>一般情况下，给error对象填入恰当的错误范围，错误码，错误信息后，调用者就可以更精准的定位错误。
+我们一般对错误范围使用NSString全局变量进行定义。错误码常采用枚举，例如：
+<code>objc
+extern NSSring *const YCErrorDomain;
+typedef NS_ENUM（NSInteger, YCError）{
+    YCErrorUnknow   = -1,
+    YCErrorInternalIncosistency  = 100,
+    YCErrorGeneralFault  = 105,
+    YCErrorBadInput  = 500,
+};
+NSString *const YCErrorDomain = @"YCErrorDomain";
+</code></p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[为Harpy（版本更新工具)制做兼容版本]]></title>
@@ -460,106 +803,6 @@ selector:@selector(videoFinished:) name:MPMoviePlayerPlaybackDidFinishNotificati
 <hr />
 
 <p>参考:<a href="http://stackoverflow.com/a/19596598">http://stackoverflow.com/a/19596598</a></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[关于在storyboard中使用静态cell的注意事项]]></title>
-    <link href="http://yangchao0033.github.io/blog/2015/12/30/guan-yu-zai-storyboardzhong-shi-yong-jing-tai-cellde-zhu-yi-shi-xiang/"/>
-    <updated>2015-12-30T15:26:05+08:00</updated>
-    <id>http://yangchao0033.github.io/blog/2015/12/30/guan-yu-zai-storyboardzhong-shi-yong-jing-tai-cellde-zhu-yi-shi-xiang</id>
-    <content type="html"><![CDATA[<p> &ndash;关于在<em>storyboard</em>中使用静态TableViewCell的可变高度的使用技巧</p>
-
-<p>起因:在storyboard使用之前，创建tableView视图，通常是采用代码控制数据源，通过数据源数据的长度来决定tableView中cell的个数，而这样做的好处还有就是可以通过将已经在界面中展示的cell放入缓存池中，以供后续数据展示再从缓存池中取出进行复用。这样做的好处是为了防止数据过大时创建大量的cell浪费不必要的空间。显而易见，tableView就是为了进行批量数据的展示。</p>
-
-<!--more-->
-
-
-<p> <br/>
-然而，在现实开发中，会出现一种需求：展示的数据长度是确定的，而且需要向tableView一样实现视图上下滚动，单个cell视图可点击响应。这种情况下，继续使用原来的代码数据源控制一样可以实现，这时的数据源个数是确定的。即便如此，你也需要考虑处理cell滚动时发生的重用所带来的影响。而且当数据源确定时，你的产品经理绝对不甘于像平常一样每条数据都展示为同一个尺寸内容。而是会尽可能地在每个cell中加入丰富的控件，时间相应来是有限的tableView实现最为复杂的用户交互事件。此时，你会在自己的数据源拼命地书写if语句来保证视图的正确显示，又要避免发生未知的cell重用问题。<br/>
-这样做是可行的，但是在主要时间将大量花费在处理有限个数cell上的逻辑处理，而并非我们所要实现的主要业务。<br/>
-所以，在这种情况下，我们会考虑把这些重复而且无用的逻辑处理交给苹果自己搞定（当然，主要目的是为了偷懒^_^）<br/>
-static cell，这是苹果为我们提供的解决方案。目前仅限于在storyboard中使用。</p>
-
-<p> <code>static cell</code>的用法非常简单，这里不作为重点赘述，请大家自行学习。<br/>
-  现在给大家这样一个场景，在你用<code>static cell</code>搭建好界面，然后轻松加愉快的拖拖控件，完成相关业务功能。<br/>
-  上面老板开始验收项目，对产品  说你的界面不够详细，再改改。<br/>
-  产品开始提需求，说我们的cell内容太少，需要在点击时展开详情。<br/>
-  而恰好你用静态单元cell偷了个懒，现在要为了一个cell重新用动态cell写一遍？<br/>
-  别闹了，明天还要和UI妹子去爬香山呢，绝壁不当加班狗。<br/>
-  所以，我们开始探索静态cell的高度改变之旅。</p>
-
-<hr />
-
-<p>  方案一：
-  既然我们可以将静态cell当做一个控件拖入控制器做属性。何不在代码中修改作为属性的静态cell的高度呢？
-<code>objc   
-        self.fuJianCell.height = 100;       
-        [self.fuJianCell layoutIfNeeded];
-        [self.tableView reloadData];
-</code>
-然并卵，这些方法对非cell的控件来说刷新高度足矣，然而<code>tableView</code>的高度始终是由代理来控制的，所以这样修改是没用的。<br/>
-既然这样，我们就从高度代理入手。</p>
-
-<hr />
-
-<p>方案二：
-通过代理入手，将每个cell的在storyBoard的设置高度用代码写到一个数组中，并通过代理返回。
-<code>objc
-- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    // 变高行数
-    NSInteger mutableHeightRow = 1;
-    // 如果不展开
-    if(!isOpen){
-        self.heights[mutableHeightRow] = @(原始高度);
-        return [self.heights[indexPath.row] integerValue];
-    } else {
-        self.heights[mutableHeightRow] = @(展开高度);
-        return [self.heights[indexPath.row] integerValue];
-    }
-}
-</code>
-问题解决，但是违背了我们的初衷，说好的交给苹果自己算呢，为毛要手动将高度存在数组中？</p>
-
-<hr />
-
-<p>方案三：
-交给tableView的父类方法返回我们在storyboard中预设的高度，然后单独处理变高的cell高度
-<code>objc
-- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    // 变高行数
-    NSInteger mutableHeightRow = 1;
-    if (indexPath.row == mutableHeightRow) {
-        if (!isOpen) {
-            // 假设改行原来高度为200
-            return 80;
-        } else {
-            return [super tableView:tableView heightForRowAtIndexPath:indexPath];
-        }
-    } else {
-        /** 返回静态单元格故事板中的高度 */
-        return [super tableView:tableView heightForRowAtIndexPath:indexPath];
-    }
-}
-</code>
-完美~</p>
-
-<hr />
-
-<pre><code class="objc">// 注意别忘了,在修改展开状态的时候刷新表格
-    isOpen = YES;
-    [self.tableView reloadData];
-</code></pre>
-
-<p>其实，这样处理静态cell的方式不光可以处理可变高度，还可以用在数据源的section个数或者每个section的row的个数上，再或者指定让某个位置的cell使用动态cell其他使用静态cell，让我们的静态cell比动态cell更好用。其方法都是通过<code>super</code>关键字调用父类方法返回storyboard中存储的的相关数据。</p>
-
-<p>至于原理，暂时还不清楚，推测使用了运行时动态创建一个支持静态cell的tableView的子类，我们实际使用的是这个新的tableView类的实例，或者使用<code>类簇</code>，利用私有子类进行了相关的静态cell的逻辑处理。</p>
-
-<p>总之，这让我们省去了很多处理逻辑的代码。</p>
-
-<p>参考文章：<a href="http://codego.net/513617/">UITableView的：在处理混合cell表视图的静态和动态的cell小区选择</a></p>
 ]]></content>
   </entry>
   

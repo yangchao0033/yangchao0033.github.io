@@ -1,0 +1,497 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>关于block使用的5点注意事项 - SuperYang`s Blog</title>
+  <meta name="author" content="Super Yang">
+
+  
+  <meta name="description" content="详细讲解block的使用注意">
+  <meta name="keywords" content="objective-c,block,注意事项">
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://yangchao0033.github.io/blog/2016/01/04/guan-yu-blockshi-yong-de-5dian-zhu-yi-shi-xiang-d/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="SuperYang`s Blog" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<!--百度追踪-->
+<meta name="baidu-site-verification" content="RnO2PmZzv2" />
+<meta name="baidu-site-verification" content="T7BiPPFzd4" />
+<!--360追踪-->
+<meta name="360-site-verification" content="c48c953af335a6c42f6e8f513d6b8a1e" />
+
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-71812998-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-71812998-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">SuperYang`s Blog</a></h1>
+  
+    <h2>Coding Everything.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="yangchao0033.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">首页</a></li>
+  <li><a href="/blog/archives">归档</a></li>
+  <li><a href="http://weibo.com/u/3266043817">我的微博</a></li>
+  <li><a href="https://github.com/yangchao0033">Github</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">关于block使用的5点注意事项</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-01-04T11:24:25+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>4</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>11:24 am</span></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p><div class="post">
+        <div class="clear"></div>
+        <div class="postBody">
+            <div id="cnblogs_post_body"><div id="main-content" class="wiki-content">
+<p>1、在使用block前需要对block指针做判空处理。</p>
+<p>不判空直接使用，一旦指针为空直接产生崩溃。</p>
+</div>
+<div class="wiki-content">
+<pre><span style="color: #0000ff;">if</span> (!<span style="color: #000000;">self.isOnlyNet) {
+    </span><span style="color: #0000ff;">if</span> (succBlock == NULL) { <span style="color: #008000;">//</span><span style="color: #008000;">后面使用block之前要先做判空处理</span>
+        <span style="color: #0000ff;">return</span><span style="color: #000000;">;
+    }
+    </span><span style="color: #0000ff;">id</span> data =<span style="color: #000000;"> [NSKeyedUnarchiver unarchiveObjectWithFile:[self favoriteFile]];
+    </span><span style="color: #0000ff;">if</span> ([data isKindOfClass:[NSMutableArray <span style="color: #0000ff;">class</span><span style="color: #000000;">]]) {
+        succBlock(data,YES);
+    }</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{
+        succBlock(nil,YES);
+    }
+}</span></pre>
+<p>&nbsp;</p>
+</div>
+<!--more-->
+<div class="wiki-content">2、在MRC的编译环境下，block如果作为成员参数要copy一下将栈上的block拷贝到堆上（示例见下，<a class="external-link" href="http://www.cnblogs.com/biosli/archive/2013/05/29/iOS_Objective-C_Block.html" rel="nofollow">原因参考</a>）
+<p>3、在block使用之后要对，block指针做赋空值处理，如果是MRC的编译环境下，要先release掉block对象。</p>
+<p>block作为类对象的成员变量，使用block的人有可能用类对象参与block中的运算而产生循环引用。</p>
+<p>将block赋值为空，是解掉循环引用的重要方法。（不能只在dealloc里面做赋空值操作，这样已经产生的循环引用不会被破坏掉）</p>
+<pre>typedef <span style="color: #0000ff;">void</span>(^SuccBlock)(<span style="color: #0000ff;">id</span><span style="color: #000000;"> data);
+</span><span style="color: #0000ff;">@interface</span><span style="color: #000000;"> NetworkClass {
+    SuccessBlock _sucBlock;
+}
+@property (nonatomic,assign)BOOL propertyUseInCallBack;
+</span>- (<span style="color: #0000ff;">void</span><span style="color: #000000;">) requestWithSucBlock: (SuccessBlock) callbackBlock;
+</span><span style="color: #0000ff;">@end</span></p>
+
+<p><span style="color: #0000ff;">@implementation</span><span style="color: #000000;"> NetworkClass
+</span>- (<span style="color: #0000ff;">void</span><span style="color: #000000;">) requestWithSucBlock: (SuccessBlock) callbackBlock {
+    <em>sucBlock </span>= callbackBlock;<span style="color: #008000;">//</span><span style="color: #008000;">MRC下：</em>sucBlock = [callbackBlock copy]; 不copy block会在栈上被回收。</span>
+<span style="color: #000000;">}</p>
+
+<p></span>- (<span style="color: #0000ff;">void</span>) netwrokDataBack: (<span style="color: #0000ff;">id</span><span style="color: #000000;">) data {
+    </span><span style="color: #0000ff;">if</span> (data != nil &amp;&amp; <em>sucBlock !=<span style="color: #000000;"> NULL) {
+        </em>sucBlock(data);
+    }
+    </span><span style="color: #008000;">//</span><span style="color: #008000;">MRC下：要先将[<em>sucBlock release];（之前copy过）</span>
+    </em>sucBlock = nil; <span style="color: #008000;">//</span><span style="color: #008000;">Importent: 在使用之后将Block赋空值，解引用 !!!</span>
+<span style="color: #000000;">}
+</span><span style="color: #0000ff;">@end</span></p>
+
+<p><span style="color: #008000;">//</span><span style="color: #008000;">=======================以下是使用方===========================</span>
+<span style="color: #0000ff;">@implementation</span><span style="color: #000000;"> UserCode
+</span>- (<span style="color: #0000ff;">void</span><span style="color: #000000;">) temporaryNetworkCall
+{
+    NetworkClass </span><em>netObj =<span style="color: #000000;"> [[NetworkClass alloc] init];
+    netObj.propertyUseInCallBack </span>=<span style="color: #000000;"> NO;
+    [netObj requestWithSucBlock: </span>^(<span style="color: #0000ff;">id</span><span style="color: #000000;"> data) {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">由于block里面引用netObj的指针所以这里产生了循环引用，且由于这个block是作为参数传入对象的，编译器不会报错。
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">因此，NetworkClass使用完block之后一定要将作为成员变量的block赋空值。</span>
+        <span style="color: #0000ff;">if</span> (netObj.propertyUseInCallBack ==<span style="color: #000000;"> YES) {
+            </span><span style="color: #008000;">//</span><span style="color: #008000;">Do Something&hellip;</span>
+<span style="color: #000000;">        }
+    }];
+}
+</span><span style="color: #0000ff;">@end</span></pre>
+<p>&nbsp;</p>
+<p>还有一种改法，在block接口设计时，将可能需要的变量作为形参传到block中，从设计上解决循环引用的问题。</p>
+<p>如果上面Network类设计成这个样子：</p>
+<div class="code panel pdl" style="border-width: 1px;">
+<div class="codeHeader panelHeader pdl" style="border-bottom-width: 1px;">
+<pre><span style="color: #0000ff;">@class</span><span style="color: #000000;"> NetowrkClass;
+typedef </span><span style="color: #0000ff;">void</span>(^SuccBlock)(NetworkClass </em>aNetworkObj, <span style="color: #0000ff;">id</span><span style="color: #000000;"> data);
+</span><span style="color: #0000ff;">@interface</span><span style="color: #000000;"> NetworkClass
+</span><span style="color: #008000;">//</span><span style="color: #008000;">&hellip;</span>
+<span style="color: #0000ff;">@end</span>
+<span style="color: #0000ff;">@implementation</span><span style="color: #000000;"> NetworkClass
+</span><span style="color: #0000ff;">@end</span></p>
+
+<p><span style="color: #0000ff;">@implementation</span><span style="color: #000000;"> UserCode
+</span>- (<span style="color: #0000ff;">void</span><span style="color: #000000;">) temporaryNetworkCall
+{
+    NetworkClass </span><em>netObj =<span style="color: #000000;"> [[NetworkClass alloc] init];
+    netObj.propertyUseInCallBack </span>=<span style="color: #000000;"> NO;
+    [netObj requestWithSucBlock: </span>^(NetworkClass </em>aNetworkObj, <span style="color: #0000ff;">id</span><span style="color: #000000;"> data) {
+        </span><span style="color: #008000;">//</span><span style="color: #008000;">这里参数中已经有netObj的对象了，使用者不用再从block外引用指针了。</span>
+        <span style="color: #0000ff;">if</span> (aNetworkObj.propertyUseInCallBack ==<span style="color: #000000;"> YES) {
+            </span><span style="color: #008000;">//</span><span style="color: #008000;">Do Something&hellip;</span>
+<span style="color: #000000;">        }
+    }];
+}
+</span><span style="color: #0000ff;">@end</span></pre>
+<p>&nbsp;</p>
+</div>
+</div>
+<p>4、使用方将self或成员变量加入block之前要先将self变为<strong>weak</p>
+<p>5、在多线程环境下（block中的weakSelf有可能被析构的情况下），需要先将self转为strong指针，避免在运行到某个关键步骤时self对象被析构。</p>
+<p>第四、第五条合起来有个名词叫weak–strong dance，来自于<a class="external-link" style="text-decoration: none;" href="https://www.google.com.hk/url?sa=t&amp;rct=j&amp;q=&amp;esrc=s&amp;source=web&amp;cd=1&amp;ved=0CDkQFjAA&amp;url=%68%74%74%70%3a%2f%2f%64%65%76%65%6c%6f%70%65%72%2e%61%70%70%6c%65%2e%63%6f%6d%2f%76%69%64%65%6f%73%2f%77%77%64%63%2f%32%30%31%31%2f&amp;ei=mDl_UcKaEtDZkgXG14GoDg&amp;usg=AFQjCNENM0Mbw7vrvpPYNzjg2R9u6IUiEA&amp;sig2=wwwajZBQ62fO7EsU4RvSOg&amp;bvm=bv.45645796,d.dGI&amp;cad=rjt" rel="nofollow">2011 WWDC Session #322 (Objective-C Advancements in Depth）</a></p>
+<p>以下代码来自AFNetworking，堪称使用weak–strong dance的经典。</p>
+<div class="code panel pdl" style="border-width: 1px;">
+<div class="codeHeader panelHeader pdl" style="border-bottom-width: 1px;">
+<pre></strong>weak <strong>typeof(self)weakSelf =<span style="color: #000000;"> self;
+AFNetworkReachabilityStatusBlock callback </span>= ^<span style="color: #000000;">(AFNetworkReachabilityStatus status) {
+    </strong>strong <strong>typeof(weakSelf)strongSelf </span>=<span style="color: #000000;"> weakSelf;
+    strongSelf.networkReachabilityStatus </span>=<span style="color: #000000;"> status;
+    </span><span style="color: #0000ff;">if</span><span style="color: #000000;"> (strongSelf.networkReachabilityStatusBlock) {
+        strongSelf.networkReachabilityStatusBlock(status);
+    }
+};</span></pre>
+</div>
+<div class="codeHeader panelHeader pdl" style="border-bottom-width: 1px;">Review一下上面这段代码，里面玄机不少。</div>
+</div>
+<p>第一行：</strong>weak <strong>typeof(self)weakSelf = self;</p>
+<p>如之前第四条所说，为防止callback内部对self强引用，weak一下。</p>
+<p>其中用到了</strong>typeof(self)，这里涉及几个知识点：</p>
+<p>a. <strong>typeof、</strong>typeof<strong>、typeof的区别</p>
+<p>恩~~他们没有区别，但是这牵扯一段往事，在早期C语言中没有typeof这个关键字，</strong>typeof、<strong>typeof</strong>是在C语言的扩展关键字的时候出现的。</p>
+<p>typeof是现代GNU C++的关键字，从Objective-C的根源说，他其实来自于C语言，所以AFNetworking使用了继承自C的关键字。</p>
+<p>b.对于老的LLVM编译器上面这句话会编译报错，所以在很早的ARC使用者中流行<strong>typeof(&amp;*self)这种写法，<a class="external-link" href="http://stackoverflow.com/questions/10892361/generic-typeof-for-weak-self-references/" rel="nofollow">原因如下</a></p>
+<p>大致说法是老LLVM编译器会将</strong>typeof转义为 XXX类名 <em>const <strong>strong的</strong>strong和前面的__weak关键字对指针的修饰又冲突了，所以加上&amp;</em>对指针的修饰。</p>
+<p>第三行：<strong>strong </strong>typeof(weakSelf)strongSelf = weakSelf;</p>
+<p>按照之前第五条的说法给转回strong了，这里__typeof()里面写的是weakSelf，里面写self也没有问题，因为typeof是编译时确定变量类型，所以这里写self 不会被循环引用。</p>
+<p>第四、五、六行，如果不转成strongSelf而使用weakSelf，后面几句话中，有可能在第四句执行之后self的对象可能被析构掉，然后后面的StausBlock没有执行，导致逻辑错误。</p>
+<p>最后第五行，使用前对block判空。</p>
+<p>&nbsp;</p>
+<p>写在最后，阅读好的开源库源码是提高个人水平的一个很好途径，看见不懂的地方去查去摸索会得到更多。</p>
+<p>&nbsp;</p>
+<p>参考：</p>
+<p><a class="external-link" href="http://blog.csdn.net/fhbystudy/article/details/17350951" rel="nofollow"><a href="http://blog.csdn.net/fhbystudy/article/details/17350951">http://blog.csdn.net/fhbystudy/article/details/17350951</a></a></p>
+<p><a class="external-link" href="http://stackoverflow.com/questions/10892361/generic-typeof-for-weak-self-references" rel="nofollow"><a href="http://stackoverflow.com/questions/10892361/generic-typeof-for-weak-self-references">http://stackoverflow.com/questions/10892361/generic-typeof-for-weak-self-references</a></a></p>
+<p><a class="external-link" href="http://stackoverflow.com/questions/14877415/difference-between-typeof-typeof-and-typeof-objective-c" rel="nofollow"><a href="http://stackoverflow.com/questions/14877415/difference-between-typeof-typeof-and-typeof-objective-c">http://stackoverflow.com/questions/14877415/difference-between-typeof-typeof-and-typeof-objective-c</a></a></p>
+<p><a class="external-link" href="http://rocry.com/2012/12/18/objective-c-type-of/" rel="nofollow"><a href="http://rocry.com/2012/12/18/objective-c-type-of/">http://rocry.com/2012/12/18/objective-c-type-of/</a></a></p>
+<p><a class="external-link" href="http://fuckingblocksyntax.com/" rel="nofollow"><a href="http://fuckingblocksyntax.com/">http://fuckingblocksyntax.com/</a></a> 这是个工具网站，我每次写block的时候都会用到。</p>
+        <h4 class="title2">
+            <a id="cb_post_title_url" class="postTitle3" href="http://www.cnblogs.com/biosli/p/block_usage.html">原文链接(<a href="http://www.cnblogs.com/biosli/p/block_usage.html">http://www.cnblogs.com/biosli/p/block_usage.html</a>)</a>
+        </h4>
+</div>
+<div id="xunlei_com_thunder_helper_plugin_d462f475-c18e-46be-bd10-327458d045bd">&nbsp;</div></div><div id="MySignature"></div>
+<div class="clear"></div></p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Super Yang</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2016-01-04T11:24:25+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>4</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>11:24 am</span></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/ios/'>ios</a>
+  
+</span>
+
+
+      
+
+<DIV style="font-size:12px;BORDER-BOTTOM: #bbbbbb 1px solid; BORDER-LEFT: #bbbbbb 1px solid; BACKGROUND: #f6f6f6; HEIGHT: 120px; BORDER-TOP: #bbbbbb 1px solid; BORDER-RIGHT: #bbbbbb 1px solid" class=oec2003right> 
+<DIV style="MARGIN-TOP: 10px; FLOAT: left; MARGIN-LEFT: 5px; MARGIN-RIGHT: 10px"> 
+<IMG alt="" src="http://ww2.sinaimg.cn/thumb150/c2abdfa9jw8ez7appr3p2j20g40a2t91.jpg" width=90 height=100></DIV> 
+<DIV style="LINE-HEIGHT: 200%; MARGIN-TOP: 10px; COLOR: #000000"> 
+作者： <A href="http://yangchao0033.github.io/">杨超</A> <BR> 
+出处： <A href="http://yangchao0033.github.io/">http://yangchao0033.github.io/</A> 
+<BR>本文基于<a target="_blank" title="Creative Commons Attribution 2.5 China Mainland License" href="http://creativecommons.org/licenses/by/2.5/cn/"> 
+署名 2.5 中国大陆</a>许可协议发布，欢迎转载，演绎或用于商业目的，但是必须保留本文的署名 
+<a href="http://yangchao0033.github.io/">杨超</a>（包含链接）。 </DIV></DIV> 
+
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+<div class="bshare-custom"><a title="分享到QQ空间" class="bshare-qzone"></a><a title="分享到新浪微博" class="bshare-sinaminiblog"></a><a title="分享到人人网" class="bshare-renren"></a><a title="分享到腾讯微博" class="bshare-qqmb"></a><a title="分享到网易微博" class="bshare-neteasemb"></a><a title="更多平台" class="bshare-more bshare-more-icon more-style-addthis"></a><span class="BSHARE_COUNT bshare-share-count">0</span></div><script type="text/javascript" charset="utf-8" src="http://static.bshare.cn/b/buttonLite.js#style=-1&amp;uuid=&amp;pophcol=2&amp;lang=zh"></script><script type="text/javascript" charset="utf-8" src="http://static.bshare.cn/b/bshareC0.js"></script>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2016/01/04/objective-ccuo-wu-mo-xing/" title="Previous Post: Objective-C错误模型">&laquo; Objective-C错误模型</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2016/01/04/definede-gao-ji-yong-fa/" title="Next Post: 宏定义的高级用法">宏定义的高级用法 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><!-- Duoshuo Comment BEGIN -->
+
+<div class="ds-thread"></div>
+
+<script type="text/javascript">
+
+var duoshuoQuery = {short_name:"yangchao0033"};
+
+(function() {
+
+var ds = document.createElement('script');
+
+ds.type = 'text/javascript';ds.async = true;
+
+ds.src = 'http://static.duoshuo.com/embed.js';
+
+ds.charset = 'UTF-8';
+
+(document.getElementsByTagName('head')[0] 
+
+|| document.getElementsByTagName('body')[0]).appendChild(ds);
+
+})();
+
+</script>
+
+<!-- Duoshuo Comment END -->
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+    <h1>新浪微博</h1>
+    <ul id="weibo">
+    <li>
+<!--添加微博秀-->
+<iframe width="100%" height="100" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=0&isWeibo=0&isFans=0&uid=3266043817&verifier=3639b7ec&colors=efefef,efefef,666666,0082cb,ecfbfd&dpc=1"></iframe>
+      </li>
+    </ul>
+</section>
+<section>
+  <h1>Categories</h1>
+  <ul id="categories">
+    <li class='category'><a href='/blog/categories/ios/'>ios (6)</a></li>
+<li class='category'><a href='/blog/categories/时光留声机/'>时光留声机 (1)</a></li>
+
+  </ul>
+</section>
+<section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/01/04/definede-gao-ji-yong-fa/">宏定义的高级用法</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/01/04/guan-yu-blockshi-yong-de-5dian-zhu-yi-shi-xiang-d/">关于block使用的5点注意事项</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/01/04/objective-ccuo-wu-mo-xing/">Objective-C错误模型</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/01/02/happy-new-year/">Happy New Year</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/01/01/wei-harpy(ban-ben-geng-xin-gong-ju-zhi-zuo-jian-rong-ban-ben-)/">为Harpy（版本更新工具)制做兼容版本</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/yangchao0033">@yangchao0033</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'yangchao0033',
+            count: 48,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+<section>
+  <h1>访客地图</h1>
+  <!--获得代码添加到这-->
+<script type="text/javascript" src="//ra.revolvermaps.com/0/0/1.js?i=0sycmreaxpu&amp;s=190&amp;m=0&amp;v=true&amp;r=false&amp;b=000000&amp;n=false&amp;c=007eff" async="async"></script>
+</section>
+<section>
+<h1>酷站博客</h1>
+<ul>
+        <li>
+        <a href="http://blog.jobbole.com/">伯乐在线</a>
+        </li>
+        <li>
+        <a href="http://www.cnblogs.com/">博客园</a>
+        </li>
+        <li>
+        <a href="http://coolshell.cn/">酷壳CoolShell</a>
+        </li>
+        <li>
+        <a href="http://www.tuicool.com/articles/V7RVb2Q/">Octopress专栏</a>
+        </li>
+        <li>
+        <a href="http://blog.ibireme.com/">郭曜源的技术博客</a>
+        </li>
+        <li>
+        <a href="http://www.cnblogs.com/kenshincui/p/3985090.html">kenshin Cui 的技术博客</a>
+        </li>
+</ul>
+</section>
+
+  
+</aside>
+
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2016 - Super Yang -
+<!--添加站长工具--> 
+ <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+<script language="javascript" type="text/javascript" src="http://js.users.51.la/18738010.js"></script>
+<noscript><a href="http://www.51.la/?18738010" target="_blank"><img alt="&#x6211;&#x8981;&#x5566;&#x514D;&#x8D39;&#x7EDF;&#x8BA1;" src="http://img.users.51.la/18738010.asp" style="border:none" /></a></noscript>
+</p>
+
+
+<!--添加百度推送--> 
+<script>
+
+(function(){
+
+    var bp = document.createElement('script');
+
+    bp.src = '//push.zhanzhang.baidu.com/push.js';
+
+    var s = document.getElementsByTagName("script")[0];
+
+    s.parentNode.insertBefore(bp, s);
+
+})();
+
+</script>
+
+</footer>
+  
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>
