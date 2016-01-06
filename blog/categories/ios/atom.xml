@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Ios | SuperYang`s Blog]]></title>
   <link href="http://yangchao0033.github.io/blog/categories/ios/atom.xml" rel="self"/>
   <link href="http://yangchao0033.github.io/"/>
-  <updated>2016-01-06T19:18:59+08:00</updated>
+  <updated>2016-01-06T19:32:55+08:00</updated>
   <id>http://yangchao0033.github.io/</id>
   <author>
     <name><![CDATA[Super Yang]]></name>
@@ -211,7 +211,7 @@ CFRunLoopRemoveTimer(CFRunLoopRef rl, CFRunLoopTimerRef timer, CFStringRef mode)
 <p>苹果官方公开的内部mode有两个：CFRunLoopDefaultMode（NSDefaultRunLoopMode）和UITrackingRunLoopMode，你可以用这两个 Mode Name来操作对应的 Mode。
 同时苹果还提出了一个操作Common标记的字符串：kCFRunLoopCommonModes（NSRunLoopCommonModes），你可以用这个字符串来操作Common Items，或标记一个Mode为“Common”。使用时注意区分该字符串与其他mode name。</p>
 
-<p>参考文章：</p>
+<p><strong>参考文章：</strong></p>
 
 <p>深入理解RunLoop&mdash;&mdash;&mdash;-<a href="http://blog.ibireme.com/2015/05/18/runloop/#more-41710">http://blog.ibireme.com/2015/05/18/runloop/#more-41710</a></p>
 
