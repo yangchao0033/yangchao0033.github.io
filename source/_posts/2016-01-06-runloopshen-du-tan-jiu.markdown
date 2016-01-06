@@ -20,7 +20,7 @@ function loop() {
     } while (message != quit);
 }
 ```
-这种模型通常被称作 Event Loop。 Event Loop 在很多系统和框架里都有实现，比如 Node.js 的事件处理，比如 Windows 程序的消息循环，再比如 OSX/iOS 里的 RunLoop。实现这种模型的关键点在于：如何管理事件/消息，如何让线程在没有处理消息时休眠以避免资源占用、在有消息到来时立刻被唤醒。
+这种模型通常被称作 [Event Loop](https://en.wikipedia.org/wiki/Event_loop)。 Event Loop 在很多系统和框架里都有实现，比如 Node.js 的事件处理，比如 Windows 程序的消息循环，再比如 OSX/iOS 里的 RunLoop。实现这种模型的关键点在于：如何管理事件/消息，如何让线程在没有处理消息时休眠以避免资源占用、在有消息到来时立刻被唤醒。
 
 <!--more-->
 所以，RunLoop 实际上就是一个对象，这个对象管理了其需要处理的事件和消息，并提供了一个入口函数来执行上面 Event Loop 的逻辑。线程执行了这个函数后，就会一直处于这个函数内部 "接受消息->等待->处理" 的循环中，直到这个循环结束（比如传入 quit 的消息），函数返回。
@@ -154,7 +154,7 @@ CFRunLoopRemoveTimer(CFRunLoopRef rl, CFRunLoopTimerRef timer, CFStringRef mode)
 苹果官方公开的内部mode有两个：CFRunLoopDefaultMode（NSDefaultRunLoopMode）和UITrackingRunLoopMode，你可以用这两个 Mode Name来操作对应的 Mode。
 同时苹果还提出了一个操作Common标记的字符串：kCFRunLoopCommonModes（NSRunLoopCommonModes），你可以用这个字符串来操作Common Items，或标记一个Mode为“Common”。使用时注意区分该字符串与其他mode name。
 
-参考文章：
+**参考文章：**
 
 深入理解RunLoop----------[http://blog.ibireme.com/2015/05/18/runloop/#more-41710](http://blog.ibireme.com/2015/05/18/runloop/#more-41710)
 
