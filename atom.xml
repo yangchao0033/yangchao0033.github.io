@@ -4,7 +4,7 @@
   <title><![CDATA[SuperYang`s Blog]]></title>
   <link href="http://yangchao0033.github.io/atom.xml" rel="self"/>
   <link href="http://yangchao0033.github.io/"/>
-  <updated>2016-01-07T14:27:21+08:00</updated>
+  <updated>2016-01-07T14:45:39+08:00</updated>
   <id>http://yangchao0033.github.io/</id>
   <author>
     <name><![CDATA[Super Yang]]></name>
@@ -21,9 +21,6 @@
     <content type="html"><![CDATA[<h2>苹果用 RunLoop 实现的功能</h2>
 
 <p>首先我们可以看一下 App 启动后 RunLoop 的状态：</p>
-
-<!--more-->
-
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -226,12 +223,19 @@
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>可以看到，系统默认注册了5个Mode:
-1. kCFRunLoopDefaultMode: App的默认 Mode，通常主线程是在这个 Mode 下运行的。
-2. UITrackingRunLoopMode: 界面跟踪 Mode，用于 ScrollView 追踪触摸滑动，保证界面滑动时不受其他 Mode 影响。
-3. UIInitializationRunLoopMode: 在刚启动 App 时第进入的第一个 Mode，启动完成后就不再使用。
+<p>可以看到，系统默认注册了5个Mode:</p>
+
+<!--more-->
+
+
+<ol>
+<li>kCFRunLoopDefaultMode: App的默认 Mode，通常主线程是在这个 Mode 下运行的。</li>
+<li>UITrackingRunLoopMode: 界面跟踪 Mode，用于 ScrollView 追踪触摸滑动，保证界面滑动时不受其他 Mode 影响。</li>
+<li>UIInitializationRunLoopMode: 在刚启动 App 时第进入的第一个 Mode，启动完成后就不再使用。
 4: GSEventReceiveRunLoopMode: 接受系统事件的内部 Mode，通常用不到。
-5: kCFRunLoopCommonModes: 这是一个占位的 Mode，没有实际作用。</p>
+5: kCFRunLoopCommonModes: 这是一个占位的 Mode，没有实际作用。</li>
+</ol>
+
 
 <p>你可以在<a href="http://iphonedevwiki.net/index.php/CFRunLoop">这里</a>看到更多的苹果内部的 Mode，但那些 Mode 在开发中就很难遇到了。</p>
 
