@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Ios | SuperYang`s Blog]]></title>
   <link href="http://yangchao0033.github.io/blog/categories/ios/atom.xml" rel="self"/>
   <link href="http://yangchao0033.github.io/"/>
-  <updated>2016-01-07T11:48:16+08:00</updated>
+  <updated>2016-01-07T13:58:10+08:00</updated>
   <id>http://yangchao0033.github.io/</id>
   <author>
     <name><![CDATA[Super Yang]]></name>
@@ -12,6 +12,300 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[RunLoop深度探究（三）]]></title>
+    <link href="http://yangchao0033.github.io/blog/2016/01/07/runloopshen-du-tan-jiu-(3)/"/>
+    <updated>2016-01-07T11:54:24+08:00</updated>
+    <id>http://yangchao0033.github.io/blog/2016/01/07/runloopshen-du-tan-jiu-(3)</id>
+    <content type="html"><![CDATA[<h2>苹果用 RunLoop 实现的功能</h2>
+
+<p>首先我们可以看一下 App 启动后 RunLoop 的状态：</p>
+
+<pre><code class="objc">CFRunLoop {
+    current mode = kCFRunLoopDefaultMode
+    common modes = {
+        UITrackingRunLoopMode
+        kCFRunLoopDefaultMode
+    }
+
+    common mode items = {
+
+        // source0 (manual)
+        CFRunLoopSource {order =-1, {
+            callout = _UIApplicationHandleEventQueue}}
+        CFRunLoopSource {order =-1, {
+            callout = PurpleEventSignalCallback }}
+        CFRunLoopSource {order = 0, {
+            callout = FBSSerialQueueRunLoopSourceHandler}}
+
+        // source1 (mach port)
+        CFRunLoopSource {order = 0,  {port = 17923}}
+        CFRunLoopSource {order = 0,  {port = 12039}}
+        CFRunLoopSource {order = 0,  {port = 16647}}
+        CFRunLoopSource {order =-1, {
+            callout = PurpleEventCallback}}
+        CFRunLoopSource {order = 0, {port = 2407,
+            callout = _ZL20notify_port_callbackP12__CFMachPortPvlS1_}}
+        CFRunLoopSource {order = 0, {port = 1c03,
+            callout = __IOHIDEventSystemClientAvailabilityCallback}}
+        CFRunLoopSource {order = 0, {port = 1b03,
+            callout = __IOHIDEventSystemClientQueueCallback}}
+        CFRunLoopSource {order = 1, {port = 1903,
+            callout = __IOMIGMachPortPortCallback}}
+
+        // Ovserver
+        CFRunLoopObserver {order = -2147483647, activities = 0x1, // Entry
+            callout = _wrapRunLoopWithAutoreleasePoolHandler}
+        CFRunLoopObserver {order = 0, activities = 0x20,          // BeforeWaiting
+            callout = _UIGestureRecognizerUpdateObserver}
+        CFRunLoopObserver {order = 1999000, activities = 0xa0,    // BeforeWaiting | Exit
+            callout = _afterCACommitHandler}
+        CFRunLoopObserver {order = 2000000, activities = 0xa0,    // BeforeWaiting | Exit
+            callout = _ZN2CA11Transaction17observer_callbackEP19__CFRunLoopObservermPv}
+        CFRunLoopObserver {order = 2147483647, activities = 0xa0, // BeforeWaiting | Exit
+            callout = _wrapRunLoopWithAutoreleasePoolHandler}
+
+        // Timer
+        CFRunLoopTimer {firing = No, interval = 3.1536e+09, tolerance = 0,
+            next fire date = 453098071 (-4421.76019 @ 96223387169499),
+            callout = _ZN2CAL14timer_callbackEP16__CFRunLoopTimerPv (QuartzCore.framework)}
+    },
+
+    modes ＝ {
+        CFRunLoopMode  {
+            sources0 =  { /* same as 'common mode items' */ },
+            sources1 =  { /* same as 'common mode items' */ },
+            observers = { /* same as 'common mode items' */ },
+            timers =    { /* same as 'common mode items' */ },
+        },
+
+        CFRunLoopMode  {
+            sources0 =  { /* same as 'common mode items' */ },
+            sources1 =  { /* same as 'common mode items' */ },
+            observers = { /* same as 'common mode items' */ },
+            timers =    { /* same as 'common mode items' */ },
+        },
+
+        CFRunLoopMode  {
+            sources0 = {
+                CFRunLoopSource {order = 0, {
+                    callout = FBSSerialQueueRunLoopSourceHandler}}
+            },
+            sources1 = (null),
+            observers = {
+                CFRunLoopObserver &gt;{activities = 0xa0, order = 2000000,
+                    callout = _ZN2CA11Transaction17observer_callbackEP19__CFRunLoopObservermPv}
+            )},
+            timers = (null),
+        },
+
+        CFRunLoopMode  {
+            sources0 = {
+                CFRunLoopSource {order = -1, {
+                    callout = PurpleEventSignalCallback}}
+            },
+            sources1 = {
+                CFRunLoopSource {order = -1, {
+                    callout = PurpleEventCallback}}
+            },
+            observers = (null),
+            timers = (null),
+        },
+
+        CFRunLoopMode  {
+            sources0 = (null),
+            sources1 = (null),
+            observers = (null),
+            timers = (null),
+        }
+    }
+}
+</code></pre>
+
+<p>可以看到，系统默认注册了5个Mode:
+1. kCFRunLoopDefaultMode: App的默认 Mode，通常主线程是在这个 Mode 下运行的。
+2. UITrackingRunLoopMode: 界面跟踪 Mode，用于 ScrollView 追踪触摸滑动，保证界面滑动时不受其他 Mode 影响。
+3. UIInitializationRunLoopMode: 在刚启动 App 时第进入的第一个 Mode，启动完成后就不再使用。
+4: GSEventReceiveRunLoopMode: 接受系统事件的内部 Mode，通常用不到。
+5: kCFRunLoopCommonModes: 这是一个占位的 Mode，没有实际作用。</p>
+
+<p>你可以在<a href="http://iphonedevwiki.net/index.php/CFRunLoop">这里</a>看到更多的苹果内部的 Mode，但那些 Mode 在开发中就很难遇到了。</p>
+
+<p>当 RunLoop 进行回调时，一般都是通过一个很长的函数调用出去 (call out), 当你在你的代码中下断点调试时，通常能在调用栈上看到这些函数。下面是这几个函数的整理版本，如果你在调用栈中看到这些长函数名，在这里查找一下就能定位到具体的调用地点了：
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="c1">/// 1. 通知Observers，即将进入RunLoop</span>
+</span><span class='line'>    <span class="c1">/// 此处有Observer会创建AutoreleasePool: _objc_autoreleasePoolPush();</span>
+</span><span class='line'>    <span class="o">&lt;</span><span class="k">strong</span><span class="o">&gt;</span><span class="n">CFRUNLOOP_IS_CALLING_OUT_TO_AN_OBSERVER_CALLBACK_FUNCTION</span><span class="o">&lt;/</span><span class="k">strong</span><span class="o">&gt;</span><span class="p">(</span><span class="n">kCFRunLoopEntry</span><span class="p">);</span>
+</span><span class='line'>    <span class="k">do</span> <span class="p">{</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span>    <span class="c1">/// 2. 通知 Observers: 即将触发 Timer 回调。</span>
+</span><span class='line'>    <span class="n">__CFRUNLOOP_IS_CALLING_OUT_TO_AN_OBSERVER_CALLBACK_FUNCTION__</span><span class="p">(</span><span class="n">kCFRunLoopBeforeTimers</span><span class="p">);</span>
+</span><span class='line'>    <span class="c1">/// 3. 通知 Observers: 即将触发 Source (非基于port的,Source0) 回调。</span>
+</span><span class='line'>    <span class="n">__CFRUNLOOP_IS_CALLING_OUT_TO_AN_OBSERVER_CALLBACK_FUNCTION__</span><span class="p">(</span><span class="n">kCFRunLoopBeforeSources</span><span class="p">);</span>
+</span><span class='line'>    <span class="n">__CFRUNLOOP_IS_CALLING_OUT_TO_A_BLOCK__</span><span class="p">(</span><span class="n">block</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">/// 4. 触发 Source0 (非基于port的) 回调。</span>
+</span><span class='line'>    <span class="n">__CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE0_PERFORM_FUNCTION__</span><span class="p">(</span><span class="n">source0</span><span class="p">);</span>
+</span><span class='line'>    <span class="n">__CFRUNLOOP_IS_CALLING_OUT_TO_A_BLOCK__</span><span class="p">(</span><span class="n">block</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">/// 6. 通知Observers，即将进入休眠</span>
+</span><span class='line'>    <span class="c1">/// 此处有Observer释放并新建AutoreleasePool: _objc_autoreleasePoolPop(); _objc_autoreleasePoolPush();</span>
+</span><span class='line'>    <span class="n">__CFRUNLOOP_IS_CALLING_OUT_TO_AN_OBSERVER_CALLBACK_FUNCTION__</span><span class="p">(</span><span class="n">kCFRunLoopBeforeWaiting</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">/// 7. sleep to wait msg.</span>
+</span><span class='line'>    <span class="n">mach_msg</span><span class="p">()</span> <span class="o">-&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="n">mach_msg_trap</span><span class="p">();</span>
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">/// 8. 通知Observers，线程被唤醒</span>
+</span><span class='line'>    <span class="n">__CFRUNLOOP_IS_CALLING_OUT_TO_AN_OBSERVER_CALLBACK_FUNCTION__</span><span class="p">(</span><span class="n">kCFRunLoopAfterWaiting</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">/// 9. 如果是被Timer唤醒的，回调Timer</span>
+</span><span class='line'>    <span class="n">__CFRUNLOOP_IS_CALLING_OUT_TO_A_TIMER_CALLBACK_FUNCTION__</span><span class="p">(</span><span class="n">timer</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">/// 9. 如果是被dispatch唤醒的，执行所有调用 dispatch_async 等方法放入main queue 的 block</span>
+</span><span class='line'>    <span class="n">__CFRUNLOOP_IS_SERVICING_THE_MAIN_DISPATCH_QUEUE__</span><span class="p">(</span><span class="n">dispatched_block</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">/// 9. 如果如果Runloop是被 Source1 (基于port的) 的事件唤醒了，处理这个事件</span>
+</span><span class='line'>    <span class="n">__CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE1_PERFORM_FUNCTION__</span><span class="p">(</span><span class="n">source1</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'><span class="p">}</span> <span class="k">while</span> <span class="p">(...);</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">/// 10. 通知Observers，即将退出RunLoop</span>
+</span><span class='line'><span class="c1">/// 此处有Observer释放AutoreleasePool: _objc_autoreleasePoolPop();</span>
+</span><span class='line'><span class="n">__CFRUNLOOP_IS_CALLING_OUT_TO_AN_OBSERVER_CALLBACK_FUNCTION__</span><span class="p">(</span><span class="n">kCFRunLoopExit</span><span class="p">);</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></p>
+
+<h3>AutoreleasePool</h3>
+
+<p>App启动后，苹果在主线程 RunLoop 里注册了两个 Observer，其回调都是 _wrapRunLoopWithAutoreleasePoolHandler()。</p>
+
+<p>第一个 Observer 监视的事件是 Entry(即将进入Loop)，其回调内会调用 _objc_autoreleasePoolPush() 创建自动释放池。其 order 是-2147483647，优先级最高，保证创建释放池发生在其他所有回调之前。</p>
+
+<p>第二个 Observer 监视了两个事件： BeforeWaiting(准备进入休眠) 时调用<em>objc_autoreleasePoolPop() 和 </em>objc_autoreleasePoolPush() 释放旧的池并创建新池；Exit(即将退出Loop) 时调用 _objc_autoreleasePoolPop() 来释放自动释放池。这个 Observer 的 order 是 2147483647，优先级最低，保证其释放池子发生在其他所有回调之后。</p>
+
+<p>在主线程执行的代码，通常是写在诸如事件回调、Timer回调内的。这些回调会被 RunLoop 创建好的 AutoreleasePool 环绕着，所以不会出现内存泄漏，开发者也不必显示创建 Pool 了。</p>
+
+<h3>事件响应</h3>
+
+<p>苹果注册了一个 Source1 (基于 mach port 的) 用来接收系统事件，其回调函数为 __IOHIDEventSystemClientQueueCallback()。</p>
+
+<p>当一个硬件事件(触摸/锁屏/摇晃等)发生后，首先由 IOKit.framework 生成一个 IOHIDEvent 事件并由 SpringBoard 接收。这个过程的详细情况可以参考<a href="http://iphonedevwiki.net/index.php/IOHIDFamily">这里</a>。SpringBoard 只接收按键(锁屏/静音等)，触摸，加速，接近传感器等几种 Event，随后用 mach port 转发给需要的App进程。随后苹果注册的那个 Source1 就会触发回调，并调用 _UIApplicationHandleEventQueue() 进行应用内部的分发。</p>
+
+<p>_UIApplicationHandleEventQueue() 会把 IOHIDEvent 处理并包装成 UIEvent 进行处理或分发，其中包括识别 UIGesture/处理屏幕旋转/发送给 UIWindow 等。通常事件比如 UIButton 点击、touchesBegin/Move/End/Cancel 事件都是在这个回调中完成的。</p>
+
+<h3>手势识别</h3>
+
+<p>当上面的 _UIApplicationHandleEventQueue() 识别了一个手势时，其首先会调用 Cancel 将当前的 touchesBegin/Move/End 系列回调打断。随后系统将对应的 UIGestureRecognizer 标记为待处理。</p>
+
+<p>苹果注册了一个 Observer 监测 BeforeWaiting (Loop即将进入休眠) 事件，这个Observer的回调函数是 _UIGestureRecognizerUpdateObserver()，其内部会获取所有刚被标记为待处理的 GestureRecognizer，并执行GestureRecognizer的回调。</p>
+
+<p>当有 UIGestureRecognizer 的变化(创建/销毁/状态改变)时，这个回调都会进行相应处理。</p>
+
+<h3>界面更新</h3>
+
+<p>当在操作 UI 时，比如改变了 Frame、更新了 UIView/CALayer 的层次时，或者手动调用了 UIView/CALayer 的 setNeedsLayout/setNeedsDisplay方法后，这个 UIView/CALayer 就被标记为待处理，并被提交到一个全局的容器去。</p>
+
+<p>苹果注册了一个 Observer 监听 BeforeWaiting(即将进入休眠) 和 Exit (即将退出Loop) 事件，回调去执行一个很长的函数：
+_ZN2CA11Transaction17observer_callbackEP19__CFRunLoopObservermPv()。这个函数里会遍历所有待处理的 UIView/CAlayer 以执行实际的绘制和调整，并更新 UI 界面。</p>
+
+<p>这个函数内部的调用栈大概是这样的：</p>
+
+<pre><code class="objc">_ZN2CA11Transaction17observer_callbackEP19__CFRunLoopObservermPv()
+    QuartzCore:CA::Transaction::observer_callback:
+        CA::Transaction::commit();
+            CA::Context::commit_transaction();
+                CA::Layer::layout_and_display_if_needed();
+                    CA::Layer::layout_if_needed();
+                        [CALayer layoutSublayers];
+                            [UIView layoutSubviews];
+                    CA::Layer::display_if_needed();
+                        [CALayer display];
+                            [UIView drawRect];
+</code></pre>
+
+<h3>定时器</h3>
+
+<p>NSTimer 其实就是 CFRunLoopTimerRef，他们之间是 toll-free bridged 的。一个 NSTimer 注册到 RunLoop 后，RunLoop 会为其重复的时间点注册好事件。例如 10:00, 10:10, 10:20 这几个时间点。RunLoop为了节省资源，并不会在非常准确的时间点回调这个Timer。Timer 有个属性叫做 Tolerance (宽容度)，标示了当时间点到后，容许有多少最大误差。</p>
+
+<p>如果某个时间点被错过了，例如执行了一个很长的任务，则那个时间点的回调也会跳过去，不会延后执行。就比如等公交，如果 10:10 时我忙着玩手机错过了那个点的公交，那我只能等 10:20 这一趟了。</p>
+
+<p>CADisplayLink 是一个和屏幕刷新率一致的定时器（但实际实现原理更复杂，和 NSTimer 并不一样，其内部实际是操作了一个 Source）。如果在两次屏幕刷新之间执行了一个长任务，那其中就会有一帧被跳过去（和 NSTimer 相似），造成界面卡顿的感觉。在快速滑动TableView时，即使一帧的卡顿也会让用户有所察觉。Facebook 开源的 AsyncDisplayLink 就是为了解决界面卡顿的问题，其内部也用到了 RunLoop，这个稍后我会再单独写一页博客来分析。</p>
+
+<h3>PerformSelector</h3>
+
+<p>当调用 NSObject 的 performSelecter:afterDelay: 后，实际上其内部会创建一个 Timer 并添加到当前线程的 RunLoop 中。所以如果当前线程没有 RunLoop，则这个方法会失效。</p>
+
+<p>当调用 performSelector:onThread: 时，实际上其会创建一个 Timer 加到对应的线程去，同样的，如果对应线程没有 RunLoop 该方法也会失效。</p>
+
+<h3>关于GCD</h3>
+
+<p>实际上 RunLoop 底层也会用到 GCD 的东西。同时 GCD 提供的某些接口也用到了 RunLoop， 例如 dispatch_async()。</p>
+
+<p>当调用 dispatch_async(dispatch_get_main_queue(), block) 时，libDispatch 会向主线程的 RunLoop 发送消息，RunLoop会被唤醒，并从消息中取得这个 block，并在回调 <strong>CFRUNLOOP_IS_SERVICING_THE_MAIN_DISPATCH_QUEUE</strong>() 里执行这个 block。但这个逻辑仅限于 dispatch 到主线程，dispatch 到其他线程仍然是由 libDispatch 处理的。</p>
+
+<h4>参考文章</h4>
+
+<p>深入理解RunLoop(ibireme)：</p>
+
+<p><a href="http://blog.ibireme.com/2015/05/18/runloop/#more-41710">http://blog.ibireme.com/
+2015/05/18/runloop/#more-41710</a></p>
+
+<p>iPhoneDevWiki :</p>
+
+<p><a href="http://iphonedevwiki.net/index.php/CFRunLoop">iphonedevwiki.net/index.php/CFRunLoop</a>
+<a href="http://iphonedevwiki.net/index.php/IOHIDFamily">iphonedevwiki.net/index.php/IOHIDFamily</a></p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[RunLoop深度探究（二）]]></title>
@@ -225,7 +519,7 @@ IOKit 层是为设备驱动提供了一个面向对象(C++)的一个框架。</p
 
 <p>关于Mach的历史可以看看这篇很有趣的文章：<a href="http://history.programmer.com.cn/8121/">Mac OS X 背后的故事（三）Mach 之父 Avie Tevanian</a>。</p>
 
-<p><strong>参考文章：</strong></p>
+<h4>参考文章：</h4>
 
 <p>深入理解RunLoop(ibireme)：</p>
 
@@ -451,7 +745,7 @@ CFRunLoopRemoveTimer(CFRunLoopRef rl, CFRunLoopTimerRef timer, CFStringRef mode)
 <p>苹果官方公开的内部mode有两个：CFRunLoopDefaultMode（NSDefaultRunLoopMode）和UITrackingRunLoopMode，你可以用这两个 Mode Name来操作对应的 Mode。
 同时苹果还提出了一个操作Common标记的字符串：kCFRunLoopCommonModes（NSRunLoopCommonModes），你可以用这个字符串来操作Common Items，或标记一个Mode为“Common”。使用时注意区分该字符串与其他mode name。</p>
 
-<p><strong>参考文章：</strong></p>
+<h4>参考文章：</h4>
 
 <p>深入理解RunLoop&mdash;&mdash;&mdash;-<a href="http://blog.ibireme.com/2015/05/18/runloop/#more-41710">http://blog.ibireme.com/2015/05/18/runloop/#more-41710</a></p>
 
@@ -699,106 +993,6 @@ AFNetworkReachabilityStatusBlock callback </span>= ^<span style="color: #000000;
 </div>
 <div id="xunlei_com_thunder_helper_plugin_d462f475-c18e-46be-bd10-327458d045bd">&nbsp;</div></div><div id="MySignature"></div>
 <div class="clear"></div></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Objective-C错误模型]]></title>
-    <link href="http://yangchao0033.github.io/blog/2016/01/04/objective-ccuo-wu-mo-xing/"/>
-    <updated>2016-01-04T11:04:51+08:00</updated>
-    <id>http://yangchao0033.github.io/blog/2016/01/04/objective-ccuo-wu-mo-xing</id>
-    <content type="html"><![CDATA[<h2>为什么不使用异常处理机制？</h2>
-
-<p>事实上，OC是具备异常处理机制的，但是具体情况下不会启用该机制。原因是ARC下默认不是“异常安全”的。
-    理由是,如果抛出异常，那么本应该在作用域末尾释放的对象在现在不能自动释放了。 如果想生成“异常安全”的代码，需要设置编译标志“-fobjc-arc-exceptions”，并且需要引入额外的代码，在不抛出异常时，也照样执行这段代码。
-及时不适用ARC，也很难在抛出异常后不会导致内存泄露。例如：
-<code>objc
-    id resource = [YCResource alloc] init] retain];
-    if (/*有异常发生*/) {
-    @throw [NSException exceptionWithName:@"/*异常名称*/" reason@"/*异常原因*/" userInfo:nil];
-    }
-    [resource callSomeMethod];
-    [resource release];
-</code></p>
-
-<!--more-->
-
-
-<p>以上代码：如果一旦有异常抛出，那么之后的代码都不会被执行，资源resource对象也就无法被释放。
-虽然可以在异常发生前释放资源对象，但是如果需要释放的资源对象非常多，之后又有新的资源加入，往往会忘了在异常前释放新加入的资源。
-OC现在所采取的方法是只有在极其罕见的异常下，才抛出异常，异常抛出后不必考虑恢复问题，此时程序应该直接退出，这样就不用在编写复杂的“异常安全”代码了。
-现在异常只用于及其严重的错误（致命错误）。
-其中一个用途：OC中没有抽象类，所以无法定义抽象方法，此时，如果你想定义一套抽象 的API，那么可以在方法的实现中抛出异常，告诉使用者需要覆写该方法：
-<code>objc
-- (void)absructMethd {
-    NSString exceptionReason = [NSString stringWithFormat:@"%@ must be overridden", NSStringFromSelector(_cmd)];
-    @throw [NSException exceptionWithName:NSInternalInnconsistencyException reson:exceptionReason userInfo:nil];
-}
-</code></p>
-
-<h2>如何处理“不那么严重（非致命）”的错误？</h2>
-
-<p>OC的范式是：另方法返回0/nil，或者使用NSError。</p>
-
-<h2>如何使用<code>NSError</code>？</h2>
-
-<p>NSErrow使用起来非常灵活，我们使用它告诉调用者发生了什么错误。
-NSError构成：
-* Error domain(错误范围)
-描述错误发生的范围。例如处理URL的子系统，当url解析出现错误，就可以使用<code>NSURLErrorDomain</code>来表示错误范围。
-* Error code（错误码）
-独有的错误代码，用以表明具体发生了何种错误，一般用枚举定义，HTTP请求中可以存储状态码。
-* User info（用户信息）
-有关错误的额外附加信息，可以是一段本地化描述，也可能是用来存储该错误是由其他错误引起的，最终生成一条完整的错误链。</p>
-
-<p>其应用场景类型：
-* 在代理协议中返回NSError错误。
-<code>objc
-- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError - *)error;
-</code>
-这样，接口定义者和使用者都可以选择是否输入并处理该错误。
-* 在方法中用对象指针来监测错误。
-<code>objc
-- (BOOL)doSomething:(NSError **)error;
-/*使用方法*/
-NSError *error = nil;
-BOOL ret = [slef doSomething:&amp;error];
-if (ret) {
-        // 处理错误
-}
-</code>
-这种方法一般都会返回BOOL值，用来判断是否操作成功，如果只是判断成功状态，则只要判断返回值并且error参数传为nil就行，而error指针可以用来输出错误信息。
-<code>
-笔记：实际上ARC时，编译器会把NSError**转换为NSError*__autorelease*</code>,当doSomething方法执行完毕后，会将调用者创建的对象自动释放掉。这是为了防止调用者不一定能确保会释放掉NSError对象，必须要求他自己可以自动释放掉，所以加入autorelease。这样就与打部分返回值具备的语义相同了。</p>
-
-<p>doSomething方法的实现原理：
-<code>objc
-- (BOOL)doSomething:(NSError *)error {
-        if(/*发生error*/) {
-                if(error) {
-                /*给外部传入参数初始化*/
-                *error = [NSError errorWithDomain:domain code:code userinfo:userInfo];
-                }
-                return NO;
-        } else {
-                return YES;
-        }
-}
-</code>
-在给error解引用&ndash;<code>*error</code>之前，必须保证error不为空。</p>
-
-<p>一般情况下，给error对象填入恰当的错误范围，错误码，错误信息后，调用者就可以更精准的定位错误。
-我们一般对错误范围使用NSString全局变量进行定义。错误码常采用枚举，例如：
-<code>objc
-extern NSSring *const YCErrorDomain;
-typedef NS_ENUM（NSInteger, YCError）{
-    YCErrorUnknow   = -1,
-    YCErrorInternalIncosistency  = 100,
-    YCErrorGeneralFault  = 105,
-    YCErrorBadInput  = 500,
-};
-NSString *const YCErrorDomain = @"YCErrorDomain";
-</code></p>
 ]]></content>
   </entry>
   
