@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Ios | SuperYang`s Blog]]></title>
   <link href="http://yangchao0033.github.io/blog/categories/ios/atom.xml" rel="self"/>
   <link href="http://yangchao0033.github.io/"/>
-  <updated>2016-01-07T14:45:39+08:00</updated>
+  <updated>2016-01-07T15:44:11+08:00</updated>
   <id>http://yangchao0033.github.io/</id>
   <author>
     <name><![CDATA[Super Yang]]></name>
@@ -300,6 +300,111 @@ _ZN2CA11Transaction17observer_callbackEP19__CFRunLoopObservermPv()。这个函�
 
 <p>当调用 dispatch_async(dispatch_get_main_queue(), block) 时，libDispatch 会向主线程的 RunLoop 发送消息，RunLoop会被唤醒，并从消息中取得这个 block，并在回调 <strong>CFRUNLOOP_IS_SERVICING_THE_MAIN_DISPATCH_QUEUE</strong>() 里执行这个 block。但这个逻辑仅限于 dispatch 到主线程，dispatch 到其他线程仍然是由 libDispatch 处理的。</p>
 
+<h3>关于网络请求</h3>
+
+<p>iOS 中，关于网络请求的接口自下至上有如下几层:
+<code>objc
+CFSocket
+CFNetwork       -&gt;ASIHttpRequest
+NSURLConnection -&gt;AFNetworking
+NSURLSession    -&gt;AFNetworking2, Alamofire
+</code>
+• CFSocket 是最底层的接口，只负责 socket 通信。
+• CFNetwork 是基于 CFSocket 等接口的上层封装，ASIHttpRequest 工作于这一层。
+• NSURLConnection 是基于 CFNetwork 的更高层的封装，提供面向对象的接口，AFNetworking 工作于这一层。
+• NSURLSession 是 iOS7 中新增的接口，表面上是和 NSURLConnection 并列的，但底层仍然用到了 NSURLConnection 的部分功能 (比如 com.apple.NSURLConnectionLoader 线程)，AFNetworking2 和 Alamofire 工作于这一层。</p>
+
+<p>下面主要介绍下 NSURLConnection 的工作过程。</p>
+
+<p>通常使用 NSURLConnection 时，你会传入一个 Delegate，当调用了 [connection start] 后，这个 Delegate 就会不停收到事件回调。实际上，start 这个函数的内部会会获取 CurrentRunLoop，然后在其中的 DefaultMode 添加了4个 Source0 (即需要手动触发的Source)。CFMultiplexerSource 是负责各种 Delegate 回调的，CFHTTPCookieStorage 是处理各种 Cookie 的。</p>
+
+<p>当开始网络传输时，我们可以看到 NSURLConnection 创建了两个新线程：com.apple.NSURLConnectionLoader 和 com.apple.CFSocket.private。其中 CFSocket 线程是处理底层 socket 连接的。NSURLConnectionLoader 这个线程内部会使用 RunLoop 来接收底层 socket 的事件，并通过之前添加的 Source0 通知到上层的 Delegate。
+<img src="https://github.com/yangchao0033/blog/blob/master/ios/2015/12/Image/RunLoop_network.png?raw=true" alt="NSURLConnection" /></p>
+
+<p>NSURLConnectionLoader 中的 RunLoop 通过一些基于 mach port 的 Source 接收来自底层 CFSocket 的通知。当收到通知后，其会在合适的时机向 CFMultiplexerSource 等 Source0 发送通知，同时唤醒 Delegate 线程的 RunLoop 来让其处理这些通知。CFMultiplexerSource 会在 Delegate 线程的 RunLoop 对 Delegate 执行实际的回调。</p>
+
+<h2>RunLoop 的实际应用举例</h2>
+
+<h3>AFNetworking</h3>
+
+<p><a href="https://github.com/AFNetworking/AFNetworking/blob/2.6.3/AFNetworking/AFURLConnectionOperation.m">AFURLConnectionOperation</a> 这个类是基于 NSURLConnection 构建的，其希望能在后台线程接收 Delegate 回调。为此 AFNetworking 单独创建了一个线程，并在这个线程中启动了一个 RunLoop：
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="p">+</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">networkRequestThreadEntryPoint:</span><span class="p">(</span><span class="kt">id</span><span class="p">)</span><span class="nv">__unused</span> <span class="n">object</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">@autoreleasepool</span> <span class="p">{</span>
+</span><span class='line'>        <span class="p">[[</span><span class="bp">NSThread</span> <span class="n">currentThread</span><span class="p">]</span> <span class="nl">setName</span><span class="p">:@</span><span class="o">&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="n">AFNetworking</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;];</span>
+</span><span class='line'>        <span class="bp">NSRunLoop</span> <span class="o">*</span><span class="n">runLoop</span> <span class="o">=</span> <span class="p">[</span><span class="bp">NSRunLoop</span> <span class="n">currentRunLoop</span><span class="p">];</span>
+</span><span class='line'>        <span class="p">[</span><span class="n">runLoop</span> <span class="nl">addPort</span><span class="p">:[</span><span class="bp">NSMachPort</span> <span class="n">port</span><span class="p">]</span> <span class="nl">forMode</span><span class="p">:</span><span class="n">NSDefaultRunLoopMode</span><span class="p">];</span>
+</span><span class='line'>        <span class="p">[</span><span class="n">runLoop</span> <span class="n">run</span><span class="p">];</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'><span class="p">}</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">ul</span><span class="o">&gt;</span>
+</span><span class='line'><span class="o">&lt;</span><span class="n">li</span><span class="o">&gt;</span><span class="p">(</span><span class="bp">NSThread</span> <span class="o">&lt;</span><span class="n">em</span><span class="o">&gt;</span><span class="p">)</span><span class="n">networkRequestThread</span> <span class="p">{</span>
+</span><span class='line'>  <span class="k">static</span> <span class="bp">NSThread</span> <span class="o">&lt;/</span><span class="n">em</span><span class="o">&gt;&lt;</span><span class="n">em</span><span class="o">&gt;</span><span class="n">networkRequestThread</span> <span class="o">=</span> <span class="nb">nil</span><span class="p">;</span>
+</span><span class='line'>  <span class="k">static</span> <span class="kt">dispatch_once_t</span> <span class="n">oncePredicate</span><span class="p">;</span>
+</span><span class='line'>  <span class="n">dispatch_once</span><span class="p">(</span><span class="o">&amp;</span><span class="n">amp</span><span class="p">;</span><span class="n">oncePredicate</span><span class="p">,</span> <span class="o">^</span><span class="p">{</span>
+</span><span class='line'>      <span class="o">&lt;/</span><span class="n">em</span><span class="o">&gt;</span><span class="n">networkRequestThread</span> <span class="o">=</span> <span class="p">[[</span><span class="bp">NSThread</span> <span class="n">alloc</span><span class="p">]</span> <span class="nl">initWithTarget</span><span class="p">:</span><span class="nb">self</span> <span class="nl">selector</span><span class="p">:</span><span class="k">@selector</span><span class="p">(</span><span class="nl">networkRequestThreadEntryPoint</span><span class="p">:)</span> <span class="nl">object</span><span class="p">:</span><span class="nb">nil</span><span class="p">];</span>
+</span><span class='line'>      <span class="p">[</span><span class="o">&lt;</span><span class="n">em</span><span class="o">&gt;</span><span class="n">networkRequestThread</span> <span class="n">start</span><span class="p">];</span>
+</span><span class='line'>  <span class="p">});</span>
+</span><span class='line'>  <span class="k">return</span> <span class="o">&lt;/</span><span class="n">em</span><span class="o">&gt;</span><span class="n">networkRequestThread</span><span class="p">;</span>
+</span></code></pre></td></tr></table></div></figure>
+RunLoop 启动前内部必须要有至少一个 Timer/Observer/Source，所以 AFNetworking 在 [runLoop run] 之前先创建了一个新的 NSMachPort 添加进去了。通常情况下，调用者需要持有这个 NSMachPort (mach_port) 并在外部线程通过这个 port 发送消息到 loop 内；但此处添加 port 只是为了让 RunLoop 不至于退出，并没有用于实际的发送消息。</li>
+</ul>
+
+
+<pre><code class="objc">- (void)start {
+    [self.lock lock];
+    if ([self isCancelled]) {
+        [self performSelector:@selector(cancelConnection) onThread:[[self class] networkRequestThread] withObject:nil waitUntilDone:NO modes:[self.runLoopModes allObjects]];
+    } else if ([self isReady]) {
+        self.state = AFOperationExecutingState;
+        [self performSelector:@selector(operationDidStart) onThread:[[self class] networkRequestThread] withObject:nil waitUntilDone:NO modes:[self.runLoopModes allObjects]];
+    }
+    [self.lock unlock];
+}
+</code></pre>
+
+<p>当需要这个后台线程执行任务时，AFNetworking 通过调用 [NSObject performSelector:onThread:..] 将这个任务扔到了后台线程的 RunLoop 中。</p>
+
+<h3>AsyncDisplayKit</h3>
+
+<p><a href="https://github.com/facebook/AsyncDisplayKit">AsyncDisplayKit</a> 是 Facebook 推出的用于保持界面流畅性的框架，其原理大致如下：</p>
+
+<p>UI 线程中一旦出现繁重的任务就会导致界面卡顿，这类任务通常分为3类：排版，绘制，UI对象操作。</p>
+
+<p>排版通常包括计算视图大小、计算文本高度、重新计算子式图的排版等操作。
+绘制一般有文本绘制 (例如 CoreText)、图片绘制 (例如预先解压)、元素绘制 (Quartz)等操作。
+UI对象操作通常包括 UIView/CALayer 等 UI 对象的创建、设置属性和销毁。</p>
+
+<p>其中前两类操作可以通过各种方法扔到后台线程执行，而最后一类操作只能在主线程完成，并且有时后面的操作需要依赖前面操作的结果 （例如TextView创建时可能需要提前计算出文本的大小）。ASDK 所做的，就是尽量将能放入后台的任务放入后台，不能的则尽量推迟 (例如视图的创建、属性的调整)。</p>
+
+<p>为此，ASDK 创建了一个名为 ASDisplayNode 的对象，并在内部封装了 UIView/CALayer，它具有和 UIView/CALayer 相似的属性，例如 frame、backgroundColor等。所有这些属性都可以在后台线程更改，开发者可以只通过 Node 来操作其内部的 UIView/CALayer，这样就可以将排版和绘制放入了后台线程。但是无论怎么操作，这些属性总需要在某个时刻同步到主线程的 UIView/CALayer 去。</p>
+
+<p>ASDK 仿照 QuartzCore/UIKit 框架的模式，实现了一套类似的界面更新的机制：即在主线程的 RunLoop 中添加一个 Observer，监听了 kCFRunLoopBeforeWaiting 和 kCFRunLoopExit 事件，在收到回调时，遍历所有之前放入队列的待处理的任务，然后一一执行。
+具体的代码可以看这里：<a href="https://github.com/facebook/AsyncDisplayKit/blob/master/AsyncDisplayKit%2FDetails%2FTransactions%2F_ASAsyncTransactionGroup.m">_ASAsyncTransactionGroup</a>。</p>
+
+<h4>特别致谢：</h4>
+
+<p><a href="http://blog.ibireme.com/2015/05/18/runloop/#more-41710">http://blog.ibireme.com/
+2015/05/18/runloop/#more-41710</a></p>
+
 <h4>参考文章</h4>
 
 <p>深入理解RunLoop(ibireme)：</p>
@@ -526,7 +631,12 @@ IOKit 层是为设备驱动提供了一个面向对象(C++)的一个框架。</p
 
 <p>关于Mach的历史可以看看这篇很有趣的文章：<a href="http://history.programmer.com.cn/8121/">Mac OS X 背后的故事（三）Mach 之父 Avie Tevanian</a>。</p>
 
-<h4>参考文章：</h4>
+<h4>特别致谢：</h4>
+
+<p><a href="http://blog.ibireme.com/2015/05/18/runloop/#more-41710">http://blog.ibireme.com/
+2015/05/18/runloop/#more-41710</a></p>
+
+<p><strong>参考文章：</strong></p>
 
 <p>深入理解RunLoop(ibireme)：</p>
 
@@ -752,11 +862,20 @@ CFRunLoopRemoveTimer(CFRunLoopRef rl, CFRunLoopTimerRef timer, CFStringRef mode)
 <p>苹果官方公开的内部mode有两个：CFRunLoopDefaultMode（NSDefaultRunLoopMode）和UITrackingRunLoopMode，你可以用这两个 Mode Name来操作对应的 Mode。
 同时苹果还提出了一个操作Common标记的字符串：kCFRunLoopCommonModes（NSRunLoopCommonModes），你可以用这个字符串来操作Common Items，或标记一个Mode为“Common”。使用时注意区分该字符串与其他mode name。</p>
 
-<h4>参考文章：</h4>
+<h4>特别致谢：</h4>
 
-<p>深入理解RunLoop&mdash;&mdash;&mdash;-<a href="http://blog.ibireme.com/2015/05/18/runloop/#more-41710">http://blog.ibireme.com/2015/05/18/runloop/#more-41710</a></p>
+<p><a href="http://blog.ibireme.com/2015/05/18/runloop/#more-41710">http://blog.ibireme.com/
+2015/05/18/runloop/#more-41710</a></p>
 
-<p>Apple Document&mdash;&mdash;&mdash;&ndash;<a href="https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/Multithreading/RunLoopManagement/RunLoopManagement.html">https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/Multithreading/RunLoopManagement/RunLoopManagement.html</a></p>
+<p><strong>参考文章：</strong></p>
+
+<p>深入理解RunLoop:</p>
+
+<p><a href="http://blog.ibireme.com/2015/05/18/runloop/#more-41710">http://blog.ibireme.com/2015/05/18/runloop/#more-41710</a></p>
+
+<p>Apple Document:</p>
+
+<p><a href="https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/Multithreading/RunLoopManagement/RunLoopManagement.html">https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/Multithreading/RunLoopManagement/RunLoopManagement.html</a></p>
 ]]></content>
   </entry>
   
