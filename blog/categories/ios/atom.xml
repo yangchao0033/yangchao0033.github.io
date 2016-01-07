@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Ios | SuperYang`s Blog]]></title>
   <link href="http://yangchao0033.github.io/blog/categories/ios/atom.xml" rel="self"/>
   <link href="http://yangchao0033.github.io/"/>
-  <updated>2016-01-07T13:58:10+08:00</updated>
+  <updated>2016-01-07T14:23:46+08:00</updated>
   <id>http://yangchao0033.github.io/</id>
   <author>
     <name><![CDATA[Super Yang]]></name>
@@ -21,6 +21,9 @@
     <content type="html"><![CDATA[<h2>苹果用 RunLoop 实现的功能</h2>
 
 <p>首先我们可以看一下 App 启动后 RunLoop 的状态：</p>
+
+<!--more-->
+
 
 <pre><code class="objc">CFRunLoop {
     current mode = kCFRunLoopDefaultMode
