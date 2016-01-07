@@ -154,8 +154,16 @@ CFRunLoopRemoveTimer(CFRunLoopRef rl, CFRunLoopTimerRef timer, CFStringRef mode)
 苹果官方公开的内部mode有两个：CFRunLoopDefaultMode（NSDefaultRunLoopMode）和UITrackingRunLoopMode，你可以用这两个 Mode Name来操作对应的 Mode。
 同时苹果还提出了一个操作Common标记的字符串：kCFRunLoopCommonModes（NSRunLoopCommonModes），你可以用这个字符串来操作Common Items，或标记一个Mode为“Common”。使用时注意区分该字符串与其他mode name。
 
+####特别致谢：
+[http://blog.ibireme.com/
+2015/05/18/runloop/#more-41710](http://blog.ibireme.com/2015/05/18/runloop/#more-41710)
+
 **参考文章：**
 
-深入理解RunLoop----------[http://blog.ibireme.com/2015/05/18/runloop/#more-41710](http://blog.ibireme.com/2015/05/18/runloop/#more-41710)
+深入理解RunLoop:
 
-Apple Document-----------[https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/Multithreading/RunLoopManagement/RunLoopManagement.html](https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/Multithreading/RunLoopManagement/RunLoopManagement.html)
+[http://blog.ibireme.com/2015/05/18/runloop/#more-41710](http://blog.ibireme.com/2015/05/18/runloop/#more-41710)
+
+Apple Document:
+
+[https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/Multithreading/RunLoopManagement/RunLoopManagement.html](https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/Multithreading/RunLoopManagement/RunLoopManagement.html)

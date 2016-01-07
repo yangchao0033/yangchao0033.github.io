@@ -188,6 +188,10 @@ RunLoop 的核心就是一个 mach_msg() (见上面代码的第7步)，RunLoop �
 
 关于Mach的历史可以看看这篇很有趣的文章：[Mac OS X 背后的故事（三）Mach 之父 Avie Tevanian](http://history.programmer.com.cn/8121/)。
 
+####特别致谢：
+[http://blog.ibireme.com/
+2015/05/18/runloop/#more-41710](http://blog.ibireme.com/2015/05/18/runloop/#more-41710)
+
 **参考文章：**
 
 深入理解RunLoop(ibireme)：
