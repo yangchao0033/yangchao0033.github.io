@@ -9,7 +9,15 @@
   <meta name="author" content="Super Yang">
 
   
-  <meta name="description" content="&ndash;关于在storyboard中使用静态TableViewCell的可变高度的使用技巧 起因:在storyboard使用之前，创建tableView视图，通常是采用代码控制数据源，通过数据源数据的长度来决定tableView中cell的个数， &hellip;">
+  <meta name="description" content="首先，我们先对使用autoreleasepool的场景进行性能对比。 不用autoreleasepool 1
+2
+3
+4
+5
+6
+7
+8
+- (void)doSomething { NSMutableArray *collection = @[].mutableCopy; for (int i &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -101,6 +109,66 @@
       
   <header>
     
+      <h1 class="entry-title"><a href="/blog/2015/12/31/guan-yu-at-autoreleasepoolde-ce-shi-ji-shi-yong/">关于@autoreleasepool的性能测试及手动释放自动释放池</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2015-12-31T11:47:01+08:00'><span class='date'><span class='date-month'>Dec</span> <span class='date-day'>31</span><span class='date-suffix'>st</span>, <span class='date-year'>2015</span></span> <span class='time'>11:47 am</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>首先，我们先对使用autoreleasepool的场景进行性能对比。</p>
+
+<ul>
+<li>不用autoreleasepool</li>
+</ul>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='objective-c'><span class='line'><span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">doSomething</span> <span class="p">{</span>
+</span><span class='line'>    <span class="bp">NSMutableArray</span> <span class="o">*</span><span class="n">collection</span> <span class="o">=</span> <span class="l">@[]</span><span class="p">.</span><span class="n">mutableCopy</span><span class="p">;</span>
+</span><span class='line'>    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mf">10e6</span><span class="p">;</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>        <span class="bp">NSString</span> <span class="o">*</span><span class="n">str</span> <span class="o">=</span> <span class="p">[</span><span class="bp">NSString</span> <span class="nl">stringWithFormat</span><span class="p">:</span><span class="s">@&quot;hi + %d&quot;</span><span class="p">,</span> <span class="n">i</span><span class="p">];</span>
+</span><span class='line'>        <span class="p">[</span><span class="n">collection</span> <span class="nl">addObject</span><span class="p">:</span><span class="n">str</span><span class="p">];</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>    <span class="n">NSLog</span><span class="p">(</span><span class="s">@&quot;finished!&quot;</span><span class="p">);</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p></p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2015/12/31/guan-yu-at-autoreleasepoolde-ce-shi-ji-shi-yong/">阅读全文 &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
       <h1 class="entry-title"><a href="/blog/2015/12/30/guan-yu-zai-storyboardzhong-shi-yong-jing-tai-cellde-zhu-yi-shi-xiang/">关于在storyboard中使用静态cell的注意事项</a></h1>
     
     
@@ -154,7 +222,7 @@
 <section>
   <h1>Categories</h1>
   <ul id="categories">
-    <li class='category'><a href='/blog/categories/ios/'>ios (9)</a></li>
+    <li class='category'><a href='/blog/categories/ios/'>ios (10)</a></li>
 <li class='category'><a href='/blog/categories/时光留声机/'>时光留声机 (1)</a></li>
 
   </ul>
@@ -162,6 +230,10 @@
 <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/01/08/runloopshen-du-tan-jiu-(4)/">RunLoop深度探究（四）</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2016/01/07/runloopshen-du-tan-jiu-(3)/">RunLoop深度探究（三）</a>
@@ -177,10 +249,6 @@
     
       <li class="post">
         <a href="/blog/2016/01/04/definede-gao-ji-yong-fa/">宏定义的高级用法</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/01/04/guan-yu-blockshi-yong-de-5dian-zhu-yi-shi-xiang-d/">关于block使用的5点注意事项</a>
       </li>
     
   </ul>

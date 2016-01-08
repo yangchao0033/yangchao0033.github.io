@@ -5,12 +5,12 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>MPMovieplayerviewcontroller播放结束后自动消失的解决方案 - SuperYang`s Blog</title>
+  <title>RunLoop深度探究（四） - SuperYang`s Blog</title>
   <meta name="author" content="Super Yang">
 
   
-  <meta name="description" content="解决MPMovieplayerviewcontroller播放结束后自动消失的解决方案">
-  <meta name="keywords" content="ios,MPMovieplayerviewcontroller">
+  <meta name="description" content="Run Loops 官方翻译 Run loops 是与线程相关联的基础设施的一部分。Run loop 是用来调度工作并且协调传入事件的时间处理循环。run loop 的目的是：让你的线程在有工作的任务的事后保持忙碌，并且在空闲的事后使线程保持休眠。 Run loop 的管理并不是完全自动的， &hellip;">
+  
 
   <!-- http://t.co/dKP3o1e -->
   <meta name="HandheldFriendly" content="True">
@@ -18,7 +18,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://yangchao0033.github.io/blog/2016/01/01/mpmovieplayerviewcontrollerbo-fang-jie-shu-hou-zi-dong-xiao-shi-de-jie-jue-fang-an/">
+  <link rel="canonical" href="http://yangchao0033.github.io/blog/2016/01/08/runloopshen-du-tan-jiu-(4)/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="SuperYang`s Blog" type="application/atom+xml">
@@ -98,7 +98,7 @@
   
   <header>
     
-      <h1 class="entry-title">MPMovieplayerviewcontroller播放结束后自动消失的解决方案</h1>
+      <h1 class="entry-title">RunLoop深度探究（四）</h1>
     
     
       <p class="meta">
@@ -107,69 +107,46 @@
 
 
 
-<time class='entry-date' datetime='2016-01-01T03:30:11+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>1</span><span class='date-suffix'>st</span>, <span class='date-year'>2016</span></span> <span class='time'>3:30 am</span></time>
+<time class='entry-date' datetime='2016-01-08T18:45:07+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>8</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>6:45 pm</span></time>
         
       </p>
     
   </header>
 
 
-<div class="entry-content"><hr />
+<div class="entry-content"><h2>Run Loops 官方翻译</h2>
 
-<p>你可以使用这段代码来阻止控制器播放在播放结束后自动dismissing（消失），并且捕捉到用户点击完成的按钮事件去自己定义并处理让你的MPMoviePlayerViewController播放器的消失（dismiss）的时机</p>
+<p>Run loops 是与线程相关联的基础设施的一部分。Run loop 是用来调度工作并且协调传入事件的时间处理循环。run loop 的目的是：让你的线程在有工作的任务的事后保持忙碌，并且在空闲的事后使线程保持休眠。</p>
 
 <!--more-->
 
 
-<hr />
+<p>Run loop 的管理并不是完全自动的，你仍然需要设计你的线程代码，并利用这些代码在合适的时机开启 run loop 并且相应传入的事件。Cocoa 和 Core Foundation 框架都提供了run loop 对象，以便于帮助你配置和管理你的线程 run loop。你的应用不需要显式的创建这些 run loop 对象。每条线程，包括应用的主线程，都会配有一个相关联的 run loop 对象。只有子线程们需要显式的（手动）运行它们的 run loop。然而，该 app 框架将会自动设置并且运行作为应用程序启动过程的一部分的处于 main thread （主线程）的 run loop。</p>
 
-<p>步骤 1. - 创建并初始化一个MPMoviePlayerViewController（videoPlayer）</p>
+<p>接下来，我们一起看看关于 run loop 以及它们的配置相关的更多信息。参照<a href="https://developer.apple.com/library/ios/documentation/Cocoa/Reference/Foundation/Classes/NSRunLoop_Class/index.html#//apple_ref/doc/uid/TP40003725">NSRunLoop Class Reference</a> 以及 <a href="https://developer.apple.com/library/ios/documentation/CoreFoundation/Reference/CFRunLoopRef/index.html#//apple_ref/doc/uid/20001441-CH1g-112707">CFRunLoop Reference</a>。</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="bp">MPMoviePlayerViewController</span> <span class="o">*</span><span class="n">videoPlayer</span> <span class="o">=</span> <span class="p">[[</span><span class="bp">MPMoviePlayerViewController</span> <span class="n">alloc</span><span class="p">]</span> <span class="nl">initWithContentURL</span><span class="p">:[[</span><span class="bp">NSURL</span> <span class="n">alloc</span> <span class="p">]</span><span class="nl">initWithString</span><span class="p">:[</span><span class="n">aURL</span><span class="p">];</span>
-</span></code></pre></td></tr></table></div></figure>
+<h3>Run Loop 剖析</h3>
 
+<p>run loop 是一个名副其实的循环。他会是你的线程不停地循环工作，具体包括线程的进入并且用来响应输入源所运行的事件处理程序。你的代码提供的控制状态将会被用来实现run loop具体的循环部分。换句话说，你的代码需要提供 while 或 for 循环来驱动你的 run loop。在你的 run loop 中，你使用一个 run loop 对象去“执行”接收事件的事件处理代码和调用已经安装好的 handlers。</p>
 
-<p>步骤 2. - 移除videoPlayer默认的通知事件并且加入自己的通知事件。</p>
+<p>run loop 通过两种不同类型的 source 来接收事件。Input source 传递异步事件，通常包括从其他线程或者其他应用发来的 message 。Timer source 也传递异步事件，通常发生在一个被安排好的时间或者重复的时间间隔。这两种类型的 source 都会使用 application-specific 处理例程来处理到来的事件。</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="p">[[</span><span class="bp">NSNotificationCenter</span> <span class="n">defaultCenter</span><span class="p">]</span> <span class="nl">removeObserver</span><span class="p">:</span><span class="n">videoPlayer</span>
-</span><span class='line'><span class="nl">name</span><span class="p">:</span><span class="n">MPMoviePlayerPlaybackDidFinishNotification</span> <span class="nl">object</span><span class="p">:</span><span class="n">videoPlayer</span><span class="p">.</span><span class="n">moviePlayer</span><span class="p">];</span>
-</span><span class='line'><span class="p">[[</span><span class="bp">NSNotificationCenter</span> <span class="n">defaultCenter</span><span class="p">]</span> <span class="nl">addObserver</span><span class="p">:</span><span class="nb">self</span>
-</span><span class='line'><span class="nl">selector</span><span class="p">:</span><span class="k">@selector</span><span class="p">(</span><span class="nl">videoFinished</span><span class="p">:)</span> <span class="nl">name</span><span class="p">:</span><span class="n">MPMoviePlayerPlaybackDidFinishNotification</span> <span class="nl">object</span><span class="p">:</span><span class="n">videoPlayer</span><span class="p">.</span><span class="n">moviePlayer</span><span class="p">];</span>
-</span></code></pre></td></tr></table></div></figure>
+<p>插图3-1展示了 run loop 各种 source 的概念结构。input source 传递异步事件到相对应的 handler（处理程序）并且引起 <code>runUtilDate:</code> 方法（调用线程相关的 NSRunLoop 对象）退出。</p>
 
+<p><em>插图3-1 run loop 和它的 source 结构</em>
+<img src="https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/Multithreading/Art/runloop.jpg" alt="插图3-1" /></p>
 
-<p>步骤 3. - 手动显示你的videoPlayer控制器</p>
+<p>除了处理 input source，run loop 同样也会生成一些关于 run loop 的行为的通知。注册 run-loop observers（观察者）去接收这些通知并且使用他们去在线程上做额外的处理。你可以使用 Core Foundation 框架去在你的线程上安装 run-loop observer 。</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="p">[</span><span class="nb">self</span> <span class="nl">presentMoviePlayerViewControllerAnimated</span><span class="p">:</span><span class="n">videoPlayer</span><span class="p">];</span>
-</span></code></pre></td></tr></table></div></figure>
+<p>下面这些段落提供了更多地关于 runloop的组成 和 它们可以操作的modes，它们还描述了在事件处理的不同时间点生成的通知。</p>
 
+<h3>Run Loop Modes</h3>
 
-<p>步骤 4. - 添加 videoFinish: 方法处理通知事件</p>
+<p>一个 run loop mode 是一个包含 input sources 和 被监视的 timers 和 将要被通知的 run-loop 的observer 所组成的集合。每次你启动你的 run loop 时，你都会指定（隐式或者显式的）一种特定的“mode”来运行。在执行该运行循环的期间，只有与指定运行的 mode 相关联的 source 才会被检测和允许去发送他们的事件。（相同的，只有与指定运行的 mode 相关联的 observer 会被 run loop 的进度（progress）所通知）。关联到其他 modes 的 sources 直到 run loop 切换到对应的 mode 时才会继续让新的事件通行（只有到对应的mode下，相关的 source 才会继续其对应的功能）。</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="p">-(</span><span class="kt">void</span><span class="p">)</span><span class="nf">videoFinished:</span><span class="p">(</span><span class="bp">NSNotification</span><span class="o">*</span><span class="p">)</span><span class="nv">aNotification</span><span class="p">{</span>
-</span><span class='line'>    <span class="kt">int</span> <span class="n">value</span> <span class="o">=</span> <span class="p">[[</span><span class="n">aNotification</span><span class="p">.</span><span class="n">userInfo</span> <span class="nl">valueForKey</span><span class="p">:</span><span class="n">MPMoviePlayerPlaybackDidFinishReasonUserInfoKey</span><span class="p">]</span> <span class="n">intValue</span><span class="p">];</span>
-</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="n">value</span> <span class="o">==</span> <span class="n">MPMovieFinishReasonUserExited</span><span class="p">)</span> <span class="p">{</span>
-</span><span class='line'>        <span class="p">[</span><span class="nb">self</span> <span class="n">dismissMoviePlayerViewControllerAnimated</span><span class="p">];</span>
-</span><span class='line'>    <span class="p">}</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
+<p>在你的代码中，可以使用名字来标记 modes，包括 Cocoa 和 Core Foundation 都定义了一些默认的mode和一些常用的mode，代码中你可以通过字符串来区别这些mode，你可以定义自定义的mode，仅仅通过指定简单的字符串来标记这些自定义的mode。尽管可以随意的对 mode 名字进行复制，但是这些 mode 的内容却不行。你必须确保你添加到得任何你创建的 mode 中的一个或多个input sources, timers, 或者 run-loop observer都是有用的。</p>
 
-
-<hr />
-
-<p>参考:<a href="http://stackoverflow.com/a/19596598">http://stackoverflow.com/a/19596598</a></p>
+<p>你使用 modes 并通过你的 run loop 特定的扫描中过滤掉干扰的事件。大多数情况下，你都会将你的 run loop 运行在系统默认的 mode 中。模态面板可能会运行在“ modal ” mode 中。当处于这种 mode 下，只有和 source 关联的模态面板才可以发送事件到线程中去。对于子线程来说，你可能会使用自定义 modes 去防止优先级抵的 source 在时间要求严格的操作中发送事件。</p>
 </div>
 
 
@@ -185,7 +162,7 @@
 
 
 
-<time class='entry-date' datetime='2016-01-01T03:30:11+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>1</span><span class='date-suffix'>st</span>, <span class='date-year'>2016</span></span> <span class='time'>3:30 am</span></time>
+<time class='entry-date' datetime='2016-01-08T18:45:07+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>8</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>6:45 pm</span></time>
       
 
 <span class="categories">
@@ -221,10 +198,8 @@
     
     <p class="meta">
       
-        <a class="basic-alignment left" href="/blog/2015/12/31/guan-yu-at-autoreleasepoolde-ce-shi-ji-shi-yong/" title="Previous Post: 关于@autoreleasepool的性能测试及手动释放自动释放池">&laquo; 关于@autoreleasepool的性能测试及手动释放自动释放池</a>
+        <a class="basic-alignment left" href="/blog/2016/01/07/runloopshen-du-tan-jiu-(3)/" title="Previous Post: RunLoop深度探究（三）">&laquo; RunLoop深度探究（三）</a>
       
-      
-        <a class="basic-alignment right" href="/blog/2016/01/01/wei-harpy(ban-ben-geng-xin-gong-ju-zhi-zuo-jian-rong-ban-ben-)/" title="Next Post: 为Harpy（版本更新工具)制做兼容版本">为Harpy（版本更新工具)制做兼容版本 &raquo;</a>
       
     </p>
   </footer>
