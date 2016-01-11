@@ -4,7 +4,7 @@
   <title><![CDATA[SuperYang`s Blog]]></title>
   <link href="http://yangchao0033.github.io/atom.xml" rel="self"/>
   <link href="http://yangchao0033.github.io/"/>
-  <updated>2016-01-11T15:25:42+08:00</updated>
+  <updated>2016-01-11T15:31:21+08:00</updated>
   <id>http://yangchao0033.github.io/</id>
   <author>
     <name><![CDATA[Super Yang]]></name>
@@ -18,7 +18,7 @@
     <link href="http://yangchao0033.github.io/blog/2016/01/08/runloopshen-du-tan-jiu-(4)/"/>
     <updated>2016-01-08T18:45:07+08:00</updated>
     <id>http://yangchao0033.github.io/blog/2016/01/08/runloopshen-du-tan-jiu-(4)</id>
-    <content type="html"><![CDATA[<h2>Run Loops 官方翻译</h2>
+    <content type="html"><![CDATA[<p>原文链接：<a href="https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/Multithreading/RunLoopManagement/RunLoopManagement.html#//apple_ref/doc/uid/10000057i-CH16-SW18">Run Loops</a></p>
 
 <p>Run loops 是与线程相关联的基础设施的一部分。Run loop 是用来调度工作并且协调传入事件的时间处理循环。run loop 的目的是：让你的线程在有工作的任务的事后保持忙碌，并且在空闲的事后使线程保持休眠。</p>
 
@@ -100,7 +100,9 @@ Note: modes 的区别取决于 event（事件） 的 source ，不是 event 的�
 
 <p>在 Core Foundation 中， 你必须手动的两者都创建，其中包括 port 和 它的 run loop source ，在两种情况下， 你可以使用 port 不透明类型的 (<a href="https://developer.apple.com/library/ios/documentation/CoreFoundation/Reference/CFMachPortRef/index.html#//apple_ref/c/tdef/CFMachPortRef">CFMachPortRef</a>, <a href="https://developer.apple.com/library/ios/documentation/CoreFoundation/Reference/CFMessagePortRef/index.html#//apple_ref/c/tdef/CFMessagePortRef">CFMessagePortRef</a>, or <a href="https://developer.apple.com/library/ios/documentation/CoreFoundation/Reference/CFSocketRef/index.html#//apple_ref/c/tdef/CFSocketRef">CFSocketRef</a>) 相关的函数来创建合适的对象（you use the functions associated with the port opaque type (CFMachPortRef, CFMessagePortRef, or CFSocketRef) to create the appropriate objects）。</p>
 
-<p>如何创建和配置自定义的基于 port 的源，可以参照<a href="https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/Multithreading/RunLoopManagement/RunLoopManagement.html#//apple_ref/doc/uid/10000057i-CH16-131281">创建一个基于 port 的 input source</a></p>
+<p>如何创建和配置自定义的基于 port 的源，可以参照<a href="https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/Multithreading/RunLoopManagement/RunLoopManagement.html#//apple_ref/doc/uid/10000057i-CH16-131281">创建一个基于 port 的 input source</a>
+</br>
+</br></p>
 
 <h4>自定义 input source</h4>
 
@@ -109,6 +111,8 @@ Note: modes 的区别取决于 event（事件） 的 source ，不是 event 的�
 <p>除了定义在事件到来时自定义 source 的行为，你还必须定义事件传递机制。source 的这部分运行在一个单独的线程中，并且负责 当数据已经准备好去被处理的时候，这部分会去提供一个拥有数据的 input source，并且发信号给 input source。这个事件传递机制取决于你，但是也不用过于复杂。</p>
 
 <p>有关如何创建一个自定义 input source 的例子，可以参考<a href="https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/Multithreading/RunLoopManagement/RunLoopManagement.html#//apple_ref/doc/uid/10000057i-CH16-SW3">定义一个自定义 input source</a>， 关于自定义 input source 的详细信息， 可以参考 <a href="https://developer.apple.com/library/ios/documentation/CoreFoundation/Reference/CFRunLoopSourceRef/index.html#//apple_ref/doc/uid/20001443">CFRunLoopSourceReference</a></p>
+
+<p>(未完待续。。。)</p>
 ]]></content>
   </entry>
   
