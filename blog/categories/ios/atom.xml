@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Ios | SuperYang`s Blog]]></title>
   <link href="http://yangchao0033.github.io/blog/categories/ios/atom.xml" rel="self"/>
   <link href="http://yangchao0033.github.io/"/>
-  <updated>2016-01-10T14:39:49+08:00</updated>
+  <updated>2016-01-11T11:06:38+08:00</updated>
   <id>http://yangchao0033.github.io/</id>
   <author>
     <name><![CDATA[Super Yang]]></name>
@@ -51,6 +51,24 @@
 <p>在你的代码中，可以使用名字来标记 modes，包括 Cocoa 和 Core Foundation 都定义了一些默认的mode和一些常用的mode，代码中你可以通过字符串来区别这些mode，你可以定义自定义的mode，仅仅通过指定简单的字符串来标记这些自定义的mode。尽管可以随意的对 mode 名字进行复制，但是这些 mode 的内容却不行。你必须确保你添加到得任何你创建的 mode 中的一个或多个input sources, timers, 或者 run-loop observer都是有用的。</p>
 
 <p>你使用 modes 并通过你的 run loop 特定的扫描中过滤掉干扰的事件。大多数情况下，你都会将你的 run loop 运行在系统默认的 mode 中。模态面板可能会运行在“ modal ” mode 中。当处于这种 mode 下，只有和 source 关联的模态面板才可以发送事件到线程中去。对于子线程来说，你可能会使用自定义 modes 去防止优先级抵的 source 在时间要求严格的操作中发送事件。</p>
+
+<pre><code>Note: modes 的区别取决于 event（事件） 的 source ，不是 event 的类型。比如，你可能不会用 mode 去仅仅匹配一个鼠标点击事件或者键盘点击事件。 你可能会用 mode 去监听一组不同的端口。暂停 timer ，或者改变当前监视的 source ，然后，run loop observer 会立即开始监视。
+</code></pre>
+
+<p>列表3-1列出了 Cocoa 和 Core Foundation 框架中你可以使用的具有官方文档描述的一些标准的 mode，列名称列出了你在代码中需要指定 mode 时需要使用的实际常量。</p>
+
+<p><strong>Table 3-1</strong> 预定义的 run loop modes</p>
+
+<p>| Mode | Name |Description|
+| :&mdash;&mdash; | :&mdash;&mdash; | :&mdash;&mdash; |
+| Default | <a href="https://developer.apple.com/library/ios/documentation/Cocoa/Reference/Foundation/Classes/NSRunLoop_Class/index.html#//apple_ref/c/data/NSDefaultRunLoopMode">NSDefaultRunLoopMode</a> (Cocoa)
+<a href="https://developer.apple.com/library/ios/documentation/CoreFoundation/Reference/CFRunLoopRef/index.html#//apple_ref/c/data/kCFRunLoopDefaultMode">kCFRunLoopDefaultMode</a> (Core Foundation) | The default mode is the one used for most operations. Most of the time, you should use this mode to start your run loop and configure your input sources. |
+|Connection|<code>NSConnectionReplyMode</code>(Cocoa)|Cocoa uses this mode in conjunction with <code>NSConnection</code> objects to monitor replies. You should rarely need to use this mode yourself.|
+|Modal|<code>NSModalPanelRunLoopMode</code>(Cocoa)|Cocoa uses this mode to identify events intended for modal panels.|
+|Event tracking|<code>NSEventTrackingRunLoopMode</code>(Cocoa)|Cocoa uses this mode to restrict incoming events during mouse-dragging loops and other sorts of user interface tracking loops.|
+|Common modes|<a href="https://developer.apple.com/library/ios/documentation/Cocoa/Reference/Foundation/Classes/NSRunLoop_Class/index.html#//apple_ref/c/data/NSRunLoopCommonModes">NSRunLoopCommonModes</a>(Cocoa)
+<a href="https://developer.apple.com/library/ios/documentation/CoreFoundation/Reference/CFRunLoopRef/index.html#//apple_ref/c/data/kCFRunLoopCommonModes">kCFRunLoopCommonModes</a> (Core Foundation)|This is a configurable group of commonly used modes. Associating an input source with this mode also associates it with each of the modes in the group. For Cocoa applications, this set includes the default, modal, and event tracking modes by default. Core Foundation includes just the default mode initially. You can add custom modes to the set using the <a href="https://developer.apple.com/library/ios/documentation/CoreFoundation/Reference/CFRunLoopRef/index.html#//apple_ref/c/func/CFRunLoopAddCommonMode">CFRunLoopAddCommonMode</a> function.
+|</p>
 ]]></content>
   </entry>
   
