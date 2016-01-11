@@ -4,7 +4,7 @@
   <title><![CDATA[SuperYang`s Blog]]></title>
   <link href="http://yangchao0033.github.io/atom.xml" rel="self"/>
   <link href="http://yangchao0033.github.io/"/>
-  <updated>2016-01-11T15:31:21+08:00</updated>
+  <updated>2016-01-11T15:34:32+08:00</updated>
   <id>http://yangchao0033.github.io/</id>
   <author>
     <name><![CDATA[Super Yang]]></name>
@@ -18,7 +18,7 @@
     <link href="http://yangchao0033.github.io/blog/2016/01/08/runloopshen-du-tan-jiu-(4)/"/>
     <updated>2016-01-08T18:45:07+08:00</updated>
     <id>http://yangchao0033.github.io/blog/2016/01/08/runloopshen-du-tan-jiu-(4)</id>
-    <content type="html"><![CDATA[<p>原文链接：<a href="https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/Multithreading/RunLoopManagement/RunLoopManagement.html#//apple_ref/doc/uid/10000057i-CH16-SW18">Run Loops</a></p>
+    <content type="html"><![CDATA[<p>原文链接：<a href="https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/Multithreading/RunLoopManagement/RunLoopManagement.html#//apple_ref/doc/uid/10000057i-CH16-SW1">Run Loops</a></p>
 
 <p>Run loops 是与线程相关联的基础设施的一部分。Run loop 是用来调度工作并且协调传入事件的时间处理循环。run loop 的目的是：让你的线程在有工作的任务的事后保持忙碌，并且在空闲的事后使线程保持休眠。</p>
 
