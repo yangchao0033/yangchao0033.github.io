@@ -23,7 +23,7 @@ keywords: ios, 性能检测,autoreleasepool
 ```  
 <!--more-->
 不使用性能如下如所示：
-![不使用](http://lypxcnc-dl.yunpan.360.cn/intf.php?method=Preview.outputPic&qid=246165388&fname=%2Fmac%E5%A4%87%E4%BB%BD%2Fios%2F2015%2F11%2Fimage%2FSnip20151108_8.png&fhash=f9b9a5146857df0e674211b4a81405c7bf0c5193&dt=71.386154716d9b80a7a2c5b7517e7424a0&v=1.0.1&rtick=14515884295186&open_app_id=0&devtype=web&sign=b2a0f819bcdc8ee3f2368017ba09df85&)  
+![不使用](https://github.com/yangchao0033/blog/blob/master/ios/2015/11/image/Snip20151108_9.png?raw=true)  
 
 * 使用autoreleasepool
 ```objective-c
@@ -39,7 +39,7 @@ keywords: ios, 性能检测,autoreleasepool
 }
 ```  
 使用效果如下图所示：
-![使用autoreleasepool](http://d.pcs.baidu.com/thumbnail/2430b3c52659ed6040d1bd1b0caf00f4?fid=3643355266-250528-153089275883599&time=1451588400&rt=pr&sign=FDTAER-DCb740ccc5511e5e8fedcff06b081203-OOQTgjpbAx1aDaa9nBURvIsmtmY%3d&expires=8h&chkbd=0&chkv=0&dp-logid=2964101469645371&dp-callid=0&size=c10000_u10000&quality=90)  
+![使用autoreleasepool](https://github.com/yangchao0033/blog/blob/master/ios/2015/11/image/Snip20151108_8.png?raw=true)  
 
 综上，当需要在程序中创建大量的临时变量时（大量也可指数量多，不确定，比如从数据库中读取数据时）,很容易使内存产生峰值又回到内存低谷，这样对程序的性能会产生很大影响，而使用自动释放池后，峰值明显有所下降。  
 `原因：`由于在mian函数中已经为我们添加了自动释放池，如下所示：  
