@@ -1,0 +1,951 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>为Harpy（版本更新工具)制做兼容版本 - SuperYang`s Blog</title>
+  <meta name="author" content="Super Yang">
+
+  
+  <meta name="description" content="使用现有的开源框架只做iOS6的兼容版本">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://yangchao0033.github.io/blog/2016/01/01/wei-harpy(ban-ben-geng-xin-gong-ju-zhi-zuo-jian-rong-ban-ben-)/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="SuperYang`s Blog" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <!--<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>-->
+  <script src="/javascripts/libs/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<!--百度追踪-->
+<meta name="baidu-site-verification" content="RnO2PmZzv2" />
+<meta name="baidu-site-verification" content="T7BiPPFzd4" />
+<!--360追踪-->
+<meta name="360-site-verification" content="c48c953af335a6c42f6e8f513d6b8a1e" />
+
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-71812998-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-71812998-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">SuperYang`s Blog</a></h1>
+  
+    <h2>Coding Everything.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="yangchao0033.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">首页</a></li>
+  <li><a href="/blog/archives">文章列表</a></li>
+  <li><a href="http://weibo.com/u/3266043817">我的微博</a></li>
+  <li><a href="https://github.com/yangchao0033">Github</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">为Harpy（版本更新工具)制做兼容版本</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-01-01T03:58:09+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>1</span><span class='date-suffix'>st</span>, <span class='date-year'>2016</span></span> <span class='time'>3:58 am</span></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p><strong>中文版：</strong></p>
+
+<h1>Harpy（兼容版）</h1>
+
+<h3>(iOS5-9适配版本,基于<a href="https://github.com/ArtSabintsev/Harpy">ArtSabintsev/Harpy v3.4.5</a>)</h3>
+
+<h3>提醒用户你的应用有新的可用版本，并且及时的跳转到App Store进行更新。</h3>
+
+<h2>关于</h2>
+
+<p><strong>Harpy</strong> 将用户手机上已安装的iOS app版本与当前App Store最新可用版本进行检查对比。如果有新的可用版本时，使用弹窗及时提醒用户最新版本信息，并然用户选择是否需要进一步操作。</p>
+
+<!--more-->
+
+
+<p>Harry是基于<a href="Semantic%20Versioning">http://www.semver.org</a>版本号系统标准执行。
+- <code>Semantic Versioning</code>是一个三位数的版本号系统（例如:1.0.0）
+- Harry同样支持2位数的版本号(例如:1.0)
+- Harpy同时支持4位数的版本号（例如:1.0.0.0）</p>
+
+<h2>Swift 支持</h2>
+
+<p>当前兼容版本（iOS5-9）暂时不支持swift</p>
+
+<h2>特点</h2>
+
+<!--- [x] CocoaPods Support-->
+
+
+<ul>
+<li>[x] 支持三种类型的弹框样式 (详见 <strong>截图 &amp; Alert Types</strong>)</li>
+<li>[x] 提供可选的代理方法 (详见 <strong>Optional Delegate</strong> section)</li>
+<li>[x] 本地化支持超过20+语言</li>
+</ul>
+
+
+<h2>屏幕截图</h2>
+
+<ul>
+<li><strong>左图：</strong>强制用户更新app</li>
+<li><strong>中图：</strong>提供可选项是否前往更新</li>
+<li><strong>右图：</strong>提供跳过当前版本更新的选项</li>
+<li>这些样式全部可以通过<code>HarpyAletType</code>枚举进行控制，详见<code>Harpy.h</code></li>
+</ul>
+
+
+<p><img src="https://github.com/yangchao0033/Harpy/blob/master/samplePictures/4.pic.jpg?raw=true" title="Forced Update" alt="Forced Update" />
+<img src="https://github.com/yangchao0033/Harpy/blob/master/samplePictures/5.pic.jpg?raw=true" title="Optional Update" alt="Optional Update" />
+<img src="https://github.com/yangchao0033/Harpy/blob/master/samplePictures/3.pic.jpg?raw=true" title="Optional Update" alt="Skipped Update" /></p>
+
+<h2>安装</h2>
+
+<h3>手动安装（正在准备CocoaPods）</h3>
+
+<p>将‘Harpy’文件夹拖入到你的项目中，并选择'copy if needed',包括 <code>Harpy.h</code> 和 <code>Harpy.m</code> 文件</p>
+
+<h2>配置</h2>
+
+<ol>
+<li>import <strong>Harpy.h</strong> 导入到 AppDelefate 类中 或者 Pre-Complier Header(.pch)文件中</li>
+<li>在你的<code>Appdelegate</code>中设置<strong>appID</strong>（必要），设置你的<strong>alertType</strong>（可选）</li>
+<li>在你的<code>Appdelegate</code>中调用<code>checkVersion</code>方法，三个检测方法调用位置分别位于Appdelegate的启动的代理方法中，可以自行选择使用
+
+<ul>
+<li>在 <code>application:didFinishLaunchingWithOptions:</code> 中调用 <code>checkVersion</code></li>
+<li>在 <code>applicationDidBecomeActive:</code> 中调用 <code>checkVersionDaily</code></li>
+<li>在 <code>applicationDidBecomeActive:</code> 中调用 <code>checkVersionWeekly</code> .</li>
+</ul>
+</li>
+</ol>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+</pre></td><td class='code'><pre><code class='obj-c'><span class='line'><span class="p">-</span> <span class="p">(</span><span class="kt">BOOL</span><span class="p">)</span><span class="nf">application:</span><span class="p">(</span><span class="bp">UIApplication</span> <span class="o">*</span><span class="p">)</span><span class="nv">application</span> <span class="nf">didFinishLaunchingWithOptions:</span><span class="p">(</span><span class="bp">NSDictionary</span> <span class="o">*</span><span class="p">)</span><span class="nv">launchOptions</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="c1">// 启用Harpy之前确保你的window可用</span>
+</span><span class='line'>  <span class="p">[</span><span class="nb">self</span><span class="p">.</span><span class="n">window</span> <span class="n">makeKeyAndVisible</span><span class="p">];</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="c1">// 为你的应用设置app id</span>
+</span><span class='line'>  <span class="p">[[</span><span class="n">Harpy</span> <span class="n">sharedInstance</span><span class="p">]</span> <span class="nl">setAppID</span><span class="p">:</span><span class="s">@&quot;&lt;#app_id#&gt;&quot;</span><span class="p">];</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="c1">// 设置 UIAlertController 将要基于哪个控制器显示 （适配iOS8+）</span>
+</span><span class='line'>  <span class="p">[[</span><span class="n">Harpy</span> <span class="n">sharedInstance</span><span class="p">]</span> <span class="nl">setPresentingViewController</span><span class="p">:</span><span class="n">_window</span><span class="p">.</span><span class="n">rootViewController</span><span class="p">];</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="c1">// (可选)设置代理来追踪用户点击事件，活着的使用自定义的界面来展示你的信息</span>
+</span><span class='line'>      <span class="p">[[</span><span class="n">Harpy</span> <span class="n">sharedInstance</span><span class="p">]</span> <span class="nl">setDelegate</span><span class="p">:</span><span class="nb">self</span><span class="p">];</span>
+</span><span class='line'>  
+</span><span class='line'>  <span class="c1">// (可选) 设置alertController的tincolor（iOS8+可用）</span>
+</span><span class='line'>  <span class="p">[[</span><span class="n">Harpy</span> <span class="n">sharedInstance</span><span class="p">]</span> <span class="nl">setAlertControllerTintColor</span><span class="p">:</span><span class="s">@&quot;&lt;#alert_controller_tint_color#&gt;&quot;</span><span class="p">];</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="c1">// (可选) 设置你的应用名</span>
+</span><span class='line'>  <span class="p">[[</span><span class="n">Harpy</span> <span class="n">sharedInstance</span><span class="p">]</span> <span class="nl">setAppName</span><span class="p">:</span><span class="s">@&quot;&lt;#app_name#&gt;&quot;</span><span class="p">];</span>
+</span><span class='line'>
+</span><span class='line'>   <span class="cm">/* （可选）设置弹框类型 默认为HarpyAlertTypeOption */</span>
+</span><span class='line'>  <span class="p">[[</span><span class="n">Harpy</span> <span class="n">sharedInstance</span><span class="p">]</span> <span class="nl">setAlertType</span><span class="p">:</span><span class="o">&lt;</span><span class="err">#</span><span class="n">alert_type</span><span class="err">#</span><span class="o">&gt;</span><span class="p">];</span>
+</span><span class='line'>
+</span><span class='line'>   <span class="cm">/* (可选)如果你的应用只在某些国家或地区可用，你必须使用两个字符的country code来设置应用的可用区域 */</span>
+</span><span class='line'>  <span class="p">[[</span><span class="n">Harpy</span> <span class="n">sharedInstance</span><span class="p">]</span> <span class="nl">setCountryCode</span><span class="p">:</span><span class="s">@&quot;&lt;#country_code#&gt;&quot;</span><span class="p">];</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="cm">/* (可选) 强制指定应用显示语言, 请使用 Harpy.h 中定义的 HarpyLanguage 进行设置。*/</span>
+</span><span class='line'>  <span class="p">[[</span><span class="n">Harpy</span> <span class="n">sharedInstance</span><span class="p">]</span> <span class="nl">setForceLanguageLocalization</span><span class="p">:</span><span class="o">&lt;</span><span class="err">#</span><span class="n">HarpyLanguageConstant</span><span class="err">#</span><span class="o">&gt;</span><span class="p">];</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="c1">// 执行版本检测</span>
+</span><span class='line'>  <span class="p">[[</span><span class="n">Harpy</span> <span class="n">sharedInstance</span><span class="p">]</span> <span class="n">checkVersion</span><span class="p">];</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">applicationDidBecomeActive:</span><span class="p">(</span><span class="bp">UIApplication</span> <span class="o">*</span><span class="p">)</span><span class="nv">application</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="cm">/*</span>
+</span><span class='line'><span class="cm">     执行每天检测你的app是否需要更新版本，需要在`applicationDidBecomeActive:`执行最合适</span>
+</span><span class='line'><span class="cm">     因为这对于的你的应用进如后台很长时间后非常有用。</span>
+</span><span class='line'><span class="cm">     </span>
+</span><span class='line'><span class="cm">     同时，也会在应用第一次启动时执行版本检测</span>
+</span><span class='line'><span class="cm">     */</span>
+</span><span class='line'>  <span class="p">[[</span><span class="n">Harpy</span> <span class="n">sharedInstance</span><span class="p">]</span> <span class="n">checkVersionDaily</span><span class="p">];</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="cm">/*</span>
+</span><span class='line'><span class="cm">     执行每周检测你的app新版本。同理需要将此代码放置在`applicationDidBecomeActive:`中执行。</span>
+</span><span class='line'>
+</span><span class='line'><span class="cm">     同时，也会在应用第一次启动时执行版本检测</span>
+</span><span class='line'><span class="cm">  */</span>
+</span><span class='line'>  <span class="p">[[</span><span class="n">Harpy</span> <span class="n">sharedInstance</span><span class="p">]</span> <span class="n">checkVersionWeekly</span><span class="p">];</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">applicationWillEnterForeground:</span><span class="p">(</span><span class="bp">UIApplication</span> <span class="o">*</span><span class="p">)</span><span class="nv">application</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="cm">/*</span>
+</span><span class='line'><span class="cm">  执行app新版本检测，放在此是为了让用户从App Sore跳转回来并重新从后台进入你的</span>
+</span><span class='line'><span class="cm">  app，并且没有在从App Store中跳转回来之前更新他们app的时候调用</span>
+</span><span class='line'><span class="cm">  </span>
+</span><span class='line'><span class="cm">  注意：只有当你使用*HarpyAlertTypeForce*样式弹框类型是才使用这种方法</span>
+</span><span class='line'>
+</span><span class='line'><span class="cm"> 并且会在你第一次启动应用时检测。</span>
+</span><span class='line'><span class="cm">     */</span>
+</span><span class='line'>  <span class="p">[[</span><span class="n">Harpy</span> <span class="n">sharedInstance</span><span class="p">]</span> <span class="n">checkVersion</span><span class="p">];</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>
+至此设置全部完成！</p>
+
+<h2>为不同的升级类型设置弹窗样式</h2>
+
+<p>如果你喜欢为不同的升级类型比如修改(revision)，补丁(patch)，轻微改动(minor)，重大修改(major)等升级类型仅仅添加下面的几行可选代码即可，添加位置必须在调用版本检查的方法（checkVersion）之前</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='obj-c'><span class='line'><span class="cm">/* 默认情况下Harpy会设置所有的版本升级样式为HarpyAlertTypeOption */</span>
+</span><span class='line'><span class="p">[[</span><span class="n">Harpy</span> <span class="n">sharedInstance</span><span class="p">]</span> <span class="nl">setPatchUpdateAlertType</span><span class="p">:</span><span class="o">&lt;</span><span class="err">#</span><span class="n">alert_type</span><span class="err">#</span><span class="o">&gt;</span><span class="p">];</span>
+</span><span class='line'><span class="p">[[</span><span class="n">Harpy</span> <span class="n">sharedInstance</span><span class="p">]</span> <span class="nl">setMinorUpdateAlertType</span><span class="p">:</span><span class="o">&lt;</span><span class="err">#</span><span class="n">alert_type</span><span class="err">#</span><span class="o">&gt;</span><span class="p">];</span>
+</span><span class='line'><span class="p">[[</span><span class="n">Harpy</span> <span class="n">sharedInstance</span><span class="p">]</span> <span class="nl">setMajorUpdateAlertType</span><span class="p">:</span><span class="o">&lt;</span><span class="err">#</span><span class="n">alert_type</span><span class="err">#</span><span class="o">&gt;</span><span class="p">];</span>
+</span><span class='line'><span class="p">[[</span><span class="n">Harpy</span> <span class="n">sharedInstance</span><span class="p">]</span> <span class="nl">setRevisionUpdateAlertType</span><span class="p">:</span><span class="o">&lt;</span><span class="err">#</span><span class="n">alert_type</span><span class="err">#</span><span class="o">&gt;</span><span class="p">];</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>可选的代理和代理方法</h2>
+
+<p>如果你想要个处理或者追踪终端用户的的行为，Harpy会为你提供四个代理方法进行监控</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='obj-c'><span class='line'><span class="c1">// 用户界面展示升级提示对话框</span>
+</span><span class='line'><span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">harpyDidShowUpdateDialog</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// 用户已经点击升级按钮并且进入到App Sotore</span>
+</span><span class='line'><span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">harpyUserDidLaunchAppStore</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// 用户已经点击跳过此次版本更新</span>
+</span><span class='line'><span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">harpyUserDidSkipVersion</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// 用户已经点击取消更行对话框</span>
+</span><span class='line'><span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">harpyUserDidCancel</span><span class="p">;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>If you would like to use your own UI, please use the following delegate method to obtain the localized update message if a new version is available:
+如果你想使用自己的UI，如果有可用的新版本，使用下面的代理来获得本地化的升级信息（需要设置AlertTpye为HarpyAlertTypeNone）</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='obj-c'><span class='line'><span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">harpyDidDetectNewVersionWithoutAlert:</span><span class="p">(</span><span class="bp">NSString</span> <span class="o">*</span><span class="p">)</span><span class="nv">message</span><span class="p">;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>强制本地化</h2>
+
+<p>Harpy 已经本地化了的语言包括 Arabic, Basque, 简体中文, 繁体中文, Danish, Dutch, English, Estonian, French, German, Hebrew, Hungarian, Italian, Japanese, Korean, Latvian, Lithuanian, Malay, Polish, Portuguese (Brazil), Portuguese (Portugal), Russian, Slovenian, Swedish, Spanish, Thai, and Turkish.</p>
+
+<p>你可能想要你的升级对话框<em>永远</em>显示正确的语言，而忽略iOS的语言设置（比如在指定国家发行的app）</p>
+
+<p>你可以使用以下代码实现强制本地化</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='obj-c'><span class='line'><span class="p">[[</span><span class="n">Harpy</span> <span class="n">sharedInstance</span><span class="p">]</span> <span class="n">setForceLanguageLocalization</span><span class="o">&lt;</span><span class="err">#</span><span class="n">HarpyLanguageConstant</span><span class="err">#</span><span class="o">&gt;</span><span class="p">];</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>在App Store上提交的重要注意事项</h2>
+
+<p>App Store 审核人员将不会看到升级弹框</p>
+
+<p><strong>English</strong>：</p>
+
+<h1>Harpy（Compatible version Base On <a href="https://github.com/ArtSabintsev/Harpy">ArtSabintsev/Harpy v3.4.5</a>）</h1>
+
+<h3>Notify users when a new version of your app is available, and prompt them with the App Store link.</h3>
+
+<hr />
+
+<h2>About</h2>
+
+<p><strong>Harpy</strong> checks a user&rsquo;s currently installed version of your iOS app against the version that is currently available in the App Store. If a new version is available, an alert can be presented to the user informing them of the newer version, and giving them the option to update the application.</p>
+
+<p>Harpy is built to work with the <a href="Semantic%20Versioning">http://www.semver.org</a> system.
+- Semantic Versioning is a three number versioning system (e.g., 1.0.0)
+- Harpy also supports two-number versioning (e.g., 1.0)
+- Harpy also supports four-number versioning (e.g., 1.0.0.0)</p>
+
+<h2>Swift Support</h2>
+
+<ul>
+<li>not support yet</li>
+</ul>
+
+
+<h2>Features</h2>
+
+<!--- [x] CocoaPods Support-->
+
+
+<ul>
+<li>[x] Three types of alerts (see <strong>Screenshots &amp; Alert Types</strong>)</li>
+<li>[x] Optional delegate methods (see <strong>Optional Delegate</strong> section)</li>
+<li>[x] Localized for 20+ languages</li>
+</ul>
+
+
+<h2>Screenshots</h2>
+
+<ul>
+<li>The <strong>left picture</strong> forces the user to update the app.</li>
+<li>The <strong>center picture</strong> gives the user the option to update the app.</li>
+<li>The <strong>right picture</strong> gives the user the option to skip the current update.</li>
+<li>These options are controlled by the <code>HarpyAlertType</code> typede that is found in <code>Harpy.h</code>.</li>
+</ul>
+
+
+<p><img src="https://github.com/ArtSabintsev/Harpy/blob/master/samplePictures/picForcedUpdate.png?raw=true" title="Forced Update" alt="Forced Update" />
+<img src="https://github.com/ArtSabintsev/Harpy/blob/master/samplePictures/picOptionalUpdate.png?raw=true" title="Optional Update" alt="Optional Update" />
+<img src="https://github.com/ArtSabintsev/Harpy/blob/master/samplePictures/picSkippedUpdate.png?raw=true" title="Optional Update" alt="Skipped Update" /></p>
+
+<h2>Installation Instructions</h2>
+
+<!--### CocoaPods Installation
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='obj-c'><span class='line'><span class="n">pod</span> <span class="err">&#39;</span><span class="n">Harpy</span><span class="err">&#39;</span>
+</span></code></pre></td></tr></table></div></figure>-->
+
+
+<h3>Manual Installation</h3>
+
+<p>Copy the &lsquo;Harpy&rsquo; folder into your Xcode project. It contains the Harpy.h and Harpy.m files.</p>
+
+<h2>Setup</h2>
+
+<ol>
+<li>Import <strong>Harpy.h</strong> into your AppDelegate or Pre-Compiler Header (.pch)</li>
+<li>In your <code>AppDelegate</code>, set the <strong>appID</strong>, and optionally, you can set the <strong>alertType</strong>.</li>
+<li>In your <code>AppDelegate</code>, call <strong>only one</strong> of the <code>checkVersion</code> methods, as all three perform a check on your application&rsquo;s first launch. Use either:
+
+<ul>
+<li><code>checkVersion</code> in <code>application:didFinishLaunchingWithOptions:</code></li>
+<li><code>checkVersionDaily</code> in <code>applicationDidBecomeActive:</code>.</li>
+<li><code>checkVersionWeekly</code> in <code>applicationDidBecomeActive:</code>.</li>
+</ul>
+</li>
+</ol>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+<span class='line-number'>67</span>
+<span class='line-number'>68</span>
+<span class='line-number'>69</span>
+<span class='line-number'>70</span>
+<span class='line-number'>71</span>
+<span class='line-number'>72</span>
+<span class='line-number'>73</span>
+</pre></td><td class='code'><pre><code class='obj-c'><span class='line'><span class="p">-</span> <span class="p">(</span><span class="kt">BOOL</span><span class="p">)</span><span class="nf">application:</span><span class="p">(</span><span class="bp">UIApplication</span> <span class="o">*</span><span class="p">)</span><span class="nv">application</span> <span class="nf">didFinishLaunchingWithOptions:</span><span class="p">(</span><span class="bp">NSDictionary</span> <span class="o">*</span><span class="p">)</span><span class="nv">launchOptions</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="c1">// Present Window before calling Harpy</span>
+</span><span class='line'>  <span class="p">[</span><span class="nb">self</span><span class="p">.</span><span class="n">window</span> <span class="n">makeKeyAndVisible</span><span class="p">];</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="c1">// Set the App ID for your app</span>
+</span><span class='line'>  <span class="p">[[</span><span class="n">Harpy</span> <span class="n">sharedInstance</span><span class="p">]</span> <span class="nl">setAppID</span><span class="p">:</span><span class="s">@&quot;&lt;#app_id#&gt;&quot;</span><span class="p">];</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="c1">// Set the UIViewController that will present an instance of UIAlertController</span>
+</span><span class='line'>  <span class="p">[[</span><span class="n">Harpy</span> <span class="n">sharedInstance</span><span class="p">]</span> <span class="nl">setPresentingViewController</span><span class="p">:</span><span class="n">_window</span><span class="p">.</span><span class="n">rootViewController</span><span class="p">];</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="c1">// (Optional) Set the Delegate to track what a user clicked on, or to use a custom UI to present your message.</span>
+</span><span class='line'>      <span class="p">[[</span><span class="n">Harpy</span> <span class="n">sharedInstance</span><span class="p">]</span> <span class="nl">setDelegate</span><span class="p">:</span><span class="nb">self</span><span class="p">];</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="c1">// (Optional) The tintColor for the alertController</span>
+</span><span class='line'>  <span class="p">[[</span><span class="n">Harpy</span> <span class="n">sharedInstance</span><span class="p">]</span> <span class="nl">setAlertControllerTintColor</span><span class="p">:</span><span class="s">@&quot;&lt;#alert_controller_tint_color#&gt;&quot;</span><span class="p">];</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="c1">// (Optional) Set the App Name for your app</span>
+</span><span class='line'>  <span class="p">[[</span><span class="n">Harpy</span> <span class="n">sharedInstance</span><span class="p">]</span> <span class="nl">setAppName</span><span class="p">:</span><span class="s">@&quot;&lt;#app_name#&gt;&quot;</span><span class="p">];</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="cm">/* (Optional) Set the Alert Type for your app</span>
+</span><span class='line'><span class="cm">  By default, Harpy is configured to use HarpyAlertTypeOption */</span>
+</span><span class='line'>  <span class="p">[[</span><span class="n">Harpy</span> <span class="n">sharedInstance</span><span class="p">]</span> <span class="nl">setAlertType</span><span class="p">:</span><span class="o">&lt;</span><span class="err">#</span><span class="n">alert_type</span><span class="err">#</span><span class="o">&gt;</span><span class="p">];</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="cm">/* (Optional) If your application is not available in the U.S. App Store, you must specify the two-letter</span>
+</span><span class='line'><span class="cm">  country code for the region in which your applicaiton is available. */</span>
+</span><span class='line'>  <span class="p">[[</span><span class="n">Harpy</span> <span class="n">sharedInstance</span><span class="p">]</span> <span class="nl">setCountryCode</span><span class="p">:</span><span class="s">@&quot;&lt;#country_code#&gt;&quot;</span><span class="p">];</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="cm">/* (Optional) Overrides system language to predefined language.</span>
+</span><span class='line'><span class="cm">  Please use the HarpyLanguage constants defined in Harpy.h. */</span>
+</span><span class='line'>  <span class="p">[[</span><span class="n">Harpy</span> <span class="n">sharedInstance</span><span class="p">]</span> <span class="nl">setForceLanguageLocalization</span><span class="p">:</span><span class="o">&lt;</span><span class="err">#</span><span class="n">HarpyLanguageConstant</span><span class="err">#</span><span class="o">&gt;</span><span class="p">];</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="c1">// Perform check for new version of your app</span>
+</span><span class='line'>  <span class="p">[[</span><span class="n">Harpy</span> <span class="n">sharedInstance</span><span class="p">]</span> <span class="n">checkVersion</span><span class="p">];</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">applicationDidBecomeActive:</span><span class="p">(</span><span class="bp">UIApplication</span> <span class="o">*</span><span class="p">)</span><span class="nv">application</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="cm">/*</span>
+</span><span class='line'><span class="cm">  Perform daily check for new version of your app</span>
+</span><span class='line'><span class="cm">  Useful if user returns to you app from background after extended period of time</span>
+</span><span class='line'><span class="cm">      Place in applicationDidBecomeActive:</span>
+</span><span class='line'>
+</span><span class='line'><span class="cm">      Also, performs version check on first launch.</span>
+</span><span class='line'><span class="cm">     */</span>
+</span><span class='line'>  <span class="p">[[</span><span class="n">Harpy</span> <span class="n">sharedInstance</span><span class="p">]</span> <span class="n">checkVersionDaily</span><span class="p">];</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="cm">/*</span>
+</span><span class='line'><span class="cm">  Perform weekly check for new version of your app</span>
+</span><span class='line'><span class="cm">  Useful if you user returns to your app from background after extended period of time</span>
+</span><span class='line'><span class="cm">  Place in applicationDidBecomeActive:</span>
+</span><span class='line'>
+</span><span class='line'><span class="cm">  Also, performs version check on first launch.</span>
+</span><span class='line'><span class="cm">  */</span>
+</span><span class='line'>  <span class="p">[[</span><span class="n">Harpy</span> <span class="n">sharedInstance</span><span class="p">]</span> <span class="n">checkVersionWeekly</span><span class="p">];</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">applicationWillEnterForeground:</span><span class="p">(</span><span class="bp">UIApplication</span> <span class="o">*</span><span class="p">)</span><span class="nv">application</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="cm">/*</span>
+</span><span class='line'><span class="cm">  Perform check for new version of your app</span>
+</span><span class='line'><span class="cm">  Useful if user returns to you app from background after being sent tot he App Store,</span>
+</span><span class='line'><span class="cm">  but doesn&#39;t update their app before coming back to your app.</span>
+</span><span class='line'>
+</span><span class='line'><span class="cm">      ONLY USE THIS IF YOU ARE USING *HarpyAlertTypeForce*</span>
+</span><span class='line'>
+</span><span class='line'><span class="cm">      Also, performs version check on first launch.</span>
+</span><span class='line'><span class="cm">     */</span>
+</span><span class='line'>  <span class="p">[[</span><span class="n">Harpy</span> <span class="n">sharedInstance</span><span class="p">]</span> <span class="n">checkVersion</span><span class="p">];</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>And you&rsquo;re all set!</p>
+
+<h2>Differentiated Alerts for Patch, Minor, and Major Updates</h2>
+
+<p>If you would like to set a different type of alert for revision, patch, minor, and/or major updates, simply add one or all of the following <em>optional</em> lines to your setup <em>before</em> calling any of the <code>checkVersion</code> methods:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='obj-c'><span class='line'><span class="cm">/* By default, Harpy is configured to use HarpyAlertTypeOption for all version updates */</span>
+</span><span class='line'><span class="p">[[</span><span class="n">Harpy</span> <span class="n">sharedInstance</span><span class="p">]</span> <span class="nl">setPatchUpdateAlertType</span><span class="p">:</span><span class="o">&lt;</span><span class="err">#</span><span class="n">alert_type</span><span class="err">#</span><span class="o">&gt;</span><span class="p">];</span>
+</span><span class='line'><span class="p">[[</span><span class="n">Harpy</span> <span class="n">sharedInstance</span><span class="p">]</span> <span class="nl">setMinorUpdateAlertType</span><span class="p">:</span><span class="o">&lt;</span><span class="err">#</span><span class="n">alert_type</span><span class="err">#</span><span class="o">&gt;</span><span class="p">];</span>
+</span><span class='line'><span class="p">[[</span><span class="n">Harpy</span> <span class="n">sharedInstance</span><span class="p">]</span> <span class="nl">setMajorUpdateAlertType</span><span class="p">:</span><span class="o">&lt;</span><span class="err">#</span><span class="n">alert_type</span><span class="err">#</span><span class="o">&gt;</span><span class="p">];</span>
+</span><span class='line'><span class="p">[[</span><span class="n">Harpy</span> <span class="n">sharedInstance</span><span class="p">]</span> <span class="nl">setRevisionUpdateAlertType</span><span class="p">:</span><span class="o">&lt;</span><span class="err">#</span><span class="n">alert_type</span><span class="err">#</span><span class="o">&gt;</span><span class="p">];</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>Optional Delegate and Delegate Methods</h2>
+
+<p>If you&rsquo;d like to handle or track the end-user&rsquo;s behavior, four delegate methods have been made available to you:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='obj-c'><span class='line'><span class="c1">// User presented with update dialog</span>
+</span><span class='line'><span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">harpyDidShowUpdateDialog</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// User did click on button that launched App Store.app</span>
+</span><span class='line'><span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">harpyUserDidLaunchAppStore</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// User did click on button that skips version update</span>
+</span><span class='line'><span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">harpyUserDidSkipVersion</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// User did click on button that cancels update dialog</span>
+</span><span class='line'><span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">harpyUserDidCancel</span><span class="p">;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>If you would like to use your own UI, please use the following delegate method to obtain the localized update message if a new version is available:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='obj-c'><span class='line'><span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">harpyDidDetectNewVersionWithoutAlert:</span><span class="p">(</span><span class="bp">NSString</span> <span class="o">*</span><span class="p">)</span><span class="nv">message</span><span class="p">;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>Force Localization</h2>
+
+<p>Harpy has localizations for Arabic, Basque, Chinese (Simplified), Chinese (Traditional), Danish, Dutch, English, Estonian, French, German, Hebrew, Hungarian, Italian, Japanese, Korean, Latvian, Lithuanian, Malay, Polish, Portuguese (Brazil), Portuguese (Portugal), Russian, Slovenian, Swedish, Spanish, Thai, and Turkish.</p>
+
+<p>You may want the update dialog to <em>always</em> appear in a certain language, ignoring iOS&rsquo;s language setting (e.g. apps released in a specific country).</p>
+
+<p>You can enable it like this:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='obj-c'><span class='line'><span class="p">[[</span><span class="n">Harpy</span> <span class="n">sharedInstance</span><span class="p">]</span> <span class="n">setForceLanguageLocalization</span><span class="o">&lt;</span><span class="err">#</span><span class="n">HarpyLanguageConstant</span><span class="err">#</span><span class="o">&gt;</span><span class="p">];</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>Important Note on App Store Submissions</h2>
+
+<p>The App Store reviewer will <strong>not</strong> see the alert.</p>
+
+<h2>Created and maintained by</h2>
+
+<p><a href="http://www.sabintsev.com/">Arthur Ariel Sabintsev</a></p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Super Yang</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2016-01-01T03:58:09+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>1</span><span class='date-suffix'>st</span>, <span class='date-year'>2016</span></span> <span class='time'>3:58 am</span></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/ios/'>ios</a>
+  
+</span>
+
+
+      
+
+<DIV style="font-size:12px;BORDER-BOTTOM: #bbbbbb 1px solid; BORDER-LEFT: #bbbbbb 1px solid; BACKGROUND: #f6f6f6; HEIGHT: 120px; BORDER-TOP: #bbbbbb 1px solid; BORDER-RIGHT: #bbbbbb 1px solid" class=oec2003right> 
+<DIV style="MARGIN-TOP: 10px; FLOAT: left; MARGIN-LEFT: 5px; MARGIN-RIGHT: 10px"> 
+<IMG alt="" src="http://ww2.sinaimg.cn/thumb150/c2abdfa9jw8ez7appr3p2j20g40a2t91.jpg" width=90 height=100></DIV> 
+<DIV style="LINE-HEIGHT: 200%; MARGIN-TOP: 10px; COLOR: #000000"> 
+作者： <A href="http://yangchao0033.github.io/">杨超</A> <BR> 
+出处： <A href="http://yangchao0033.github.io/">http://yangchao0033.github.io/</A> 
+<BR>本文基于<a target="_blank" title="Creative Commons Attribution 2.5 China Mainland License" href="http://creativecommons.org/licenses/by/2.5/cn/"> 
+署名 2.5 中国大陆</a>许可协议发布，欢迎转载，演绎或用于商业目的，如非注明转载，原创必须保留本文的署名 
+<a href="http://yangchao0033.github.io/">杨超</a>（包含链接）。 </DIV></DIV> 
+
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+<div class="bshare-custom"><a title="分享到QQ空间" class="bshare-qzone"></a><a title="分享到新浪微博" class="bshare-sinaminiblog"></a><a title="分享到人人网" class="bshare-renren"></a><a title="分享到腾讯微博" class="bshare-qqmb"></a><a title="分享到网易微博" class="bshare-neteasemb"></a><a title="更多平台" class="bshare-more bshare-more-icon more-style-addthis"></a><span class="BSHARE_COUNT bshare-share-count">0</span></div><script type="text/javascript" charset="utf-8" src="http://static.bshare.cn/b/buttonLite.js#style=-1&amp;uuid=&amp;pophcol=2&amp;lang=zh"></script><script type="text/javascript" charset="utf-8" src="http://static.bshare.cn/b/bshareC0.js"></script>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2016/01/01/mpmovieplayerviewcontrollerbo-fang-jie-shu-hou-zi-dong-xiao-shi-de-jie-jue-fang-an/" title="Previous Post: MPMovieplayerviewcontroller播放结束后自动消失的解决方案">&laquo; MPMovieplayerviewcontroller播放结束后自动消失的解决方案</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2016/01/02/happy-new-year/" title="Next Post: Happy New Year">Happy New Year &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><!-- Duoshuo Comment BEGIN -->
+
+<div class="ds-thread"></div>
+
+<script type="text/javascript">
+
+var duoshuoQuery = {short_name:"yangchao0033"};
+
+(function() {
+
+var ds = document.createElement('script');
+
+ds.type = 'text/javascript';ds.async = true;
+
+ds.src = 'http://static.duoshuo.com/embed.js';
+
+ds.charset = 'UTF-8';
+
+(document.getElementsByTagName('head')[0] 
+
+|| document.getElementsByTagName('body')[0]).appendChild(ds);
+
+})();
+
+</script>
+
+<!-- Duoshuo Comment END -->
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+    <h1>新浪微博</h1>
+    <ul id="weibo">
+    <li>
+<!--添加微博秀-->
+<iframe width="100%" height="100" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=0&isWeibo=0&isFans=0&uid=3266043817&verifier=3639b7ec&colors=efefef,efefef,666666,0082cb,ecfbfd&dpc=1"></iframe>
+      </li>
+    </ul>
+</section>
+<section>
+  <h1>Categories</h1>
+  <ul id="categories">
+    <li class='category'><a href='/blog/categories/ios/'>ios (10)</a></li>
+<li class='category'><a href='/blog/categories/时光留声机/'>时光留声机 (1)</a></li>
+
+  </ul>
+</section>
+<section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/01/08/runloopshen-du-tan-jiu-(4)/">RunLoop深度探究（四）</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/01/07/runloopshen-du-tan-jiu-(3)/">RunLoop深度探究（三）</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/01/07/runloopshen-du-tan-jiu-(er-)/">RunLoop深度探究（二）</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/01/06/runloopshen-du-tan-jiu/">RunLoop深度探究（一）</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/01/04/definede-gao-ji-yong-fa/">宏定义的高级用法</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/yangchao0033">@yangchao0033</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'yangchao0033',
+            count: 48,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+<section>
+  <h1>访客地图</h1>
+  <!--获得代码添加到这-->
+<script type="text/javascript" src="//ra.revolvermaps.com/0/0/1.js?i=0sycmreaxpu&amp;s=190&amp;m=0&amp;v=true&amp;r=false&amp;b=000000&amp;n=false&amp;c=007eff" async="async"></script>
+</section>
+<section>
+<h1>酷站博客</h1>
+<ul>
+        <li>
+        <a href="http://iphonedevwiki.net/index.php/Main_Page">iphoneDevWiki</a>
+        </li>
+        <li>
+        <a href="https://en.wikipedia.org/wiki/List_of_iOS_devices">IphoneWikipedia</a>
+        </li>
+        <li>
+        <a href="http://nshipster.com/">nshipster(Mattt Thompson)</a>
+        </li>
+        <li>
+        <a href="http://nshipster.cn/">nshipster中文(Mattt Thompson)</a>
+        </li>
+        <li>
+        <a href="http://www.tuicool.com/articles/V7RVb2Q/">Octopress专栏</a>
+        </li>
+        <li>
+        <a href="http://blog.ibireme.com/">郭曜源的技术博客</a>
+        </li>
+        <li>
+        <a href="http://www.cnblogs.com/kenshincui/p/3985090.html">kenshin Cui 的技术博客</a>
+        </li>
+        <li>
+        <a href="https://github.com/ming1016/study/wiki">戴明的技术笔记</a>
+        </li>
+</ul>
+</section>
+
+  
+</aside>
+
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2016 - Super Yang -
+<!--添加站长工具--> 
+ <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+<script language="javascript" type="text/javascript" src="http://js.users.51.la/18738010.js"></script>
+<noscript><a href="http://www.51.la/?18738010" target="_blank"><img alt="&#x6211;&#x8981;&#x5566;&#x514D;&#x8D39;&#x7EDF;&#x8BA1;" src="http://img.users.51.la/18738010.asp" style="border:none" /></a></noscript>
+</p>
+
+
+<!--添加百度推送--> 
+<script>
+
+(function(){
+
+    var bp = document.createElement('script');
+
+    bp.src = '//push.zhanzhang.baidu.com/push.js';
+
+    var s = document.getElementsByTagName("script")[0];
+
+    s.parentNode.insertBefore(bp, s);
+
+})();
+
+</script>
+
+</footer>
+  
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>
