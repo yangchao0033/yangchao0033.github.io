@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Ios | SuperYang`s Blog]]></title>
   <link href="http://yangchao0033.github.io/blog/categories/ios/atom.xml" rel="self"/>
   <link href="http://yangchao0033.github.io/"/>
-  <updated>2016-01-11T16:15:45+08:00</updated>
+  <updated>2016-01-12T14:33:37+08:00</updated>
   <id>http://yangchao0033.github.io/</id>
   <author>
     <name><![CDATA[Super Yang]]></name>
@@ -112,7 +112,59 @@ Note: modes 的区别取决于 event（事件） 的 source ，不是 event 的�
 
 <p>有关如何创建一个自定义 input source 的例子，可以参考<a href="https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/Multithreading/RunLoopManagement/RunLoopManagement.html#//apple_ref/doc/uid/10000057i-CH16-SW3">定义一个自定义 input source</a>， 关于自定义 input source 的详细信息， 可以参考 <a href="https://developer.apple.com/library/ios/documentation/CoreFoundation/Reference/CFRunLoopSourceRef/index.html#//apple_ref/doc/uid/20001443">CFRunLoopSourceReference</a></p>
 
-<p>(未完待续。。。)</p>
+<h3>Run Loop 的时间执行次序</h3>
+
+<p>每一次你运行 run loop 时，你的线程的 run loop 都会处理未完成的事件，并且为已经注册的任何观察者生成通知信息。下面是它执行的具体步骤：</p>
+
+<ol>
+<li>通知观察者 runloop 已经进入。</li>
+<li>通知观察者 任何就绪的 timer 即将触发。</li>
+<li>通知观察者 任何 不是基于端口的 input source （source0）即将触发</li>
+<li>触发任何不是基于端口的并且准备就绪的 input source。</li>
+<li>假如存在已经准备好的基于端口的 input source （source1），将会等待被触发。并立即开始处理事件。跳转至步骤 9 。</li>
+<li>通知观察者 线程即将睡眠。</li>
+<li>设置让线程在符合如下条件之一时从睡眠状态唤醒：
+
+<ul>
+<li>一个基于端口的 input source（source1）产生的事件到来。</li>
+<li>timer 触发了。</li>
+<li>超出 runloop 预定的时间。</li>
+<li>run loop 明确唤醒</li>
+</ul>
+</li>
+<li>通知观察者，线程刚刚唤醒。</li>
+<li>处理剩余的事件：
+
+<ul>
+<li>  如果一个用户定义的 timer 触发，处理 timer 的事件并且重启 ru loop ，跳转值步骤 2 。</li>
+<li>如果一个 input source 触发，传递这个事件。</li>
+<li>run loop 已经明确地被唤醒但是还没有超时。重启 run loop，并且跳转至 第二步。</li>
+</ul>
+</li>
+<li>通知观察者，run loop 已经退出。
+因为 timer 和 input source 发出的 observer 通知是在这些事件确实是发生时被发送的，那么在事件发生的时间和 observer 收到的通知的时间会存在时间间隙。如果对事件发生时间的准确性要求非常严格，那么你需要采取 <code>睡眠</code> 和 <code>唤醒睡眠</code> 的通知方式来帮助你纠正事件实际发生的时间。</li>
+</ol>
+
+
+<p>由于定时器等周期性事件是在 run loop 运行的时候发送的，需要避免在发送这些事件时被打断。典型的例子比如：只要进入运行循环，并且反复实时地从应用中请求事件来实现对鼠标跟踪的常规动作。由于你的代码是直接抓取事件的，而不是像平时一样让应用分发这些事件的，所以 timer 是不能被触发的，除非鼠标追踪程序退出并返回到应用程序控制。</p>
+
+<p>一个 run loop 可以使用 run loop 对象显示唤醒，其他的事件可能也会引起 run loop 的唤醒。比如，添加另一个 <code>不是基于端口的 input source</code>（source1） 唤醒 run loop 从而使 input source 可以被立即处理（相比于一直处于等待状态直到其他时间发生才唤醒）。</p>
+
+<h3>在什么时候适合使用 RunLoop ？</h3>
+
+<p><strong><code>唯一需要你显示的使用 run loop 的时候是：当你为你的应用创建了子线程的时候。</code></strong>在你的应用中，主线程的 run loop 是基础设施中至关重要的一部分。所以，app 的框架都会提供运行主线程 loop 的代码并且自动开启 loop。iOS中<a href="https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIApplication_Class/index.html#//apple_ref/occ/cl/UIApplication">UIApplication</a>（或者OSX中<code>NSApplication</code>）的<code>run</code>方法会开启一个应用中的主 loop 作为应用程序启动步骤的一部分。如果你使用 Xcode 的项目模板来创建你的应用，你完全不用自已去显示的调用这些常规方法。</p>
+
+<p>对子线程来讲，你需要决定是否一个 run loop 对它来说是必要的，如果是，需要你自己配置并且启动它。你并不需要在任何情况下都开启线程的 run loop。比如：你使用线程去执行一些长期的并且预先决定的任务的时候，你可能需要避免开启 run loop 。Run loop 通常服务于一些需要你和线程之间互动性更强的特殊场景。比如，你需要在以下这些场景中开启你的 run loop：</p>
+
+<ul>
+<li>使用 port 或者自定义 input source 来和其他线程进行通信。</li>
+<li>在线程中使用 timer 。</li>
+<li>在 Cocoa 的应用中使用任何与 <code>performSelector…</code>相关的方法。</li>
+<li>让你的线程继续执行周期性的任务。</li>
+</ul>
+
+
+<p>如果你选择使用 run loop，配置和建立它是非常简单的。如同所有的多线程编程一样，你需要有计划的在合适的情况下退出子线程。让它（run loop）更好的退出而不是迫使它终止永远都是更好的更干净的结束线程的方法。关于如何配置并且退出的方法将在<a href="https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/Multithreading/RunLoopManagement/RunLoopManagement.html#//apple_ref/doc/uid/10000057i-CH16-SW5">使用Run Loop对象</a>中向大家展示。</p>
 ]]></content>
   </entry>
   
