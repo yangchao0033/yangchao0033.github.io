@@ -4,7 +4,7 @@
   <title><![CDATA[SuperYang`s Blog]]></title>
   <link href="http://yangchao0033.github.io/atom.xml" rel="self"/>
   <link href="http://yangchao0033.github.io/"/>
-  <updated>2016-01-12T15:33:48+08:00</updated>
+  <updated>2016-01-14T13:44:47+08:00</updated>
   <id>http://yangchao0033.github.io/</id>
   <author>
     <name><![CDATA[Super Yang]]></name>
@@ -1754,7 +1754,7 @@ NSError构成：
     <id>http://yangchao0033.github.io/blog/2016/01/01/wei-harpy(ban-ben-geng-xin-gong-ju-zhi-zuo-jian-rong-ban-ben-)</id>
     <content type="html"><![CDATA[<p><strong>中文版：</strong></p>
 
-<h1>Harpy（兼容版）</h1>
+<h1>(Harpy)<a href="%E5%85%BC%E5%AE%B9%E7%89%88%E6%9C%AC">https://github.com/yangchao0033/Harpy</a></h1>
 
 <h3>(iOS5-9适配版本,基于<a href="https://github.com/ArtSabintsev/Harpy">ArtSabintsev/Harpy v3.4.5</a>)</h3>
 
