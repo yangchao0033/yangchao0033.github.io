@@ -11,8 +11,8 @@ description: 使用现有的开源框架只做iOS6的兼容版本
 
 **中文版：**
 
-# Harpy（兼容版）
-
+# Harpy (兼容版本)
+github:[https://github.com/yangchao0033/Harpy](https://github.com/yangchao0033/Harpy)
 ###(iOS5-9适配版本,基于[ArtSabintsev/Harpy v3.4.5](https://github.com/ArtSabintsev/Harpy))
 
 ### 提醒用户你的应用有新的可用版本，并且及时的跳转到App Store进行更新。
