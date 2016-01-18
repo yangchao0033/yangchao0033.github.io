@@ -4,7 +4,7 @@
   <title><![CDATA[SuperYang`s Blog]]></title>
   <link href="http://yangchao0033.github.io/atom.xml" rel="self"/>
   <link href="http://yangchao0033.github.io/"/>
-  <updated>2016-01-18T14:07:12+08:00</updated>
+  <updated>2016-01-18T16:19:57+08:00</updated>
   <id>http://yangchao0033.github.io/</id>
   <author>
     <name><![CDATA[Super Yang]]></name>
@@ -12,6 +12,53 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[CocoaPod Version Update]]></title>
+    <link href="http://yangchao0033.github.io/blog/2016/01/18/cocoapod-version-update/"/>
+    <updated>2016-01-18T15:58:44+08:00</updated>
+    <id>http://yangchao0033.github.io/blog/2016/01/18/cocoapod-version-update</id>
+    <content type="html"><![CDATA[<h3>问题描述：</h3>
+
+<p>使用 pod 安装第三方库时无法使用 <code>pod search</code> 搜索最新的版本</p>
+
+<h3>定位问题：</h3>
+
+<p>使用的 pod 版本过低</p>
+
+<h3>方案：</h3>
+
+<!--more-->
+
+
+<p>升级pod版本</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>$ sudo gem update --system
+</span><span class='line'>$ gem sources --remove https://rubygems.org/ 
+</span><span class='line'>$ gem sources -a https://ruby.taobao.org/ 
+</span><span class='line'>$ sudo gem install cocoapods
+</span><span class='line'>$ pod setup</span></code></pre></td></tr></table></div></figure>
+
+
+<p>line 1: 为 <code>gem</code> 升级到最新版<br/>
+line 2: 删除 <code>gem</code> 默认的源<br/>
+line 3: 添加淘宝的源，为了解除天朝对gem的隔离（ps：<code>gem</code> 到底干了啥，这么苦大仇深？）<br/>
+line 4: 安装 <code>CocoaPod</code> (会去新加的源去检查是否有新的内容，有则更新，保持你本地pod拥有最新的库信息)<br/>
+line 5: <code>pod</code> 安装将利用刚才的配置更新本地镜像</p>
+
+<h3>使用：</h3>
+
+<p>继续使用 <code>pod search 库名</code>
+例如： <code>pod search ReactiveCocoa</code></p>
+
+<p>就能搜到最新的库版本了</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[RunLoop深度探究（五）]]></title>
