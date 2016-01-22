@@ -4,7 +4,7 @@
   <title><![CDATA[SuperYang`s Blog]]></title>
   <link href="http://yangchao0033.github.io/atom.xml" rel="self"/>
   <link href="http://yangchao0033.github.io/"/>
-  <updated>2016-01-18T16:19:57+08:00</updated>
+  <updated>2016-01-22T18:20:01+08:00</updated>
   <id>http://yangchao0033.github.io/</id>
   <author>
     <name><![CDATA[Super Yang]]></name>
@@ -632,7 +632,82 @@ line 5: <code>pod</code> 安装将利用刚才的配置更新本地镜像</p>
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p><strong>未完待续。。。</strong></p>
+<p><code>Note：回调函数会在之前的表3-4和3-6中调用这些函数</code></p>
+
+<h5>信号激活 input source</h5>
+
+<p>释放 input source 的数据之后，客户机必须发信号给 source 并且唤醒它的 runloop。发信号给 source 是让 runloop 知道 source 已经准备好被处理。因为线程可能会在发信号的时处于睡眠状态，所以那你必须显式的让 run loop 保持唤醒。除非如此，不然在处理 input source 时会出现延迟。</p>
+
+<p>表 3-9 展示了 <code>RunLoopSource</code> 对象的 <code>fireCommandsOnRunLoop</code> 方法，客户机会在它准备好为 source 处理添加到 buffer 缓冲区中的 command 命令时调用这个方法。</p>
+
+<p>表 3-9 唤醒 run loop</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">fireCommandsOnRunLoop:</span><span class="p">(</span><span class="n">CFRunLoopRef</span><span class="p">)</span><span class="nv">runloop</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="n">CFRunLoopSourceSignal</span><span class="p">(</span><span class="n">runLoopSource</span><span class="p">);</span>
+</span><span class='line'>  <span class="n">CFRunLoopWakeUp</span><span class="p">(</span><span class="n">runloop</span><span class="p">);</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><code>Note:你不能通过向一个自定义 input source 发信息来处理一个 SIGHUP 或者其他处理类型的信号</code>，Core Foundation 框架中用于唤醒 runloop 的函数不是信号安全的。并且不能作为你的应用程序中内置信号处理的例行程序使用。关于更多的关于信号处理程序，详见 <a href="https://developer.apple.com/library/ios/documentation/System/Conceptual/ManPages_iPhoneOS/man2/sigaction.2.html#//apple_ref/doc/man/2/sigaction">sigaction</a> man 页面。</p>
+
+<h3>配置 Timer Source</h3>
+
+<p>为了创建 timer source，所有你需要做的就是创建一个 timer 对象，并且在你的 run loop 中调度它。在 Cocoa 中，你使用 <a href="https://developer.apple.com/library/ios/documentation/Cocoa/Reference/Foundation/Classes/NSTimer_Class/index.html#//apple_ref/occ/cl/NSTimer">NSTimer</a> 类来创建一个新的 timer 对象。在 Core Foundation 框架中，你可以使用 <a href="https://developer.apple.com/library/ios/documentation/CoreFoundation/Reference/CFRunLoopTimerRef/index.html#//apple_ref/c/tdef/CFRunLoopTimerRef]">CFRunLoopTimerRef</a> 不透明类型来创建。<code>NSTimer</code> 类只是 Core Foundation 框架中的一个扩展，是用来方便的提供一些功能，比如使用相同的方法创建和调度 timer 。
+在 Cocoa 中，你能通过以下两种类方法创建和调度 timer。<br/>
+<a href="https://developer.apple.com/library/ios/documentation/Cocoa/Reference/Foundation/Classes/NSTimer_Class/index.html#//apple_ref/occ/clm/NSTimer/scheduledTimerWithTimeInterval:target:selector:userInfo:repeats:">scheduledTimerWithTimeInterval:target:selector:userInfo:repeats:</a>
+<a href="https://developer.apple.com/library/ios/documentation/Cocoa/Reference/Foundation/Classes/NSTimer_Class/index.html#//apple_ref/occ/clm/NSTimer/scheduledTimerWithTimeInterval:invocation:repeats:">scheduledTimerWithTimeInterval:invocation:repeats:</a></p>
+
+<p>这些方法创建 timer 并且将它们添加到当前线程的 run loop 中的 default mode(<a href="https://developer.apple.com/library/ios/documentation/Cocoa/Reference/Foundation/Classes/NSRunLoop_Class/index.html#//apple_ref/c/data/NSDefaultRunLoopMode">NSDefaultRunLoopMode</a>) 中去。如果你使用的是 <a href="https://developer.apple.com/library/ios/documentation/Cocoa/Reference/Foundation/Classes/NSTimer_Class/index.html#//apple_ref/occ/cl/NSTimer">NSTimer</a> 对象，那就可以手动调度 timer 并且可以使用 <a href="https://developer.apple.com/library/ios/documentation/Cocoa/Reference/Foundation/Classes/NSRunLoop_Class/index.html#//apple_ref/occ/cl/NSRunLoop">NSRunLoop</a> 的 <a href="https://developer.apple.com/library/ios/documentation/Cocoa/Reference/Foundation/Classes/NSRunLoop_Class/index.html#//apple_ref/occ/instm/NSRunLoop/addTimer:forMode:">addTimer:forMode:</a> 手动将它添加到 runloop 中去。这两种技术都是基于同一种，但是通过timer 的配置给你不同级别的控制。比如你手动创建 timer 并将它添加到 run loop 中，并添加到除 default mode 之外的其他 mode 中去。表3-10 展示了如何使用两种技术创建 timer。第一个 timer 初始化为 延迟一秒但是会在延迟后有规律的每个0.1秒触发一次。第二个 timer 会在 0.2 秒延迟后开始触发，并且在延迟结束后 每 0.2 秒触发一次。</p>
+
+<p>表3-10 使用 NSTimer 创建和调度 timer</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="bp">NSRunLoop</span><span class="o">*</span> <span class="n">myRunLoop</span> <span class="o">=</span> <span class="p">[</span><span class="bp">NSRunLoop</span> <span class="n">currentRunLoop</span><span class="p">];</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// 创建并调度第一个 timer</span>
+</span><span class='line'><span class="bp">NSDate</span><span class="o">*</span> <span class="n">futureDate</span> <span class="o">=</span> <span class="p">[</span><span class="bp">NSDate</span> <span class="nl">dateWithTimeIntervalSinceNow</span><span class="p">:</span><span class="mf">1.0</span><span class="p">];</span>
+</span><span class='line'><span class="bp">NSTimer</span><span class="o">*</span> <span class="n">myTimer</span> <span class="o">=</span> <span class="p">[[</span><span class="bp">NSTimer</span> <span class="n">alloc</span><span class="p">]</span> <span class="nl">initWithFireDate</span><span class="p">:</span><span class="n">futureDate</span>
+</span><span class='line'>                        <span class="nl">interval</span><span class="p">:</span><span class="mf">0.1</span>
+</span><span class='line'>                        <span class="nl">target</span><span class="p">:</span><span class="nb">self</span>
+</span><span class='line'>                        <span class="nl">selector</span><span class="p">:</span><span class="k">@selector</span><span class="p">(</span><span class="nl">myDoFireTimer1</span><span class="p">:)</span>
+</span><span class='line'>                        <span class="nl">userInfo</span><span class="p">:</span><span class="nb">nil</span>
+</span><span class='line'>                        <span class="nl">repeats</span><span class="p">:</span><span class="nb">YES</span><span class="p">];</span>
+</span><span class='line'><span class="p">[</span><span class="n">myRunLoop</span> <span class="nl">addTimer</span><span class="p">:</span><span class="n">myTimer</span> <span class="nl">forMode</span><span class="p">:</span><span class="n">NSDefaultRunLoopMode</span><span class="p">];</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// 创建并调动第二个 timer</span>
+</span><span class='line'><span class="p">[</span><span class="bp">NSTimer</span> <span class="nl">scheduledTimerWithTimeInterval</span><span class="p">:</span><span class="mf">0.2</span>
+</span><span class='line'>                        <span class="nl">target</span><span class="p">:</span><span class="nb">self</span>
+</span><span class='line'>                        <span class="nl">selector</span><span class="p">:</span><span class="k">@selector</span><span class="p">(</span><span class="nl">myDoFireTimer2</span><span class="p">:)</span>
+</span><span class='line'>                        <span class="nl">userInfo</span><span class="p">:</span><span class="nb">nil</span>
+</span><span class='line'>                        <span class="nl">repeats</span><span class="p">:</span><span class="nb">YES</span><span class="p">];</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h1>(未完待续。。。)</h1>
 
 <h3>配置一个基于 port 的 input source</h3>
 
@@ -734,7 +809,7 @@ line 5: <code>pod</code> 安装将利用刚才的配置更新本地镜像</p>
 
 <p>表 3-14 <span id = "liting3-14"> 使用 Mach port 启动子线程 </span></p>
 
-<p><strong>未完待续。。。</strong></p>
+<h1>(未完待续。。。)</h1>
 ]]></content>
   </entry>
   
