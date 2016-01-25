@@ -809,7 +809,7 @@ var _hmt = _hmt || [];
 
 <p><a href="#list3-12">表 3-12</a> 中展示了用于启动子工作线程的主线程代码。因为 Cocoa 框架执行很多介入步骤用于配置 port 和 run loop ，Cocoa 的 <code>launchThread</code> 方法相比于 Core Foundation 的等价功能<a href="#list3-17">表 3-17</a>更加简洁明了。尽管如此，这两个框架在这一模块的功能表现基本都是相同的。其中一个存在的差异是与发送本地 port 到工作线程的方式不同，这个方法是直接发送 NSPort 对象的。</p>
 
-<p><strong>表 3-12</strong> <span id="list3-12">Main Thread lauch method</span></p>
+<p><strong>表 3-12</strong> list3-12 Main Thread lauch method</p>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -840,7 +840,7 @@ var _hmt = _hmt || [];
 道，在
 登记信息中，你需要让工作线程发送自己的本地 port 到主线程。接收登记信息是为了让你的主线程知道开动子线程的过程进行的非常顺利，同时也为我们为提供了一种方法去向该线程发送更多信息。</p>
 
-<p>表 3-13 展示了用于主线程的<a href="https://developer.apple.com/library/ios/documentation/Cocoa/Reference/NSPortDelegate_Protocol/index.html#//apple_ref/occ/intfm/NSPortDelegate/handlePortMessage:">handlePortMessage:</a>方法，这个方法会在线程到达自己的本地 port 时进行调用。当登记信息到达时，该方法将直接从 port 信息中检索子线程的 port 并保存以备后用。</p>
+<p>表 3-13 展示了用于主线程的<a href="https://developer.apple.com/library/ios/documentation/Cocoa/Reference/NSPortDelegate_Protocol/index.html#//apple_ref/occ/intfm/NSPortDelegate/handlePortMessage:">handlePortMessage:</a>方法，这个方法会在线程到达自己的本地 port 时进行调用。当登记信息(check-in message)到达时，该方法将直接从 port 信息中检索子线程的 port 并保存以备后用。</p>
 
 <p><strong>表 3-13</strong>    <span id = "listing 3-13">处理 Mach port 信息</span></p>
 
@@ -895,9 +895,139 @@ var _hmt = _hmt || [];
 
 <p>对于工作子线程，你必须配置它并且是使用指定的端口进行信息沟通并返回到主线程。</p>
 
-<p>表 3-14 <span id = "liting3-14"> 使用 Mach port 启动子线程 </span></p>
+<p>表 3-14 展示了用于设置工作线程的代码。在创建一个 qutorealease  pool 之后，该方法会创建一个工作对象去驱动线程执行。该工作对象 的 <code>sendCheckinMessage:</code> 方法（表3-15 所示）为工作线程创建一个本地端口然后回复一个 check-in 信息给主线程。
+表 3-14 <span id = "liting3-14"> 使用 Mach port 启动子线程 </span></p>
 
-<h1>(未完待续。。。)</h1>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="p">+(</span><span class="kt">void</span><span class="p">)</span><span class="nf">LaunchThreadWithPort:</span><span class="p">(</span><span class="kt">id</span><span class="p">)</span><span class="nv">inData</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="bp">NSAutoreleasePool</span><span class="o">*</span>  <span class="n">pool</span> <span class="o">=</span> <span class="p">[[</span><span class="bp">NSAutoreleasePool</span> <span class="n">alloc</span><span class="p">]</span> <span class="n">init</span><span class="p">];</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// 设置本线程与主线程的连接 </span>
+</span><span class='line'>    <span class="bp">NSPort</span><span class="o">*</span> <span class="n">distantPort</span> <span class="o">=</span> <span class="p">(</span><span class="bp">NSPort</span><span class="o">*</span><span class="p">)</span><span class="n">inData</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">MyWorkerClass</span><span class="o">*</span>  <span class="n">workerObj</span> <span class="o">=</span> <span class="p">[[</span><span class="nb">self</span> <span class="n">alloc</span><span class="p">]</span> <span class="n">init</span><span class="p">];</span>
+</span><span class='line'>    <span class="p">[</span><span class="n">workerObj</span> <span class="nl">sendCheckinMessage</span><span class="p">:</span><span class="n">distantPort</span><span class="p">];</span>
+</span><span class='line'>    <span class="p">[</span><span class="n">distantPort</span> <span class="k">release</span><span class="p">];</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// 让 run loop 处理这些逻辑 </span>
+</span><span class='line'>    <span class="k">do</span>
+</span><span class='line'>    <span class="p">{</span>
+</span><span class='line'>        <span class="p">[[</span><span class="bp">NSRunLoop</span> <span class="n">currentRunLoop</span><span class="p">]</span> <span class="nl">runMode</span><span class="p">:</span><span class="n">NSDefaultRunLoopMode</span>
+</span><span class='line'>                            <span class="nl">beforeDate</span><span class="p">:[</span><span class="bp">NSDate</span> <span class="n">distantFuture</span><span class="p">]];</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>    <span class="k">while</span> <span class="p">(</span><span class="o">!</span><span class="p">[</span><span class="n">workerObj</span> <span class="n">shouldExit</span><span class="p">]);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="p">[</span><span class="n">workerObj</span> <span class="k">release</span><span class="p">];</span>
+</span><span class='line'>    <span class="p">[</span><span class="n">pool</span> <span class="k">release</span><span class="p">];</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>当使用 <code>NSMachPort</code> 时,本地和远端线程都可以使用相同的 port 对象 完成线程之间的单工通信（单向通信）。换句话说，通过一个线程创建的本地对象会成为另一个线程的远端 port 对象。（ps：现在总算明白本地就是当前线程环境，远端就是其他线程环境）。</p>
+
+<p>表 3-15展示了子线程的 check-in 例行程序 （登记信息例行程序）。这个方法设置了他自己的用于和以后进行通讯的本地端口。并且回复一个 check-in 登记信息给主线程。该方法使用 port 对象去接收 <code>LaunchThreadWithport:</code> 方法作为信息目标。</p>
+
+<p>表 3-15 使用 Mach port 发送 check-in 登记信息</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="c1">// Worker thread check-in method</span>
+</span><span class='line'><span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">sendCheckinMessage:</span><span class="p">(</span><span class="bp">NSPort</span><span class="o">*</span><span class="p">)</span><span class="nv">outPort</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="c1">// 保留（retain）并保存远端的 port 以备后用</span>
+</span><span class='line'>    <span class="p">[</span><span class="nb">self</span> <span class="nl">setRemotePort</span><span class="p">:</span><span class="n">outPort</span><span class="p">];</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// 创建和配置工作线程的端口（ps：当前线程端口） </span>
+</span><span class='line'>    <span class="bp">NSPort</span><span class="o">*</span> <span class="n">myPort</span> <span class="o">=</span> <span class="p">[</span><span class="bp">NSMachPort</span> <span class="n">port</span><span class="p">];</span>
+</span><span class='line'>    <span class="p">[</span><span class="n">myPort</span> <span class="nl">setDelegate</span><span class="p">:</span><span class="nb">self</span><span class="p">];</span>
+</span><span class='line'>    <span class="p">[[</span><span class="bp">NSRunLoop</span> <span class="n">currentRunLoop</span><span class="p">]</span> <span class="nl">addPort</span><span class="p">:</span><span class="n">myPort</span> <span class="nl">forMode</span><span class="p">:</span><span class="n">NSDefaultRunLoopMode</span><span class="p">];</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// 创建 check-in 登记信息</span>
+</span><span class='line'>    <span class="n">NSPortMessage</span><span class="o">*</span> <span class="n">messageObj</span> <span class="o">=</span> <span class="p">[[</span><span class="n">NSPortMessage</span> <span class="n">alloc</span><span class="p">]</span> <span class="nl">initWithSendPort</span><span class="p">:</span><span class="n">outPort</span>
+</span><span class='line'>                                         <span class="nl">receivePort</span><span class="p">:</span><span class="n">myPort</span> <span class="nl">components</span><span class="p">:</span><span class="nb">nil</span><span class="p">];</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="n">messageObj</span><span class="p">)</span>
+</span><span class='line'>    <span class="p">{</span>
+</span><span class='line'>        <span class="c1">// 完成配置信息 并 立即发送出去</span>
+</span><span class='line'>        <span class="p">[</span><span class="n">messageObj</span> <span class="nl">setMsgId</span><span class="p">:</span><span class="nl">setMsgid</span><span class="p">:</span><span class="n">kCheckinMessage</span><span class="p">];</span>
+</span><span class='line'>        <span class="p">[</span><span class="n">messageObj</span> <span class="nl">sendBeforeDate</span><span class="p">:[</span><span class="bp">NSDate</span> <span class="n">date</span><span class="p">]];</span>
+</span><span class='line'>    <span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h4>配置一个 NSMessagePort 对象</h4>
+
+<p>如果想要使用 <a href="https://developer.apple.com/library/ios/documentation/Cocoa/Reference/Foundation/Classes/NSM%20%20%20%20essagePort_Class/index.html#//apple_ref/occ/cl/NSMessagePort">NSMessagePort</a> 对象创建一个本地连接，你不能在线程间仅仅值传递一个 port 对>    象。远端信息端口必须通过名字获取。
+在Cocoa中，如果你想实现这个功能，需要使用一个指定的名字去注册你的本地端口，然后向远端线程传递注册的名字以便于他可以包含一
+    个合适的端口对象用于交流。表 3-16 展示了 port 创建方法和注册方法 用于你想要使用 消息端口（message port）的地方。</p>
+
+<p>表 3-16 注册一个 message port</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="bp">NSPort</span><span class="o">*</span> <span class="n">localPort</span> <span class="o">=</span> <span class="p">[[</span><span class="bp">NSMessagePort</span> <span class="n">alloc</span><span class="p">]</span> <span class="n">init</span><span class="p">];</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// 配置对象并将它添加到当前 run loop 中去</span>
+</span><span class='line'><span class="p">[</span><span class="n">localPort</span> <span class="nl">setDelegate</span><span class="p">:</span><span class="nb">self</span><span class="p">];</span>
+</span><span class='line'><span class="p">[[</span><span class="bp">NSRunLoop</span> <span class="n">currentRunLoop</span><span class="p">]</span> <span class="nl">addPort</span><span class="p">:</span><span class="n">localPort</span> <span class="nl">forMode</span><span class="p">:</span><span class="n">NSDefaultRunLoopMode</span><span class="p">];</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// 使用指定的名字注册端口。名字必须唯一。</span>
+</span><span class='line'><span class="bp">NSString</span><span class="o">*</span> <span class="n">localPortName</span> <span class="o">=</span> <span class="p">[</span><span class="bp">NSString</span> <span class="nl">stringWithFormat</span><span class="p">:</span><span class="s">@&quot;MyPortName&quot;</span><span class="p">];</span>
+</span><span class='line'><span class="p">[[</span><span class="n">NSMessagePortNameServer</span> <span class="n">sharedInstance</span><span class="p">]</span> <span class="nl">registerPort</span><span class="p">:</span><span class="n">localPort</span>
+</span><span class='line'><span class="nl">name</span><span class="p">:</span><span class="n">localPortName</span><span class="p">];</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p> (未完待续。。。)</p>
 </div>
 
 

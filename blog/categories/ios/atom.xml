@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Ios | SuperYang`s Blog]]></title>
   <link href="http://yangchao0033.github.io/blog/categories/ios/atom.xml" rel="self"/>
   <link href="http://yangchao0033.github.io/"/>
-  <updated>2016-01-25T10:28:17+08:00</updated>
+  <updated>2016-01-25T13:42:17+08:00</updated>
   <id>http://yangchao0033.github.io/</id>
   <author>
     <name><![CDATA[Super Yang]]></name>
@@ -619,7 +619,7 @@ static AppDelegate *_instance;
 
 <p><a href="#list3-12">表 3-12</a> 中展示了用于启动子工作线程的主线程代码。因为 Cocoa 框架执行很多介入步骤用于配置 port 和 run loop ，Cocoa 的 <code>launchThread</code> 方法相比于 Core Foundation 的等价功能<a href="#list3-17">表 3-17</a>更加简洁明了。尽管如此，这两个框架在这一模块的功能表现基本都是相同的。其中一个存在的差异是与发送本地 port 到工作线程的方式不同，这个方法是直接发送 NSPort 对象的。</p>
 
-<p><strong>表 3-12</strong> <span id="list3-12">Main Thread lauch method</span></p>
+<p><strong>表 3-12</strong> list3-12 Main Thread lauch method</p>
 
 <pre><code class="objc">- (void)launchThread {
     NSPort *myPort = [NSMachPort port];
@@ -638,7 +638,7 @@ static AppDelegate *_instance;
 道，在
 登记信息中，你需要让工作线程发送自己的本地 port 到主线程。接收登记信息是为了让你的主线程知道开动子线程的过程进行的非常顺利，同时也为我们为提供了一种方法去向该线程发送更多信息。</p>
 
-<p>表 3-13 展示了用于主线程的<a href="https://developer.apple.com/library/ios/documentation/Cocoa/Reference/NSPortDelegate_Protocol/index.html#//apple_ref/occ/intfm/NSPortDelegate/handlePortMessage:">handlePortMessage:</a>方法，这个方法会在线程到达自己的本地 port 时进行调用。当登记信息到达时，该方法将直接从 port 信息中检索子线程的 port 并保存以备后用。</p>
+<p>表 3-13 展示了用于主线程的<a href="https://developer.apple.com/library/ios/documentation/Cocoa/Reference/NSPortDelegate_Protocol/index.html#//apple_ref/occ/intfm/NSPortDelegate/handlePortMessage:">handlePortMessage:</a>方法，这个方法会在线程到达自己的本地 port 时进行调用。当登记信息(check-in message)到达时，该方法将直接从 port 信息中检索子线程的 port 并保存以备后用。</p>
 
 <p><strong>表 3-13</strong>    <span id = "listing 3-13">处理 Mach port 信息</span></p>
 
@@ -671,9 +671,83 @@ static AppDelegate *_instance;
 
 <p>对于工作子线程，你必须配置它并且是使用指定的端口进行信息沟通并返回到主线程。</p>
 
-<p>表 3-14 <span id = "liting3-14"> 使用 Mach port 启动子线程 </span></p>
+<p>表 3-14 展示了用于设置工作线程的代码。在创建一个 qutorealease  pool 之后，该方法会创建一个工作对象去驱动线程执行。该工作对象 的 <code>sendCheckinMessage:</code> 方法（表3-15 所示）为工作线程创建一个本地端口然后回复一个 check-in 信息给主线程。
+表 3-14 <span id = "liting3-14"> 使用 Mach port 启动子线程 </span></p>
 
-<h1>(未完待续。。。)</h1>
+<pre><code class="objc">+(void)LaunchThreadWithPort:(id)inData
+{
+    NSAutoreleasePool*  pool = [[NSAutoreleasePool alloc] init];
+
+    // 设置本线程与主线程的连接 
+    NSPort* distantPort = (NSPort*)inData;
+
+    MyWorkerClass*  workerObj = [[self alloc] init];
+    [workerObj sendCheckinMessage:distantPort];
+    [distantPort release];
+
+    // 让 run loop 处理这些逻辑 
+    do
+    {
+        [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode
+                            beforeDate:[NSDate distantFuture]];
+    }
+    while (![workerObj shouldExit]);
+
+    [workerObj release];
+    [pool release];
+}
+</code></pre>
+
+<p>当使用 <code>NSMachPort</code> 时,本地和远端线程都可以使用相同的 port 对象 完成线程之间的单工通信（单向通信）。换句话说，通过一个线程创建的本地对象会成为另一个线程的远端 port 对象。（ps：现在总算明白本地就是当前线程环境，远端就是其他线程环境）。</p>
+
+<p>表 3-15展示了子线程的 check-in 例行程序 （登记信息例行程序）。这个方法设置了他自己的用于和以后进行通讯的本地端口。并且回复一个 check-in 登记信息给主线程。该方法使用 port 对象去接收 <code>LaunchThreadWithport:</code> 方法作为信息目标。</p>
+
+<p>表 3-15 使用 Mach port 发送 check-in 登记信息</p>
+
+<pre><code class="objc">// Worker thread check-in method
+- (void)sendCheckinMessage:(NSPort*)outPort
+{
+    // 保留（retain）并保存远端的 port 以备后用
+    [self setRemotePort:outPort];
+
+    // 创建和配置工作线程的端口（ps：当前线程端口）    
+    NSPort* myPort = [NSMachPort port];
+    [myPort setDelegate:self];
+    [[NSRunLoop currentRunLoop] addPort:myPort forMode:NSDefaultRunLoopMode];
+
+    // 创建 check-in 登记信息
+    NSPortMessage* messageObj = [[NSPortMessage alloc] initWithSendPort:outPort
+                                         receivePort:myPort components:nil];
+
+    if (messageObj)
+    {
+        // 完成配置信息 并 立即发送出去
+        [messageObj setMsgId:setMsgid:kCheckinMessage];
+        [messageObj sendBeforeDate:[NSDate date]];
+    }
+</code></pre>
+
+<h4>配置一个 NSMessagePort 对象</h4>
+
+<p>如果想要使用 <a href="https://developer.apple.com/library/ios/documentation/Cocoa/Reference/Foundation/Classes/NSM%20%20%20%20essagePort_Class/index.html#//apple_ref/occ/cl/NSMessagePort">NSMessagePort</a> 对象创建一个本地连接，你不能在线程间仅仅值传递一个 port 对>    象。远端信息端口必须通过名字获取。
+在Cocoa中，如果你想实现这个功能，需要使用一个指定的名字去注册你的本地端口，然后向远端线程传递注册的名字以便于他可以包含一
+    个合适的端口对象用于交流。表 3-16 展示了 port 创建方法和注册方法 用于你想要使用 消息端口（message port）的地方。</p>
+
+<p>表 3-16 注册一个 message port</p>
+
+<pre><code class="objc">NSPort* localPort = [[NSMessagePort alloc] init];
+
+// 配置对象并将它添加到当前 run loop 中去
+[localPort setDelegate:self];
+[[NSRunLoop currentRunLoop] addPort:localPort forMode:NSDefaultRunLoopMode];
+
+// 使用指定的名字注册端口。名字必须唯一。
+NSString* localPortName = [NSString stringWithFormat:@"MyPortName"];
+[[NSMessagePortNameServer sharedInstance] registerPort:localPort
+name:localPortName];
+</code></pre>
+
+<p> (未完待续。。。)</p>
 ]]></content>
   </entry>
   
