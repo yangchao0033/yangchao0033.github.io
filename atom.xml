@@ -4,7 +4,7 @@
   <title><![CDATA[SuperYang`s Blog]]></title>
   <link href="http://yangchao0033.github.io/atom.xml" rel="self"/>
   <link href="http://yangchao0033.github.io/"/>
-  <updated>2016-01-22T18:20:01+08:00</updated>
+  <updated>2016-01-25T10:28:17+08:00</updated>
   <id>http://yangchao0033.github.io/</id>
   <author>
     <name><![CDATA[Super Yang]]></name>
@@ -707,7 +707,24 @@ line 5: <code>pod</code> 安装将利用刚才的配置更新本地镜像</p>
 </span></code></pre></td></tr></table></div></figure>
 
 
-<h1>(未完待续。。。)</h1>
+<p>表3-11 展示了使用 Core Foundation 框架时需要配置的代码。尽管实例代码中没有传递任何用户自定义的信息的上下文结构，但是你可以使>用这个结构去传递任何你的 timer 所需要自定义数据。关于更多该结构的内容可以浏览 <a href="https://developer.apple.com/library/ios/documentation/CoreFoundation/Reference/CFRunLoopTimerRef/index.html#//apple_ref/doc/uid/20001444">CFRunLoopTimer 参考</a>。</p>
+
+<p>表 3-11 使用 Core Foundation 框架创建和调度一个 timer</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="n">CFRunLoopRef</span> <span class="n">runLoop</span> <span class="o">=</span> <span class="n">CFRunLoopGetCurrent</span><span class="p">();</span>
+</span><span class='line'><span class="n">CFRunLoopTimerContext</span> <span class="n">context</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">};</span>
+</span><span class='line'><span class="n">CFRunLoopTimerRef</span> <span class="n">timer</span> <span class="o">=</span> <span class="n">CFRunLoopTimerCreate</span><span class="p">(</span><span class="n">kCFAllocatorDefault</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span>
+</span><span class='line'>                                        <span class="o">&amp;</span><span class="n">myCFTimerCallback</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">context</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">CFRunLoopAddTimer</span><span class="p">(</span><span class="n">runLoop</span><span class="p">,</span> <span class="n">timer</span><span class="p">,</span> <span class="n">kCFRunLoopCommonModes</span><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
 
 <h3>配置一个基于 port 的 input source</h3>
 
