@@ -9,7 +9,7 @@
   <meta name="author" content="Super Yang">
 
   
-  <meta name="description" content="使用 Run Loop 对象 一个 run loop 对象提供了一些主要接口用于向你的 run loop 中添加 input source ，timers， 和run loop observer，并且运行它。每一条线程有且只有一个run loop 与他相关联。在 Cocoa 中，这个对象是 &hellip;">
+  <meta name="description" content="接RunLoop深度探究(四) 使用 Run Loop 对象 一个 run loop 对象提供了一些主要接口用于向你的 run loop 中添加 input source ，timers， 和run loop observer，并且运行它。每一条线程有且只有一个run loop 与他相关联。在 &hellip;">
   <meta name="keywords" content="RunLoop, 官方译文, RunLoop深度探究">
 
   <!-- http://t.co/dKP3o1e -->
@@ -136,7 +136,9 @@ var _hmt = _hmt || [];
   </header>
 
 
-<div class="entry-content"><h2>使用 Run Loop 对象</h2>
+<div class="entry-content"><p> 接<a href="http://superyang.gitcafe.io/blog/2016/01/08/runloopshen-du-tan-jiu-(4)/">RunLoop深度探究(四)</a></p>
+
+<h2>使用 Run Loop 对象</h2>
 
 <p>一个 run loop 对象提供了一些主要接口用于向你的 run loop 中添加 input source ，timers， 和run loop observer，并且运行它。每一条线程有且只有一个run loop 与他相关联。在 Cocoa 中，这个对象是 <a href="https://developer.apple.com/library/ios/documentation/Cocoa/Reference/Foundation/Classes/NSRunLoop_Class/index.html#//apple_ref/occ/cl/NSRunLoop">NSRunLoop</a> 类的一个实例。在底层的应用中，它是指向 <a href="https://developer.apple.com/library/ios/documentation/CoreFoundation/Reference/CFRunLoopRef/index.html#//apple_ref/c/tdef/CFRunLoopRef">CFRunLoopRef</a> 这种不透明类型的一个指针。</p>
 
@@ -1027,7 +1029,352 @@ var _hmt = _hmt || [];
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p> (未完待续。。。)</p>
+<h4>在 Core Foundation 框架中配置一个基于端口的（Port-Based） input source</h4>
+
+<p>这个小结描述了如歌使用 Core Foundation 框架在你的应用的主线程和辅助线程（worker thread）中创建一个双向通信信道。</p>
+
+<p>如表3-17 所示为应用主线程启动辅助线程所使用的代码。首先要做的是创建 <a href="https://developer.apple.com/library/ios/documentation/CoreFoundation/Reference/CFMessagePortRef/index.html#//apple_ref/c/tdef/CFMessagePortRef">CFMessagePortRef</a> 不透明对象去监听从辅助线程发来的消息。辅助线程需要用来创建连接的端口名，以便于字符串值可以被发送到辅助线程的入口点函数。端口名在当前用户的上线文中通常必须是唯一的。否则，可能会出现运行冲突。</p>
+
+<p>表 3-17 给新线程关联一个 Core Foundation message port</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="cp">#define kThreadStackSize        (8 *4096)</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">OSStatus</span> <span class="nf">MySpawnThread</span><span class="p">()</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="c1">// 创建一个本地端口用于接受响应</span>
+</span><span class='line'>    <span class="n">CFStringRef</span> <span class="n">myPortName</span><span class="p">;</span>
+</span><span class='line'>    <span class="n">CFMessagePortRef</span> <span class="n">myPort</span><span class="p">;</span>
+</span><span class='line'>    <span class="n">CFRunLoopSourceRef</span> <span class="n">rlSource</span><span class="p">;</span>
+</span><span class='line'>    <span class="n">CFMessagePortContext</span> <span class="n">context</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">};</span>
+</span><span class='line'>    <span class="kt">Boolean</span> <span class="n">shouldFreeInfo</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// 用端口名 创建一个符合规范的字符串</span>
+</span><span class='line'>    <span class="n">myPortName</span> <span class="o">=</span> <span class="n">CFStringCreateWithFormat</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="n">CFSTR</span><span class="p">(</span><span class="s">&quot;com.myapp.MainThread&quot;</span><span class="p">));</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// 创建端口</span>
+</span><span class='line'>    <span class="n">myPort</span> <span class="o">=</span> <span class="n">CFMessagePortCreateLocal</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span>
+</span><span class='line'>                <span class="n">myPortName</span><span class="p">,</span>
+</span><span class='line'>                <span class="o">&amp;</span><span class="n">MainThreadResponseHandler</span><span class="p">,</span>
+</span><span class='line'>                <span class="o">&amp;</span><span class="n">context</span><span class="p">,</span>
+</span><span class='line'>                <span class="o">&amp;</span><span class="n">shouldFreeInfo</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="n">myPort</span> <span class="o">!=</span> <span class="nb">NULL</span><span class="p">)</span>
+</span><span class='line'>    <span class="p">{</span>
+</span><span class='line'>        <span class="c1">// 端口已经被成功创建</span>
+</span><span class='line'>        <span class="c1">// 现在为他创建 run loop source</span>
+</span><span class='line'>        <span class="n">rlSource</span> <span class="o">=</span> <span class="n">CFMessagePortCreateRunLoopSource</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="n">myPort</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="k">if</span> <span class="p">(</span><span class="n">rlSource</span><span class="p">)</span>
+</span><span class='line'>        <span class="p">{</span>
+</span><span class='line'>            <span class="c1">// 为当前 run loop 添加 source</span>
+</span><span class='line'>            <span class="n">CFRunLoopAddSource</span><span class="p">(</span><span class="n">CFRunLoopGetCurrent</span><span class="p">(),</span> <span class="n">rlSource</span><span class="p">,</span> <span class="n">kCFRunLoopDefaultMode</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>            <span class="c1">// 一旦安装结束，这些资源需要被释放</span>
+</span><span class='line'>            <span class="n">CFRelease</span><span class="p">(</span><span class="n">myPort</span><span class="p">);</span>
+</span><span class='line'>            <span class="n">CFRelease</span><span class="p">(</span><span class="n">rlSource</span><span class="p">);</span>
+</span><span class='line'>        <span class="p">}</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// 创建线程并且继续处理任务</span>
+</span><span class='line'>    <span class="n">MPTaskID</span>        <span class="n">taskID</span><span class="p">;</span>
+</span><span class='line'>    <span class="k">return</span><span class="p">(</span><span class="n">MPCreateTask</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ServerThreadEntryPoint</span><span class="p">,</span>
+</span><span class='line'>                    <span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="p">)</span><span class="n">myPortName</span><span class="p">,</span>
+</span><span class='line'>                    <span class="n">kThreadStackSize</span><span class="p">,</span>
+</span><span class='line'>                    <span class="nb">NULL</span><span class="p">,</span>
+</span><span class='line'>                    <span class="nb">NULL</span><span class="p">,</span>
+</span><span class='line'>                    <span class="nb">NULL</span><span class="p">,</span>
+</span><span class='line'>                    <span class="mi">0</span><span class="p">,</span>
+</span><span class='line'>                    <span class="o">&amp;</span><span class="n">taskID</span><span class="p">));</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>如果 port 端口已经被安装并且线程已经启动，主线程就可以继续定期的执行去等待辅助线程的 check-in 登记信息。一旦 check-in 登记信息到达，它将会被指派到主线程的 <code>MainThreadResponseHandler</code> 函数中，如表 3-18 所示，这个函数提取辅助线程的端口名并且创建通信管道。</p>
+
+<p>表 3-18 接收 check-in 登记信息</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="cp">#define kCheckinMessage 100</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// 主线程端口信息处理函数</span>
+</span><span class='line'><span class="n">CFDataRef</span> <span class="nf">MainThreadResponseHandler</span><span class="p">(</span><span class="n">CFMessagePortRef</span> <span class="n">local</span><span class="p">,</span>
+</span><span class='line'>                    <span class="kt">SInt32</span> <span class="n">msgid</span><span class="p">,</span>
+</span><span class='line'>                    <span class="n">CFDataRef</span> <span class="n">data</span><span class="p">,</span>
+</span><span class='line'>                    <span class="kt">void</span><span class="o">*</span> <span class="n">info</span><span class="p">)</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="n">msgid</span> <span class="o">==</span> <span class="n">kCheckinMessage</span><span class="p">)</span>
+</span><span class='line'>    <span class="p">{</span>
+</span><span class='line'>        <span class="n">CFMessagePortRef</span> <span class="n">messagePort</span><span class="p">;</span>
+</span><span class='line'>        <span class="n">CFStringRef</span> <span class="n">threadPortName</span><span class="p">;</span>
+</span><span class='line'>        <span class="n">CFIndex</span> <span class="n">bufferLength</span> <span class="o">=</span> <span class="n">CFDataGetLength</span><span class="p">(</span><span class="n">data</span><span class="p">);</span>
+</span><span class='line'>        <span class="kt">UInt8</span><span class="o">*</span> <span class="n">buffer</span> <span class="o">=</span> <span class="n">CFAllocatorAllocate</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="n">bufferLength</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="n">CFDataGetBytes</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">CFRangeMake</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">bufferLength</span><span class="p">),</span> <span class="n">buffer</span><span class="p">);</span>
+</span><span class='line'>        <span class="n">threadPortName</span> <span class="o">=</span> <span class="n">CFStringCreateWithBytes</span> <span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="n">buffer</span><span class="p">,</span> <span class="n">bufferLength</span><span class="p">,</span> <span class="n">kCFStringEncodingASCII</span><span class="p">,</span> <span class="nb">FALSE</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="c1">// 你必须通过一个 port 名获取远端信息</span>
+</span><span class='line'>        <span class="n">messagePort</span> <span class="o">=</span> <span class="n">CFMessagePortCreateRemote</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="p">(</span><span class="n">CFStringRef</span><span class="p">)</span><span class="n">threadPortName</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="k">if</span> <span class="p">(</span><span class="n">messagePort</span><span class="p">)</span>
+</span><span class='line'>        <span class="p">{</span>
+</span><span class='line'>      <span class="c1">// 保留并保存线程的 comm 端口 以备后用</span>
+</span><span class='line'>            <span class="n">AddPortToListOfActiveThreads</span><span class="p">(</span><span class="n">messagePort</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>            <span class="c1">// 如果端口在先前的 函数 中保留了（retain），在这里释放资源</span>
+</span><span class='line'>            <span class="n">CFRelease</span><span class="p">(</span><span class="n">messagePort</span><span class="p">);</span>
+</span><span class='line'>        <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="c1">// 释放资源</span>
+</span><span class='line'>        <span class="n">CFRelease</span><span class="p">(</span><span class="n">threadPortName</span><span class="p">);</span>
+</span><span class='line'>        <span class="n">CFAllocatorDeallocate</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="n">buffer</span><span class="p">);</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>    <span class="k">else</span>
+</span><span class='line'>    <span class="p">{</span>
+</span><span class='line'>        <span class="c1">// 处理其他信息</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">return</span> <span class="nb">NULL</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>主线程配置完成后，唯一要做的就是为新创建的辅助线程创建它自己的 端口和 登记自己的 message。表 3-19 所示为辅助线程的入口点函数。函数提取了主线程的 port 名并且用它创建了一个远端的连接回复主线程。之后函数为自己创建一个本地端口，将端口 port 安装到线程的 runloop 中去，然后给主线程发送一个包含本地端口名的 check-in 登记信息。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+<span class='line-number'>67</span>
+<span class='line-number'>68</span>
+<span class='line-number'>69</span>
+<span class='line-number'>70</span>
+<span class='line-number'>71</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="n">OSStatus</span> <span class="nf">ServerThreadEntryPoint</span><span class="p">(</span><span class="kt">void</span><span class="o">*</span> <span class="n">param</span><span class="p">)</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="c1">// 创建连接到主线程的远端端口</span>
+</span><span class='line'>    <span class="n">CFMessagePortRef</span> <span class="n">mainThreadPort</span><span class="p">;</span>
+</span><span class='line'>    <span class="n">CFStringRef</span> <span class="n">portName</span> <span class="o">=</span> <span class="p">(</span><span class="n">CFStringRef</span><span class="p">)</span><span class="n">param</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">mainThreadPort</span> <span class="o">=</span> <span class="n">CFMessagePortCreateRemote</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="n">portName</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// 释放被用于参数传递的字符串</span>
+</span><span class='line'>    <span class="n">CFRelease</span><span class="p">(</span><span class="n">portName</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// 为辅助才女创建一个本地端口</span>
+</span><span class='line'>    <span class="n">CFStringRef</span> <span class="n">myPortName</span> <span class="o">=</span> <span class="n">CFStringCreateWithFormat</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="n">CFSTR</span><span class="p">(</span><span class="s">&quot;com.MyApp.Thread-%d&quot;</span><span class="p">),</span> <span class="n">MPCurrentTaskID</span><span class="p">());</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// 保存线程上下文信息中的端口，以便之后使用。</span>
+</span><span class='line'>    <span class="n">CFMessagePortContext</span> <span class="n">context</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">,</span> <span class="n">mainThreadPort</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">};</span>
+</span><span class='line'>    <span class="kt">Boolean</span> <span class="n">shouldFreeInfo</span><span class="p">;</span>
+</span><span class='line'>    <span class="kt">Boolean</span> <span class="n">shouldAbort</span> <span class="o">=</span> <span class="nb">TRUE</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">CFMessagePortRef</span> <span class="n">myPort</span> <span class="o">=</span> <span class="n">CFMessagePortCreateLocal</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span>
+</span><span class='line'>                <span class="n">myPortName</span><span class="p">,</span>
+</span><span class='line'>                <span class="o">&amp;</span><span class="n">ProcessClientRequest</span><span class="p">,</span>
+</span><span class='line'>                <span class="o">&amp;</span><span class="n">context</span><span class="p">,</span>
+</span><span class='line'>                <span class="o">&amp;</span><span class="n">shouldFreeInfo</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="n">shouldFreeInfo</span><span class="p">)</span>
+</span><span class='line'>    <span class="p">{</span>
+</span><span class='line'>        <span class="c1">// 如果不能创建本地端口，则杀死线程</span>
+</span><span class='line'>        <span class="n">MPExit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">CFRunLoopSourceRef</span> <span class="n">rlSource</span> <span class="o">=</span> <span class="n">CFMessagePortCreateRunLoopSource</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="n">myPort</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">rlSource</span><span class="p">)</span>
+</span><span class='line'>    <span class="p">{</span>
+</span><span class='line'>        <span class="c1">// 如果不能创建本地端口，则杀死线程</span>
+</span><span class='line'>        <span class="n">MPExit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// 给 runloop 添加source</span>
+</span><span class='line'>    <span class="n">CFRunLoopAddSource</span><span class="p">(</span><span class="n">CFRunLoopGetCurrent</span><span class="p">(),</span> <span class="n">rlSource</span><span class="p">,</span> <span class="n">kCFRunLoopDefaultMode</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// 一旦线程安装完毕，这些资源需要释放</span>
+</span><span class='line'>    <span class="n">CFRelease</span><span class="p">(</span><span class="n">myPort</span><span class="p">);</span>
+</span><span class='line'>    <span class="n">CFRelease</span><span class="p">(</span><span class="n">rlSource</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// 打包端口名，并发送 check-in 信息。</span>
+</span><span class='line'>    <span class="n">CFDataRef</span> <span class="n">returnData</span> <span class="o">=</span> <span class="nb">nil</span><span class="p">;</span>
+</span><span class='line'>    <span class="n">CFDataRef</span> <span class="n">outData</span><span class="p">;</span>
+</span><span class='line'>    <span class="n">CFIndex</span> <span class="n">stringLength</span> <span class="o">=</span> <span class="n">CFStringGetLength</span><span class="p">(</span><span class="n">myPortName</span><span class="p">);</span>
+</span><span class='line'>    <span class="kt">UInt8</span><span class="o">*</span> <span class="n">buffer</span> <span class="o">=</span> <span class="n">CFAllocatorAllocate</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="n">stringLength</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">CFStringGetBytes</span><span class="p">(</span><span class="n">myPortName</span><span class="p">,</span>
+</span><span class='line'>                <span class="n">CFRangeMake</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">stringLength</span><span class="p">),</span>
+</span><span class='line'>                <span class="n">kCFStringEncodingASCII</span><span class="p">,</span>
+</span><span class='line'>                <span class="mi">0</span><span class="p">,</span>
+</span><span class='line'>                <span class="nb">FALSE</span><span class="p">,</span>
+</span><span class='line'>                <span class="n">buffer</span><span class="p">,</span>
+</span><span class='line'>                <span class="n">stringLength</span><span class="p">,</span>
+</span><span class='line'>                <span class="nb">NULL</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">outData</span> <span class="o">=</span> <span class="n">CFDataCreate</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="n">buffer</span><span class="p">,</span> <span class="n">stringLength</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">CFMessagePortSendRequest</span><span class="p">(</span><span class="n">mainThreadPort</span><span class="p">,</span> <span class="n">kCheckinMessage</span><span class="p">,</span> <span class="n">outData</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// 清除线程数据结构</span>
+</span><span class='line'>    <span class="n">CFRelease</span><span class="p">(</span><span class="n">outData</span><span class="p">);</span>
+</span><span class='line'>    <span class="n">CFAllocatorDeallocate</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="n">buffer</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// 进入 runloop</span>
+</span><span class='line'>    <span class="n">CFRunLoopRun</span><span class="p">();</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>一旦进入 runloop，所有发送给线程端口的事件会被 <code>ProcessClientRequest</code> 函数处理。该函数的实现依赖于工作线程的类型，这里暂不做介绍。</p>
 </div>
 
 
@@ -1136,7 +1483,7 @@ ds.charset = 'UTF-8';
 <section>
   <h1>Categories</h1>
   <ul id="categories">
-    <li class='category'><a href='/blog/categories/ios/'>ios (12)</a></li>
+    <li class='category'><a href='/blog/categories/ios/'>ios (13)</a></li>
 <li class='category'><a href='/blog/categories/时光留声机/'>时光留声机 (1)</a></li>
 
   </ul>
@@ -1144,6 +1491,10 @@ ds.charset = 'UTF-8';
 <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/01/26/coretextji-chu/">CoreText基础概念（扫盲篇）</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2016/01/18/cocoapod-version-update/">CocoaPod Version Update</a>
@@ -1159,10 +1510,6 @@ ds.charset = 'UTF-8';
     
       <li class="post">
         <a href="/blog/2016/01/07/runloopshen-du-tan-jiu-(3)/">RunLoop深度探究（三）</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/01/07/runloopshen-du-tan-jiu-(er-)/">RunLoop深度探究（二）</a>
       </li>
     
   </ul>

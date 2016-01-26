@@ -4,7 +4,7 @@
   <title><![CDATA[SuperYang`s Blog]]></title>
   <link href="http://yangchao0033.github.io/atom.xml" rel="self"/>
   <link href="http://yangchao0033.github.io/"/>
-  <updated>2016-01-25T13:42:17+08:00</updated>
+  <updated>2016-01-26T18:09:26+08:00</updated>
   <id>http://yangchao0033.github.io/</id>
   <author>
     <name><![CDATA[Super Yang]]></name>
@@ -12,6 +12,597 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[CoreText基础概念（扫盲篇）]]></title>
+    <link href="http://yangchao0033.github.io/blog/2016/01/26/coretextji-chu/"/>
+    <updated>2016-01-26T18:00:48+08:00</updated>
+    <id>http://yangchao0033.github.io/blog/2016/01/26/coretextji-chu</id>
+    <content type="html"><![CDATA[<h2>CoreText 基础扫盲（阅读源码必看了）</h2>
+
+<p>这段时间阅读ibireme神的源码，看到了 CoreText 排版这一块，里面包含了很多文字排版的专有名词，这里做一下整理，顺便帮大家安利一下。</p>
+
+<p>CoreText 框架中最常用的几个类：</p>
+
+<ul>
+<li><a href="https://developer.apple.com/library/mac/documentation/Carbon/Reference/CTFontRef/Reference/reference.html#//apple_ref/doc/uid/TP40005110">CTFont</a></li>
+<li><a href="https://developer.apple.com/library/mac/documentation/Carbon/Reference/CTFontCollectionRef/Reference/reference.html#//apple_ref/doc/uid/TP40005104">CTFontCollection</a></li>
+<li><a href="https://developer.apple.com/library/mac/documentation/Carbon/Reference/CTFontDescriptorRef/Reference/reference.html#//apple_ref/doc/uid/TP40005107">CTFontDescriptor</a></li>
+<li><a href="https://developer.apple.com/library/mac/documentation/Carbon/Reference/CTFrameRef/Reference/reference.html#//apple_ref/doc/uid/TP40005113">CTFrame</a></li>
+<li><a href="https://developer.apple.com/library/mac/documentation/Carbon/Reference/CTFramesetterRef/Reference/reference.html#//apple_ref/doc/uid/TP40005105">CTFramesetter</a></li>
+<li><a href="https://developer.apple.com/library/mac/documentation/Carbon/Reference/CTGlyphInfoRef/Reference/reference.html#//apple_ref/doc/uid/TP40005108">CTGlyphInfo</a></li>
+<li><a href="https://developer.apple.com/library/mac/documentation/Carbon/Reference/CTLineRef/Reference/reference.html#//apple_ref/doc/uid/TP40005111">CTLine</a></li>
+<li><a href="https://developer.apple.com/library/mac/documentation/Carbon/Reference/CTParagraphStyleRef/Reference/reference.html#//apple_ref/doc/uid/TP40005114">CTParagraphStyle</a></li>
+<li><a href="https://developer.apple.com/library/mac/documentation/Carbon/Reference/CTRunRef/Reference/reference.html#//apple_ref/doc/uid/TP40005106">CTRun</a></li>
+<li><a href="https://developer.apple.com/library/mac/documentation/Carbon/Reference/CTTextTabRef/Reference/reference.html#//apple_ref/doc/uid/TP40005109">CTTextTab</a></li>
+<li><a href="https://developer.apple.com/library/mac/documentation/Carbon/Reference/CTTypesetterRef/Reference/reference.html#//apple_ref/doc/uid/TP40005112">CTTypesett</a></li>
+</ul>
+
+
+<p>下面是该框架的结构图</p>
+
+<!--more-->
+
+
+<p><img src="https://github.com/yangchao0033/blog/blob/master/ios/2016/1/image/CoreText%E6%9E%B6%E6%9E%84%E5%9B%BE.png?raw=true" alt="coretext架构图" /></p>
+
+<p>CTFrame 作为一个整体的画布(Canvas)，其中由行(CTLine)组成，而每行可以分为一个或多个小方块（CTRun）。
+注意：你不需要自己创建CTRun，Core Text将根据NSAttributedString的属性来自动创建CTRun。每个CTRun对象对应不同的属性，正因此，你可以自由的控制字体、颜色、字间距等等信息。
+通常处理步聚：
+1.使用core text就是先有一个要显示的string，然后定义这个string每个部分的样式－>attributedString －> 生成 CTFramesetter -> 得到CTFrame -> 绘制（CTFrameDraw）
+其中可以更详细的设置换行方式，对齐方式，绘制区域的大小等。
+2.绘制只是显示，点击事件就需要一个判断了。
+CTFrame 包含了多个CTLine,并且可以得到各个line的其实位置与大小。判断点击处在不在某个line上。CTLine 又可以判断这个点(相对于ctline的坐标)处的文字范围。然后遍历这个string的所有NSTextCheckingResult，根据result的rang判断点击处在不在这个rang上，从而得到点击的链接与位置。</p>
+
+<h3>字体的基本知识</h3>
+
+<p><strong>字体(Font):</strong>是一系列字号、样式和磅值相同的字符(例如:10磅黑体Palatino)。现多被视为字样的同义词</p>
+
+<p><strong>字面(Face):</strong>是所有字号的磅值和格式的综合</p>
+
+<p><strong>字体集(Font family):</strong>是一组相关字体(例如:Franklin family包括Franklin Gothic、Fran-klinHeavy和Franklin Compressed)</p>
+
+<p><strong>磅值(Weight):</strong>用于描述字体粗度。典型的磅值,从最粗到最细,有极细、细、book、中等、半粗、粗、较粗、极粗</p>
+
+<p><strong>样式(Style):</strong>字形有三种形式:Roman type是直体;oblique type是斜体;utakuc type是斜体兼曲线(比Roman type更像书法体)。</p>
+
+<p><strong>x高度(X height):</strong>指小写字母的平均高度(以x为基准)。磅值相同的两字母,x高度越大的字母看起来比x高度小的字母要大</p>
+
+<p><strong>Cap高度(Cap height):</strong>与x高度相似。指大写字母的平均高度(以C为基准)</p>
+
+<p><strong>下行字母(Descender):</strong>例如在字母q中,基线以下的字母部分叫下伸部分</p>
+
+<p><strong>上行字母(Ascender):</strong>x高度以上的部分(比如字母b)叫做上伸部分</p>
+
+<p><strong>基线(Baseline):</strong>通常在x、v、b、m下的那条线
+描边(Stroke):组成字符的线或曲线。可以加粗或改变字符形状</p>
+
+<p><strong>衬线(Serif):</strong>用来使字符更可视的一条水平线。如字母左上角和下部的水平线。</p>
+
+<p><strong>无衬线(Sans Serif):</strong>可以让排字员不使用衬线装饰。</p>
+
+<p><strong>方形字(Block):</strong>这种字体的笔画使字符看起来比无衬线字更显眼,但还不到常见的衬线字的程度。例如Lubalin Graph就是方形字,这种字看起来好像是木头块刻的一样</p>
+
+<p><strong>手写体脚本(Calligraphic script):</strong>是一种仿效手写体的字体。例如Murray Hill或者Fraktur字体</p>
+
+<p><strong>艺术字(Decorative):</strong>像绘画般的字体</p>
+
+<p><strong>Pi符号(Pisymbol):</strong>非标准的字母数字字符的特殊符号。例如Wingdings和Mathematical Pi</p>
+
+<p><strong>连写(Ligature):</strong>是一系列连写字母如fi、fl、ffi或ffl。由于字些字母形状的原因经常被连写,故排字员已习惯将它们连写。</p>
+
+<p>读完了上面这些概念，可以参考一下下面的图片，看看具体的位置</p>
+
+<p><img src="https://github.com/yangchao0033/blog/blob/master/ios/2016/1/image/%E6%96%87%E5%AD%97%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%860.gif?raw=true" alt="文字结构" />
+<img src="https://github.com/yangchao0033/blog/blob/master/ios/2016/1/image/%E6%96%87%E5%AD%97%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%861.gif?raw=true" alt="文字结构" /></p>
+
+<p>其中，在 Apple 的 SDK 中是这样定义这些属性的</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="k">const</span> <span class="n">CFStringRef</span> <span class="n">kCTCharacterShapeAttributeName</span><span class="p">;</span>
+</span><span class='line'><span class="c1">//字体形状属性  必须是CFNumberRef对象默认为0，非0则对应相应的字符形状定义，如1表示传统字符形状</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">const</span> <span class="n">CFStringRef</span> <span class="n">kCTFontAttributeName</span><span class="p">;</span>
+</span><span class='line'><span class="c1">//字体属性   必须是CTFont对象</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">const</span> <span class="n">CFStringRef</span> <span class="n">kCTKernAttributeName</span><span class="p">;</span>
+</span><span class='line'><span class="c1">//字符间隔属性 必须是CFNumberRef对象</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">const</span> <span class="n">CFStringRef</span> <span class="n">kCTLigatureAttributeName</span><span class="p">;</span>
+</span><span class='line'><span class="c1">//设置是否使用连字属性，设置为0，表示不使用连字属性。标准的英文连字有FI,FL.默认值为1，既是使用标准连字。也就是当搜索到f时候，会把fl当成一个文字。必须是CFNumberRef 默认为1,可取0,1,2</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">const</span> <span class="n">CFStringRef</span> <span class="n">kCTForegroundColorAttributeName</span><span class="p">;</span>
+</span><span class='line'><span class="c1">//字体颜色属性  必须是CGColor对象，默认为black</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">const</span> <span class="n">CFStringRef</span> <span class="n">kCTForegroundColorFromContextAttributeName</span><span class="p">;</span>
+</span><span class='line'> <span class="c1">//上下文的字体颜色属性 必须为CFBooleanRef 默认为False</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">const</span> <span class="n">CFStringRef</span> <span class="n">kCTParagraphStyleAttributeName</span><span class="p">;</span>
+</span><span class='line'><span class="c1">//段落样式属性 必须是CTParagraphStyle对象 默认为NIL</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">const</span> <span class="n">CFStringRef</span> <span class="n">kCTStrokeWidthAttributeName</span><span class="p">;</span>
+</span><span class='line'><span class="c1">//笔画线条宽度 必须是CFNumberRef对象，默为0.0f，标准为3.0f</span>
+</span><span class='line'><span class="k">const</span> <span class="n">CFStringRef</span> <span class="n">kCTStrokeColorAttributeName</span><span class="p">;</span>
+</span><span class='line'><span class="c1">//笔画的颜色属性 必须是CGColorRef 对象，默认为前景色</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">const</span> <span class="n">CFStringRef</span> <span class="n">kCTSuperscriptAttributeName</span><span class="p">;</span>
+</span><span class='line'><span class="c1">//设置字体的上下标属性 必须是CFNumberRef对象 默认为0,可为-1为下标,1为上标，需要字体支持才行。如排列组合的样式Cn1</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">const</span> <span class="n">CFStringRef</span> <span class="n">kCTUnderlineColorAttributeName</span><span class="p">;</span>
+</span><span class='line'><span class="c1">//字体下划线颜色属性 必须是CGColorRef对象，默认为前景色</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">const</span> <span class="n">CFStringRef</span> <span class="n">kCTUnderlineStyleAttributeName</span><span class="p">;</span>
+</span><span class='line'><span class="c1">//字体下划线样式属性 必须是CFNumberRef对象,默为kCTUnderlineStyleNone 可以通过CTUnderlineStypleModifiers 进行修改下划线风格</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">const</span> <span class="n">CFStringRef</span> <span class="n">kCTVerticalFormsAttributeName</span><span class="p">;</span>
+</span><span class='line'><span class="c1">//文字的字形方向属性 必须是CFBooleanRef 默认为false，false表示水平方向，true表示竖直方向</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">const</span> <span class="n">CFStringRef</span> <span class="n">kCTGlyphInfoAttributeName</span><span class="p">;</span>
+</span><span class='line'><span class="c1">//字体信息属性 必须是CTGlyphInfo对象</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">const</span> <span class="n">CFStringRef</span> <span class="n">kCTRunDelegateAttributeName</span>
+</span><span class='line'><span class="c1">//CTRun 委托属性 必须是CTRunDelegate对象</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>例如：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="bp">NSMutableAttributedString</span> <span class="o">*</span><span class="n">mabstring</span> <span class="o">=</span> <span class="p">[[</span><span class="bp">NSMutableAttributedString</span> <span class="n">alloc</span><span class="p">]</span><span class="nl">initWithString</span><span class="p">:</span><span class="s">@&quot;This is a test of characterAttribute. 中文字符&quot;</span><span class="p">];</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><img src="https://github.com/yangchao0033/blog/blob/master/ios/2016/1/image/ex0.jpg?raw=true" alt="文字结构" /></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'>  <span class="c1">//设置字体属性</span>
+</span><span class='line'>    <span class="n">CTFontRef</span> <span class="n">font</span> <span class="o">=</span> <span class="n">CTFontCreateWithName</span><span class="p">(</span><span class="n">CFSTR</span><span class="p">(</span><span class="s">&quot;Georgia&quot;</span><span class="p">),</span> <span class="mi">40</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+</span><span class='line'>    <span class="p">[</span><span class="n">mabstring</span> <span class="nl">addAttribute</span><span class="p">:(</span><span class="kt">id</span><span class="p">)</span><span class="n">kCTFontAttributeName</span> <span class="nl">value</span><span class="p">:(</span><span class="kt">id</span><span class="p">)</span><span class="n">font</span> <span class="nl">range</span><span class="p">:</span><span class="n">NSMakeRange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">)];</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><img src="https://github.com/yangchao0033/blog/blob/master/ios/2016/1/image/ex1.jpg?raw=true" alt="文字结构" /></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="c1">//设置斜体字</span>
+</span><span class='line'>    <span class="n">CTFontRef</span> <span class="n">font</span> <span class="o">=</span> <span class="n">CTFontCreateWithName</span><span class="p">((</span><span class="n">CFStringRef</span><span class="p">)[</span><span class="bp">UIFont</span> <span class="nl">italicSystemFontOfSize</span><span class="p">:</span><span class="mi">20</span><span class="p">].</span><span class="n">fontName</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+</span><span class='line'>    <span class="p">[</span><span class="n">mabstring</span> <span class="nl">addAttribute</span><span class="p">:(</span><span class="kt">id</span><span class="p">)</span><span class="n">kCTFontAttributeName</span> <span class="nl">value</span><span class="p">:(</span><span class="kt">id</span><span class="p">)</span><span class="n">font</span> <span class="nl">range</span><span class="p">:</span><span class="n">NSMakeRange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">)];</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><img src="https://github.com/yangchao0033/blog/blob/master/ios/2016/1/image/ex2.jpg?raw=true" alt="文字结构" /></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="c1">//下划线</span>
+</span><span class='line'>    <span class="p">[</span><span class="n">mabstring</span> <span class="nl">addAttribute</span><span class="p">:(</span><span class="kt">id</span><span class="p">)</span><span class="n">kCTUnderlineStyleAttributeName</span> <span class="nl">value</span><span class="p">:(</span><span class="kt">id</span><span class="p">)[</span><span class="bp">NSNumber</span> <span class="nl">numberWithInt</span><span class="p">:</span><span class="n">kCTUnderlineStyleDouble</span><span class="p">]</span> <span class="nl">range</span><span class="p">:</span><span class="n">NSMakeRange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">)];</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><img src="https://github.com/yangchao0033/blog/blob/master/ios/2016/1/image/ex3.jpg?raw=true" alt="文字结构" /></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="c1">//下划线颜色</span>
+</span><span class='line'>    <span class="p">[</span><span class="n">mabstring</span> <span class="nl">addAttribute</span><span class="p">:(</span><span class="kt">id</span><span class="p">)</span><span class="n">kCTUnderlineColorAttributeName</span> <span class="nl">value</span><span class="p">:(</span><span class="kt">id</span><span class="p">)[</span><span class="bp">UIColor</span> <span class="n">redColor</span><span class="p">].</span><span class="bp">CGColor</span> <span class="nl">range</span><span class="p">:</span><span class="n">NSMakeRange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">)];</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><img src="https://github.com/yangchao0033/blog/blob/master/ios/2016/1/image/ex4.jpg?raw=true" alt="文字结构" /></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="c1">//设置字体简隔 eg:test </span>
+</span><span class='line'>    <span class="kt">long</span> <span class="n">number</span> <span class="o">=</span> <span class="mi">10</span><span class="p">;</span>
+</span><span class='line'>    <span class="n">CFNumberRef</span> <span class="n">num</span> <span class="o">=</span> <span class="n">CFNumberCreate</span><span class="p">(</span><span class="n">kCFAllocatorDefault</span><span class="p">,</span><span class="n">kCFNumberSInt8Type</span><span class="p">,</span><span class="o">&amp;</span><span class="n">number</span><span class="p">);</span>
+</span><span class='line'>    <span class="p">[</span><span class="n">mabstring</span> <span class="nl">addAttribute</span><span class="p">:(</span><span class="kt">id</span><span class="p">)</span><span class="n">kCTKernAttributeName</span> <span class="nl">value</span><span class="p">:(</span><span class="kt">id</span><span class="p">)</span><span class="n">num</span> <span class="nl">range</span><span class="p">:</span><span class="n">NSMakeRange</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">4</span><span class="p">)];</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><img src="https://github.com/yangchao0033/blog/blob/master/ios/2016/1/image/ex5.jpg?raw=true" alt="文字结构" /></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="c1">//设置连字</span>
+</span><span class='line'><span class="kt">long</span> <span class="n">number</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+</span><span class='line'>    <span class="n">CFNumberRef</span> <span class="n">num</span> <span class="o">=</span> <span class="n">CFNumberCreate</span><span class="p">(</span><span class="n">kCFAllocatorDefault</span><span class="p">,</span><span class="n">kCFNumberSInt8Type</span><span class="p">,</span><span class="o">&amp;</span><span class="n">number</span><span class="p">);</span>
+</span><span class='line'>    <span class="p">[</span><span class="n">mabstring</span> <span class="nl">addAttribute</span><span class="p">:(</span><span class="kt">id</span><span class="p">)</span><span class="n">kCTLigatureAttributeName</span> <span class="nl">value</span><span class="p">:(</span><span class="kt">id</span><span class="p">)</span><span class="n">num</span> <span class="nl">range</span><span class="p">:</span><span class="n">NSMakeRange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">[</span><span class="n">str</span> <span class="n">length</span><span class="p">])];</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>暂时没有效果图</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="c1">//设置字体颜色</span>
+</span><span class='line'>    <span class="p">[</span><span class="n">mabstring</span> <span class="nl">addAttribute</span><span class="p">:(</span><span class="kt">id</span><span class="p">)</span><span class="n">kCTForegroundColorAttributeName</span> <span class="nl">value</span><span class="p">:(</span><span class="kt">id</span><span class="p">)[</span><span class="bp">UIColor</span> <span class="n">redColor</span><span class="p">].</span><span class="bp">CGColor</span> <span class="nl">range</span><span class="p">:</span><span class="n">NSMakeRange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">9</span><span class="p">)];</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><img src="https://github.com/yangchao0033/blog/blob/master/ios/2016/1/image/ex6.jpg?raw=true" alt="文字结构" /></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="c1">//设置字体颜色为前影色</span>
+</span><span class='line'>    <span class="n">CFBooleanRef</span> <span class="n">flag</span> <span class="o">=</span> <span class="n">kCFBooleanTrue</span><span class="p">;</span>
+</span><span class='line'>    <span class="p">[</span><span class="n">mabstring</span> <span class="nl">addAttribute</span><span class="p">:(</span><span class="kt">id</span><span class="p">)</span><span class="n">kCTForegroundColorFromContextAttributeName</span> <span class="nl">value</span><span class="p">:(</span><span class="kt">id</span><span class="p">)</span><span class="n">flag</span> <span class="nl">range</span><span class="p">:</span><span class="n">NSMakeRange</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">)];</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>暂无效果。。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="c1">//设置空心字</span>
+</span><span class='line'>    <span class="kt">long</span> <span class="n">number</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span>
+</span><span class='line'>    <span class="n">CFNumberRef</span> <span class="n">num</span> <span class="o">=</span> <span class="n">CFNumberCreate</span><span class="p">(</span><span class="n">kCFAllocatorDefault</span><span class="p">,</span><span class="n">kCFNumberSInt8Type</span><span class="p">,</span><span class="o">&amp;</span><span class="n">number</span><span class="p">);</span>
+</span><span class='line'>    <span class="p">[</span><span class="n">mabstring</span> <span class="nl">addAttribute</span><span class="p">:(</span><span class="kt">id</span><span class="p">)</span><span class="n">kCTStrokeWidthAttributeName</span> <span class="nl">value</span><span class="p">:(</span><span class="kt">id</span><span class="p">)</span><span class="n">num</span> <span class="nl">range</span><span class="p">:</span><span class="n">NSMakeRange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">[</span><span class="n">str</span> <span class="n">length</span><span class="p">])];</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><img src="https://github.com/yangchao0033/blog/blob/master/ios/2016/1/image/ex7.jpg?raw=true" alt="文字结构" /></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="c1">//设置空心字</span>
+</span><span class='line'>    <span class="kt">long</span> <span class="n">number</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span>
+</span><span class='line'>    <span class="n">CFNumberRef</span> <span class="n">num</span> <span class="o">=</span> <span class="n">CFNumberCreate</span><span class="p">(</span><span class="n">kCFAllocatorDefault</span><span class="p">,</span><span class="n">kCFNumberSInt8Type</span><span class="p">,</span><span class="o">&amp;</span><span class="n">number</span><span class="p">);</span>
+</span><span class='line'>    <span class="p">[</span><span class="n">mabstring</span> <span class="nl">addAttribute</span><span class="p">:(</span><span class="kt">id</span><span class="p">)</span><span class="n">kCTStrokeWidthAttributeName</span> <span class="nl">value</span><span class="p">:(</span><span class="kt">id</span><span class="p">)</span><span class="n">num</span> <span class="nl">range</span><span class="p">:</span><span class="n">NSMakeRange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">[</span><span class="n">str</span> <span class="n">length</span><span class="p">])];</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//设置空心字颜色</span>
+</span><span class='line'>    <span class="p">[</span><span class="n">mabstring</span> <span class="nl">addAttribute</span><span class="p">:(</span><span class="kt">id</span><span class="p">)</span><span class="n">kCTStrokeColorAttributeName</span> <span class="nl">value</span><span class="p">:(</span><span class="kt">id</span><span class="p">)[</span><span class="bp">UIColor</span> <span class="n">greenColor</span><span class="p">].</span><span class="bp">CGColor</span> <span class="nl">range</span><span class="p">:</span><span class="n">NSMakeRange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">[</span><span class="n">str</span> <span class="n">length</span><span class="p">])];</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><img src="https://github.com/yangchao0033/blog/blob/master/ios/2016/1/image/ex8.jpg?raw=true" alt="文字结构" /></p>
+
+<p><strong>在设置空心字颜色时，必须先将字体高为空心，否则设置颜色是没有效果的。</strong></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="c1">//对同一段字体进行多属性设置    </span>
+</span><span class='line'>    <span class="c1">//红色</span>
+</span><span class='line'>    <span class="bp">NSMutableDictionary</span> <span class="o">*</span><span class="n">attributes</span> <span class="o">=</span> <span class="p">[</span><span class="bp">NSMutableDictionary</span> <span class="nl">dictionaryWithObject</span><span class="p">:(</span><span class="kt">id</span><span class="p">)[</span><span class="bp">UIColor</span> <span class="n">redColor</span><span class="p">].</span><span class="bp">CGColor</span> <span class="nl">forKey</span><span class="p">:(</span><span class="kt">id</span><span class="p">)</span><span class="n">kCTForegroundColorAttributeName</span><span class="p">];</span>
+</span><span class='line'>    <span class="c1">//斜体</span>
+</span><span class='line'>    <span class="n">CTFontRef</span> <span class="n">font</span> <span class="o">=</span> <span class="n">CTFontCreateWithName</span><span class="p">((</span><span class="n">CFStringRef</span><span class="p">)[</span><span class="bp">UIFont</span> <span class="nl">italicSystemFontOfSize</span><span class="p">:</span><span class="mi">20</span><span class="p">].</span><span class="n">fontName</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+</span><span class='line'>    <span class="p">[</span><span class="n">attributes</span> <span class="nl">setObject</span><span class="p">:(</span><span class="kt">id</span><span class="p">)</span><span class="n">font</span> <span class="nl">forKey</span><span class="p">:(</span><span class="kt">id</span><span class="p">)</span><span class="n">kCTFontAttributeName</span><span class="p">];</span>
+</span><span class='line'>    <span class="c1">//下划线</span>
+</span><span class='line'>    <span class="p">[</span><span class="n">attributes</span> <span class="nl">setObject</span><span class="p">:(</span><span class="kt">id</span><span class="p">)[</span><span class="bp">NSNumber</span> <span class="nl">numberWithInt</span><span class="p">:</span><span class="n">kCTUnderlineStyleDouble</span><span class="p">]</span> <span class="nl">forKey</span><span class="p">:(</span><span class="kt">id</span><span class="p">)</span><span class="n">kCTUnderlineStyleAttributeName</span><span class="p">];</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="p">[</span><span class="n">mabstring</span> <span class="nl">addAttributes</span><span class="p">:</span><span class="n">attributes</span> <span class="nl">range</span><span class="p">:</span><span class="n">NSMakeRange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">)];</span>
+</span><span class='line'>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><img src="https://github.com/yangchao0033/blog/blob/master/ios/2016/1/image/ex9.jpg?raw=true" alt="文字结构" /></p>
+
+<p>最后 Draw 一下</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+<span class='line-number'>67</span>
+<span class='line-number'>68</span>
+<span class='line-number'>69</span>
+<span class='line-number'>70</span>
+<span class='line-number'>71</span>
+<span class='line-number'>72</span>
+<span class='line-number'>73</span>
+<span class='line-number'>74</span>
+<span class='line-number'>75</span>
+<span class='line-number'>76</span>
+<span class='line-number'>77</span>
+<span class='line-number'>78</span>
+<span class='line-number'>79</span>
+<span class='line-number'>80</span>
+<span class='line-number'>81</span>
+<span class='line-number'>82</span>
+<span class='line-number'>83</span>
+<span class='line-number'>84</span>
+<span class='line-number'>85</span>
+<span class='line-number'>86</span>
+<span class='line-number'>87</span>
+<span class='line-number'>88</span>
+<span class='line-number'>89</span>
+<span class='line-number'>90</span>
+<span class='line-number'>91</span>
+<span class='line-number'>92</span>
+<span class='line-number'>93</span>
+<span class='line-number'>94</span>
+<span class='line-number'>95</span>
+<span class='line-number'>96</span>
+<span class='line-number'>97</span>
+<span class='line-number'>98</span>
+<span class='line-number'>99</span>
+<span class='line-number'>100</span>
+<span class='line-number'>101</span>
+<span class='line-number'>102</span>
+<span class='line-number'>103</span>
+<span class='line-number'>104</span>
+<span class='line-number'>105</span>
+<span class='line-number'>106</span>
+<span class='line-number'>107</span>
+<span class='line-number'>108</span>
+<span class='line-number'>109</span>
+<span class='line-number'>110</span>
+<span class='line-number'>111</span>
+<span class='line-number'>112</span>
+<span class='line-number'>113</span>
+<span class='line-number'>114</span>
+<span class='line-number'>115</span>
+<span class='line-number'>116</span>
+<span class='line-number'>117</span>
+<span class='line-number'>118</span>
+<span class='line-number'>119</span>
+<span class='line-number'>120</span>
+<span class='line-number'>121</span>
+<span class='line-number'>122</span>
+<span class='line-number'>123</span>
+<span class='line-number'>124</span>
+<span class='line-number'>125</span>
+<span class='line-number'>126</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="p">-(</span><span class="kt">void</span><span class="p">)</span><span class="nf">characterAttribute</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="bp">NSString</span> <span class="o">*</span><span class="n">str</span> <span class="o">=</span> <span class="s">@&quot;This is a test of characterAttribute. 中文字符&quot;</span><span class="p">;</span>
+</span><span class='line'>    <span class="bp">NSMutableAttributedString</span> <span class="o">*</span><span class="n">mabstring</span> <span class="o">=</span> <span class="p">[[</span><span class="bp">NSMutableAttributedString</span> <span class="n">alloc</span><span class="p">]</span><span class="nl">initWithString</span><span class="p">:</span><span class="n">str</span><span class="p">];</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="p">[</span><span class="n">mabstring</span> <span class="n">beginEditing</span><span class="p">];</span>
+</span><span class='line'>    <span class="cm">/*</span>
+</span><span class='line'><span class="cm">    long number = 1;</span>
+</span><span class='line'><span class="cm">    CFNumberRef num = CFNumberCreate(kCFAllocatorDefault,kCFNumberSInt8Type,&amp;number);</span>
+</span><span class='line'><span class="cm">    [mabstring addAttribute:(id)kCTCharacterShapeAttributeName value:(id)num range:NSMakeRange(0, 4)];</span>
+</span><span class='line'><span class="cm">    */</span>
+</span><span class='line'>    <span class="cm">/*</span>
+</span><span class='line'><span class="cm">    //设置字体属性</span>
+</span><span class='line'><span class="cm">    CTFontRef font = CTFontCreateWithName(CFSTR(&quot;Georgia&quot;), 40, NULL);</span>
+</span><span class='line'><span class="cm">    [mabstring addAttribute:(id)kCTFontAttributeName value:(id)font range:NSMakeRange(0, 4)];</span>
+</span><span class='line'><span class="cm">    */</span>
+</span><span class='line'>    <span class="cm">/*</span>
+</span><span class='line'><span class="cm">    //设置字体简隔 eg:test </span>
+</span><span class='line'><span class="cm">    long number = 10;</span>
+</span><span class='line'><span class="cm">    CFNumberRef num = CFNumberCreate(kCFAllocatorDefault,kCFNumberSInt8Type,&amp;number);</span>
+</span><span class='line'><span class="cm">    [mabstring addAttribute:(id)kCTKernAttributeName value:(id)num range:NSMakeRange(10, 4)];</span>
+</span><span class='line'><span class="cm">    */</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="cm">/*</span>
+</span><span class='line'><span class="cm">    long number = 1;</span>
+</span><span class='line'><span class="cm">    CFNumberRef num = CFNumberCreate(kCFAllocatorDefault,kCFNumberSInt8Type,&amp;number);</span>
+</span><span class='line'><span class="cm">    [mabstring addAttribute:(id)kCTLigatureAttributeName value:(id)num range:NSMakeRange(0, [str length])];</span>
+</span><span class='line'><span class="cm">     */</span>
+</span><span class='line'>    <span class="cm">/*</span>
+</span><span class='line'><span class="cm">    //设置字体颜色</span>
+</span><span class='line'><span class="cm">    [mabstring addAttribute:(id)kCTForegroundColorAttributeName value:(id)[UIColor redColor].CGColor range:NSMakeRange(0, 9)];</span>
+</span><span class='line'><span class="cm">     */</span>
+</span><span class='line'>    <span class="cm">/*</span>
+</span><span class='line'><span class="cm">    //设置字体颜色为前影色</span>
+</span><span class='line'><span class="cm">    CFBooleanRef flag = kCFBooleanTrue;</span>
+</span><span class='line'><span class="cm">    [mabstring addAttribute:(id)kCTForegroundColorFromContextAttributeName value:(id)flag range:NSMakeRange(5, 10)];</span>
+</span><span class='line'><span class="cm">     */</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="cm">/*</span>
+</span><span class='line'><span class="cm">    //设置空心字</span>
+</span><span class='line'><span class="cm">    long number = 2;</span>
+</span><span class='line'><span class="cm">    CFNumberRef num = CFNumberCreate(kCFAllocatorDefault,kCFNumberSInt8Type,&amp;number);</span>
+</span><span class='line'><span class="cm">    [mabstring addAttribute:(id)kCTStrokeWidthAttributeName value:(id)num range:NSMakeRange(0, [str length])];</span>
+</span><span class='line'><span class="cm">     </span>
+</span><span class='line'><span class="cm">    //设置空心字颜色</span>
+</span><span class='line'><span class="cm">    [mabstring addAttribute:(id)kCTStrokeColorAttributeName value:(id)[UIColor greenColor].CGColor range:NSMakeRange(0, [str length])];</span>
+</span><span class='line'><span class="cm">     */</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="cm">/*</span>
+</span><span class='line'><span class="cm">    long number = 1;</span>
+</span><span class='line'><span class="cm">    CFNumberRef num = CFNumberCreate(kCFAllocatorDefault,kCFNumberSInt8Type,&amp;number);</span>
+</span><span class='line'><span class="cm">    [mabstring addAttribute:(id)kCTSuperscriptAttributeName value:(id)num range:NSMakeRange(3, 1)];</span>
+</span><span class='line'><span class="cm">    */</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="cm">/*</span>
+</span><span class='line'><span class="cm">    //设置斜体字</span>
+</span><span class='line'><span class="cm">    CTFontRef font = CTFontCreateWithName((CFStringRef)[UIFont italicSystemFontOfSize:20].fontName, 14, NULL);</span>
+</span><span class='line'><span class="cm">    [mabstring addAttribute:(id)kCTFontAttributeName value:(id)font range:NSMakeRange(0, 4)];</span>
+</span><span class='line'><span class="cm">    */</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="cm">/*</span>
+</span><span class='line'><span class="cm">    //下划线</span>
+</span><span class='line'><span class="cm">    [mabstring addAttribute:(id)kCTUnderlineStyleAttributeName value:(id)[NSNumber numberWithInt:kCTUnderlineStyleDouble] range:NSMakeRange(0, 4)]; </span>
+</span><span class='line'><span class="cm">    //下划线颜色</span>
+</span><span class='line'><span class="cm">    [mabstring addAttribute:(id)kCTUnderlineColorAttributeName value:(id)[UIColor redColor].CGColor range:NSMakeRange(0, 4)];</span>
+</span><span class='line'><span class="cm">     */</span>
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//对同一段字体进行多属性设置    </span>
+</span><span class='line'>    <span class="c1">//红色</span>
+</span><span class='line'>    <span class="bp">NSMutableDictionary</span> <span class="o">*</span><span class="n">attributes</span> <span class="o">=</span> <span class="p">[</span><span class="bp">NSMutableDictionary</span> <span class="nl">dictionaryWithObject</span><span class="p">:(</span><span class="kt">id</span><span class="p">)[</span><span class="bp">UIColor</span> <span class="n">redColor</span><span class="p">].</span><span class="bp">CGColor</span> <span class="nl">forKey</span><span class="p">:(</span><span class="kt">id</span><span class="p">)</span><span class="n">kCTForegroundColorAttributeName</span><span class="p">];</span>
+</span><span class='line'>    <span class="c1">//斜体</span>
+</span><span class='line'>    <span class="n">CTFontRef</span> <span class="n">font</span> <span class="o">=</span> <span class="n">CTFontCreateWithName</span><span class="p">((</span><span class="n">CFStringRef</span><span class="p">)[</span><span class="bp">UIFont</span> <span class="nl">italicSystemFontOfSize</span><span class="p">:</span><span class="mi">20</span><span class="p">].</span><span class="n">fontName</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+</span><span class='line'>    <span class="p">[</span><span class="n">attributes</span> <span class="nl">setObject</span><span class="p">:(</span><span class="kt">id</span><span class="p">)</span><span class="n">font</span> <span class="nl">forKey</span><span class="p">:(</span><span class="kt">id</span><span class="p">)</span><span class="n">kCTFontAttributeName</span><span class="p">];</span>
+</span><span class='line'>    <span class="c1">//下划线</span>
+</span><span class='line'>    <span class="p">[</span><span class="n">attributes</span> <span class="nl">setObject</span><span class="p">:(</span><span class="kt">id</span><span class="p">)[</span><span class="bp">NSNumber</span> <span class="nl">numberWithInt</span><span class="p">:</span><span class="n">kCTUnderlineStyleDouble</span><span class="p">]</span> <span class="nl">forKey</span><span class="p">:(</span><span class="kt">id</span><span class="p">)</span><span class="n">kCTUnderlineStyleAttributeName</span><span class="p">];</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="p">[</span><span class="n">mabstring</span> <span class="nl">addAttributes</span><span class="p">:</span><span class="n">attributes</span> <span class="nl">range</span><span class="p">:</span><span class="n">NSMakeRange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">)];</span>
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">NSRange</span> <span class="n">kk</span> <span class="o">=</span> <span class="n">NSMakeRange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="bp">NSDictionary</span> <span class="o">*</span> <span class="n">dc</span> <span class="o">=</span> <span class="p">[</span><span class="n">mabstring</span> <span class="nl">attributesAtIndex</span><span class="p">:</span><span class="mi">0</span> <span class="nl">effectiveRange</span><span class="p">:</span><span class="o">&amp;</span><span class="n">kk</span><span class="p">];</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="p">[</span><span class="n">mabstring</span> <span class="n">endEditing</span><span class="p">];</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">NSLog</span><span class="p">(</span><span class="s">@&quot;value = %@&quot;</span><span class="p">,</span><span class="n">dc</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">CTFramesetterRef</span> <span class="n">framesetter</span> <span class="o">=</span> <span class="n">CTFramesetterCreateWithAttributedString</span><span class="p">((</span><span class="n">CFAttributedStringRef</span><span class="p">)</span><span class="n">mabstring</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">CGMutablePathRef</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">CGPathCreateMutable</span><span class="p">();</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">CGPathAddRect</span><span class="p">(</span><span class="n">Path</span><span class="p">,</span> <span class="nb">NULL</span> <span class="p">,</span><span class="n">CGRectMake</span><span class="p">(</span><span class="mi">10</span> <span class="p">,</span> <span class="mi">0</span> <span class="p">,</span><span class="nb">self</span><span class="p">.</span><span class="n">bounds</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">width</span><span class="o">-</span><span class="mi">10</span> <span class="p">,</span> <span class="nb">self</span><span class="p">.</span><span class="n">bounds</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">height</span><span class="o">-</span><span class="mi">10</span><span class="p">));</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">CTFrameRef</span> <span class="n">frame</span> <span class="o">=</span> <span class="n">CTFramesetterCreateFrame</span><span class="p">(</span><span class="n">framesetter</span><span class="p">,</span> <span class="n">CFRangeMake</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">Path</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>    
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//获取当前(View)上下文以便于之后的绘画，这个是一个离屏。</span>
+</span><span class='line'>    <span class="n">CGContextRef</span> <span class="n">context</span> <span class="o">=</span> <span class="n">UIGraphicsGetCurrentContext</span><span class="p">();</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">CGContextSetTextMatrix</span><span class="p">(</span><span class="n">context</span> <span class="p">,</span> <span class="n">CGAffineTransformIdentity</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//压栈，压入图形状态栈中.每个图形上下文维护一个图形状态栈，并不是所有的当前绘画环境的图形状态的元素都被保存。图形状态中不考虑当前路径，所以不保存</span>
+</span><span class='line'>    <span class="c1">//保存现在得上下文图形状态。不管后续对context上绘制什么都不会影响真正得屏幕。</span>
+</span><span class='line'>    <span class="n">CGContextSaveGState</span><span class="p">(</span><span class="n">context</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//x，y轴方向移动</span>
+</span><span class='line'>    <span class="n">CGContextTranslateCTM</span><span class="p">(</span><span class="n">context</span> <span class="p">,</span> <span class="mi">0</span> <span class="p">,</span><span class="nb">self</span><span class="p">.</span><span class="n">bounds</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">height</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">//缩放x，y轴方向缩放，－1.0为反向1.0倍,坐标系转换,沿x轴翻转180度</span>
+</span><span class='line'>    <span class="n">CGContextScaleCTM</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="mf">1.0</span> <span class="p">,</span><span class="o">-</span><span class="mf">1.0</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">CTFrameDraw</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span><span class="n">context</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">CGPathRelease</span><span class="p">(</span><span class="n">Path</span><span class="p">);</span>
+</span><span class='line'>    <span class="n">CFRelease</span><span class="p">(</span><span class="n">framesetter</span><span class="p">);</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'><span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">drawRect:</span><span class="p">(</span><span class="bp">CGRect</span><span class="p">)</span><span class="nv">rect</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="p">[</span><span class="nb">self</span> <span class="n">characterAttribute</span><span class="p">];</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[CocoaPod Version Update]]></title>
@@ -65,7 +656,9 @@ line 5: <code>pod</code> 安装将利用刚才的配置更新本地镜像</p>
     <link href="http://yangchao0033.github.io/blog/2016/01/18/runloop-5/"/>
     <updated>2016-01-18T12:34:58+08:00</updated>
     <id>http://yangchao0033.github.io/blog/2016/01/18/runloop-5</id>
-    <content type="html"><![CDATA[<h2>使用 Run Loop 对象</h2>
+    <content type="html"><![CDATA[<p> 接<a href="http://superyang.gitcafe.io/blog/2016/01/08/runloopshen-du-tan-jiu-(4)/">RunLoop深度探究(四)</a></p>
+
+<h2>使用 Run Loop 对象</h2>
 
 <p>一个 run loop 对象提供了一些主要接口用于向你的 run loop 中添加 input source ，timers， 和run loop observer，并且运行它。每一条线程有且只有一个run loop 与他相关联。在 Cocoa 中，这个对象是 <a href="https://developer.apple.com/library/ios/documentation/Cocoa/Reference/Foundation/Classes/NSRunLoop_Class/index.html#//apple_ref/occ/cl/NSRunLoop">NSRunLoop</a> 类的一个实例。在底层的应用中，它是指向 <a href="https://developer.apple.com/library/ios/documentation/CoreFoundation/Reference/CFRunLoopRef/index.html#//apple_ref/c/tdef/CFRunLoopRef">CFRunLoopRef</a> 这种不透明类型的一个指针。</p>
 
@@ -956,7 +1549,352 @@ line 5: <code>pod</code> 安装将利用刚才的配置更新本地镜像</p>
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p> (未完待续。。。)</p>
+<h4>在 Core Foundation 框架中配置一个基于端口的（Port-Based） input source</h4>
+
+<p>这个小结描述了如歌使用 Core Foundation 框架在你的应用的主线程和辅助线程（worker thread）中创建一个双向通信信道。</p>
+
+<p>如表3-17 所示为应用主线程启动辅助线程所使用的代码。首先要做的是创建 <a href="https://developer.apple.com/library/ios/documentation/CoreFoundation/Reference/CFMessagePortRef/index.html#//apple_ref/c/tdef/CFMessagePortRef">CFMessagePortRef</a> 不透明对象去监听从辅助线程发来的消息。辅助线程需要用来创建连接的端口名，以便于字符串值可以被发送到辅助线程的入口点函数。端口名在当前用户的上线文中通常必须是唯一的。否则，可能会出现运行冲突。</p>
+
+<p>表 3-17 给新线程关联一个 Core Foundation message port</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="cp">#define kThreadStackSize        (8 *4096)</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">OSStatus</span> <span class="nf">MySpawnThread</span><span class="p">()</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="c1">// 创建一个本地端口用于接受响应</span>
+</span><span class='line'>    <span class="n">CFStringRef</span> <span class="n">myPortName</span><span class="p">;</span>
+</span><span class='line'>    <span class="n">CFMessagePortRef</span> <span class="n">myPort</span><span class="p">;</span>
+</span><span class='line'>    <span class="n">CFRunLoopSourceRef</span> <span class="n">rlSource</span><span class="p">;</span>
+</span><span class='line'>    <span class="n">CFMessagePortContext</span> <span class="n">context</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">};</span>
+</span><span class='line'>    <span class="kt">Boolean</span> <span class="n">shouldFreeInfo</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// 用端口名 创建一个符合规范的字符串</span>
+</span><span class='line'>    <span class="n">myPortName</span> <span class="o">=</span> <span class="n">CFStringCreateWithFormat</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="n">CFSTR</span><span class="p">(</span><span class="s">&quot;com.myapp.MainThread&quot;</span><span class="p">));</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// 创建端口</span>
+</span><span class='line'>    <span class="n">myPort</span> <span class="o">=</span> <span class="n">CFMessagePortCreateLocal</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span>
+</span><span class='line'>                <span class="n">myPortName</span><span class="p">,</span>
+</span><span class='line'>                <span class="o">&amp;</span><span class="n">MainThreadResponseHandler</span><span class="p">,</span>
+</span><span class='line'>                <span class="o">&amp;</span><span class="n">context</span><span class="p">,</span>
+</span><span class='line'>                <span class="o">&amp;</span><span class="n">shouldFreeInfo</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="n">myPort</span> <span class="o">!=</span> <span class="nb">NULL</span><span class="p">)</span>
+</span><span class='line'>    <span class="p">{</span>
+</span><span class='line'>        <span class="c1">// 端口已经被成功创建</span>
+</span><span class='line'>        <span class="c1">// 现在为他创建 run loop source</span>
+</span><span class='line'>        <span class="n">rlSource</span> <span class="o">=</span> <span class="n">CFMessagePortCreateRunLoopSource</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="n">myPort</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="k">if</span> <span class="p">(</span><span class="n">rlSource</span><span class="p">)</span>
+</span><span class='line'>        <span class="p">{</span>
+</span><span class='line'>            <span class="c1">// 为当前 run loop 添加 source</span>
+</span><span class='line'>            <span class="n">CFRunLoopAddSource</span><span class="p">(</span><span class="n">CFRunLoopGetCurrent</span><span class="p">(),</span> <span class="n">rlSource</span><span class="p">,</span> <span class="n">kCFRunLoopDefaultMode</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>            <span class="c1">// 一旦安装结束，这些资源需要被释放</span>
+</span><span class='line'>            <span class="n">CFRelease</span><span class="p">(</span><span class="n">myPort</span><span class="p">);</span>
+</span><span class='line'>            <span class="n">CFRelease</span><span class="p">(</span><span class="n">rlSource</span><span class="p">);</span>
+</span><span class='line'>        <span class="p">}</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// 创建线程并且继续处理任务</span>
+</span><span class='line'>    <span class="n">MPTaskID</span>        <span class="n">taskID</span><span class="p">;</span>
+</span><span class='line'>    <span class="k">return</span><span class="p">(</span><span class="n">MPCreateTask</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ServerThreadEntryPoint</span><span class="p">,</span>
+</span><span class='line'>                    <span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="p">)</span><span class="n">myPortName</span><span class="p">,</span>
+</span><span class='line'>                    <span class="n">kThreadStackSize</span><span class="p">,</span>
+</span><span class='line'>                    <span class="nb">NULL</span><span class="p">,</span>
+</span><span class='line'>                    <span class="nb">NULL</span><span class="p">,</span>
+</span><span class='line'>                    <span class="nb">NULL</span><span class="p">,</span>
+</span><span class='line'>                    <span class="mi">0</span><span class="p">,</span>
+</span><span class='line'>                    <span class="o">&amp;</span><span class="n">taskID</span><span class="p">));</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>如果 port 端口已经被安装并且线程已经启动，主线程就可以继续定期的执行去等待辅助线程的 check-in 登记信息。一旦 check-in 登记信息到达，它将会被指派到主线程的 <code>MainThreadResponseHandler</code> 函数中，如表 3-18 所示，这个函数提取辅助线程的端口名并且创建通信管道。</p>
+
+<p>表 3-18 接收 check-in 登记信息</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="cp">#define kCheckinMessage 100</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// 主线程端口信息处理函数</span>
+</span><span class='line'><span class="n">CFDataRef</span> <span class="nf">MainThreadResponseHandler</span><span class="p">(</span><span class="n">CFMessagePortRef</span> <span class="n">local</span><span class="p">,</span>
+</span><span class='line'>                    <span class="kt">SInt32</span> <span class="n">msgid</span><span class="p">,</span>
+</span><span class='line'>                    <span class="n">CFDataRef</span> <span class="n">data</span><span class="p">,</span>
+</span><span class='line'>                    <span class="kt">void</span><span class="o">*</span> <span class="n">info</span><span class="p">)</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="n">msgid</span> <span class="o">==</span> <span class="n">kCheckinMessage</span><span class="p">)</span>
+</span><span class='line'>    <span class="p">{</span>
+</span><span class='line'>        <span class="n">CFMessagePortRef</span> <span class="n">messagePort</span><span class="p">;</span>
+</span><span class='line'>        <span class="n">CFStringRef</span> <span class="n">threadPortName</span><span class="p">;</span>
+</span><span class='line'>        <span class="n">CFIndex</span> <span class="n">bufferLength</span> <span class="o">=</span> <span class="n">CFDataGetLength</span><span class="p">(</span><span class="n">data</span><span class="p">);</span>
+</span><span class='line'>        <span class="kt">UInt8</span><span class="o">*</span> <span class="n">buffer</span> <span class="o">=</span> <span class="n">CFAllocatorAllocate</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="n">bufferLength</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="n">CFDataGetBytes</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">CFRangeMake</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">bufferLength</span><span class="p">),</span> <span class="n">buffer</span><span class="p">);</span>
+</span><span class='line'>        <span class="n">threadPortName</span> <span class="o">=</span> <span class="n">CFStringCreateWithBytes</span> <span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="n">buffer</span><span class="p">,</span> <span class="n">bufferLength</span><span class="p">,</span> <span class="n">kCFStringEncodingASCII</span><span class="p">,</span> <span class="nb">FALSE</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="c1">// 你必须通过一个 port 名获取远端信息</span>
+</span><span class='line'>        <span class="n">messagePort</span> <span class="o">=</span> <span class="n">CFMessagePortCreateRemote</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="p">(</span><span class="n">CFStringRef</span><span class="p">)</span><span class="n">threadPortName</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="k">if</span> <span class="p">(</span><span class="n">messagePort</span><span class="p">)</span>
+</span><span class='line'>        <span class="p">{</span>
+</span><span class='line'>      <span class="c1">// 保留并保存线程的 comm 端口 以备后用</span>
+</span><span class='line'>            <span class="n">AddPortToListOfActiveThreads</span><span class="p">(</span><span class="n">messagePort</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>            <span class="c1">// 如果端口在先前的 函数 中保留了（retain），在这里释放资源</span>
+</span><span class='line'>            <span class="n">CFRelease</span><span class="p">(</span><span class="n">messagePort</span><span class="p">);</span>
+</span><span class='line'>        <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="c1">// 释放资源</span>
+</span><span class='line'>        <span class="n">CFRelease</span><span class="p">(</span><span class="n">threadPortName</span><span class="p">);</span>
+</span><span class='line'>        <span class="n">CFAllocatorDeallocate</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="n">buffer</span><span class="p">);</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>    <span class="k">else</span>
+</span><span class='line'>    <span class="p">{</span>
+</span><span class='line'>        <span class="c1">// 处理其他信息</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">return</span> <span class="nb">NULL</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>主线程配置完成后，唯一要做的就是为新创建的辅助线程创建它自己的 端口和 登记自己的 message。表 3-19 所示为辅助线程的入口点函数。函数提取了主线程的 port 名并且用它创建了一个远端的连接回复主线程。之后函数为自己创建一个本地端口，将端口 port 安装到线程的 runloop 中去，然后给主线程发送一个包含本地端口名的 check-in 登记信息。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+<span class='line-number'>67</span>
+<span class='line-number'>68</span>
+<span class='line-number'>69</span>
+<span class='line-number'>70</span>
+<span class='line-number'>71</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="n">OSStatus</span> <span class="nf">ServerThreadEntryPoint</span><span class="p">(</span><span class="kt">void</span><span class="o">*</span> <span class="n">param</span><span class="p">)</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="c1">// 创建连接到主线程的远端端口</span>
+</span><span class='line'>    <span class="n">CFMessagePortRef</span> <span class="n">mainThreadPort</span><span class="p">;</span>
+</span><span class='line'>    <span class="n">CFStringRef</span> <span class="n">portName</span> <span class="o">=</span> <span class="p">(</span><span class="n">CFStringRef</span><span class="p">)</span><span class="n">param</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">mainThreadPort</span> <span class="o">=</span> <span class="n">CFMessagePortCreateRemote</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="n">portName</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// 释放被用于参数传递的字符串</span>
+</span><span class='line'>    <span class="n">CFRelease</span><span class="p">(</span><span class="n">portName</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// 为辅助才女创建一个本地端口</span>
+</span><span class='line'>    <span class="n">CFStringRef</span> <span class="n">myPortName</span> <span class="o">=</span> <span class="n">CFStringCreateWithFormat</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="n">CFSTR</span><span class="p">(</span><span class="s">&quot;com.MyApp.Thread-%d&quot;</span><span class="p">),</span> <span class="n">MPCurrentTaskID</span><span class="p">());</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// 保存线程上下文信息中的端口，以便之后使用。</span>
+</span><span class='line'>    <span class="n">CFMessagePortContext</span> <span class="n">context</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">,</span> <span class="n">mainThreadPort</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">};</span>
+</span><span class='line'>    <span class="kt">Boolean</span> <span class="n">shouldFreeInfo</span><span class="p">;</span>
+</span><span class='line'>    <span class="kt">Boolean</span> <span class="n">shouldAbort</span> <span class="o">=</span> <span class="nb">TRUE</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">CFMessagePortRef</span> <span class="n">myPort</span> <span class="o">=</span> <span class="n">CFMessagePortCreateLocal</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span>
+</span><span class='line'>                <span class="n">myPortName</span><span class="p">,</span>
+</span><span class='line'>                <span class="o">&amp;</span><span class="n">ProcessClientRequest</span><span class="p">,</span>
+</span><span class='line'>                <span class="o">&amp;</span><span class="n">context</span><span class="p">,</span>
+</span><span class='line'>                <span class="o">&amp;</span><span class="n">shouldFreeInfo</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="n">shouldFreeInfo</span><span class="p">)</span>
+</span><span class='line'>    <span class="p">{</span>
+</span><span class='line'>        <span class="c1">// 如果不能创建本地端口，则杀死线程</span>
+</span><span class='line'>        <span class="n">MPExit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">CFRunLoopSourceRef</span> <span class="n">rlSource</span> <span class="o">=</span> <span class="n">CFMessagePortCreateRunLoopSource</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="n">myPort</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">rlSource</span><span class="p">)</span>
+</span><span class='line'>    <span class="p">{</span>
+</span><span class='line'>        <span class="c1">// 如果不能创建本地端口，则杀死线程</span>
+</span><span class='line'>        <span class="n">MPExit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// 给 runloop 添加source</span>
+</span><span class='line'>    <span class="n">CFRunLoopAddSource</span><span class="p">(</span><span class="n">CFRunLoopGetCurrent</span><span class="p">(),</span> <span class="n">rlSource</span><span class="p">,</span> <span class="n">kCFRunLoopDefaultMode</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// 一旦线程安装完毕，这些资源需要释放</span>
+</span><span class='line'>    <span class="n">CFRelease</span><span class="p">(</span><span class="n">myPort</span><span class="p">);</span>
+</span><span class='line'>    <span class="n">CFRelease</span><span class="p">(</span><span class="n">rlSource</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// 打包端口名，并发送 check-in 信息。</span>
+</span><span class='line'>    <span class="n">CFDataRef</span> <span class="n">returnData</span> <span class="o">=</span> <span class="nb">nil</span><span class="p">;</span>
+</span><span class='line'>    <span class="n">CFDataRef</span> <span class="n">outData</span><span class="p">;</span>
+</span><span class='line'>    <span class="n">CFIndex</span> <span class="n">stringLength</span> <span class="o">=</span> <span class="n">CFStringGetLength</span><span class="p">(</span><span class="n">myPortName</span><span class="p">);</span>
+</span><span class='line'>    <span class="kt">UInt8</span><span class="o">*</span> <span class="n">buffer</span> <span class="o">=</span> <span class="n">CFAllocatorAllocate</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="n">stringLength</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">CFStringGetBytes</span><span class="p">(</span><span class="n">myPortName</span><span class="p">,</span>
+</span><span class='line'>                <span class="n">CFRangeMake</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">stringLength</span><span class="p">),</span>
+</span><span class='line'>                <span class="n">kCFStringEncodingASCII</span><span class="p">,</span>
+</span><span class='line'>                <span class="mi">0</span><span class="p">,</span>
+</span><span class='line'>                <span class="nb">FALSE</span><span class="p">,</span>
+</span><span class='line'>                <span class="n">buffer</span><span class="p">,</span>
+</span><span class='line'>                <span class="n">stringLength</span><span class="p">,</span>
+</span><span class='line'>                <span class="nb">NULL</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">outData</span> <span class="o">=</span> <span class="n">CFDataCreate</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="n">buffer</span><span class="p">,</span> <span class="n">stringLength</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">CFMessagePortSendRequest</span><span class="p">(</span><span class="n">mainThreadPort</span><span class="p">,</span> <span class="n">kCheckinMessage</span><span class="p">,</span> <span class="n">outData</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// 清除线程数据结构</span>
+</span><span class='line'>    <span class="n">CFRelease</span><span class="p">(</span><span class="n">outData</span><span class="p">);</span>
+</span><span class='line'>    <span class="n">CFAllocatorDeallocate</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="n">buffer</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// 进入 runloop</span>
+</span><span class='line'>    <span class="n">CFRunLoopRun</span><span class="p">();</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>一旦进入 runloop，所有发送给线程端口的事件会被 <code>ProcessClientRequest</code> 函数处理。该函数的实现依赖于工作线程的类型，这里暂不做介绍。</p>
 ]]></content>
   </entry>
   

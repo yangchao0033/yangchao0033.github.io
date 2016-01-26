@@ -9,7 +9,8 @@
   <meta name="author" content="Super Yang">
 
   
-  <meta name="description" content="问题描述： 使用 pod 安装第三方库时无法使用 pod search 搜索最新的版本 定位问题： 使用的 pod 版本过低 方案： ">
+  <meta name="description" content="CoreText 基础扫盲（阅读源码必看了） 这段时间阅读ibireme神的源码，看到了 CoreText 排版这一块，里面包含了很多文字排版的专有名词，这里做一下整理，顺便帮大家安利一下。 CoreText 框架中最常用的几个类： CTFont
+CTFontCollection &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -123,6 +124,61 @@ var _hmt = _hmt || [];
       
   <header>
     
+      <h1 class="entry-title"><a href="/blog/2016/01/26/coretextji-chu/">CoreText基础概念（扫盲篇）</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-01-26T18:00:48+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>26</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>6:00 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h2>CoreText 基础扫盲（阅读源码必看了）</h2>
+
+<p>这段时间阅读ibireme神的源码，看到了 CoreText 排版这一块，里面包含了很多文字排版的专有名词，这里做一下整理，顺便帮大家安利一下。</p>
+
+<p>CoreText 框架中最常用的几个类：</p>
+
+<ul>
+<li><a href="https://developer.apple.com/library/mac/documentation/Carbon/Reference/CTFontRef/Reference/reference.html#//apple_ref/doc/uid/TP40005110">CTFont</a></li>
+<li><a href="https://developer.apple.com/library/mac/documentation/Carbon/Reference/CTFontCollectionRef/Reference/reference.html#//apple_ref/doc/uid/TP40005104">CTFontCollection</a></li>
+<li><a href="https://developer.apple.com/library/mac/documentation/Carbon/Reference/CTFontDescriptorRef/Reference/reference.html#//apple_ref/doc/uid/TP40005107">CTFontDescriptor</a></li>
+<li><a href="https://developer.apple.com/library/mac/documentation/Carbon/Reference/CTFrameRef/Reference/reference.html#//apple_ref/doc/uid/TP40005113">CTFrame</a></li>
+<li><a href="https://developer.apple.com/library/mac/documentation/Carbon/Reference/CTFramesetterRef/Reference/reference.html#//apple_ref/doc/uid/TP40005105">CTFramesetter</a></li>
+<li><a href="https://developer.apple.com/library/mac/documentation/Carbon/Reference/CTGlyphInfoRef/Reference/reference.html#//apple_ref/doc/uid/TP40005108">CTGlyphInfo</a></li>
+<li><a href="https://developer.apple.com/library/mac/documentation/Carbon/Reference/CTLineRef/Reference/reference.html#//apple_ref/doc/uid/TP40005111">CTLine</a></li>
+<li><a href="https://developer.apple.com/library/mac/documentation/Carbon/Reference/CTParagraphStyleRef/Reference/reference.html#//apple_ref/doc/uid/TP40005114">CTParagraphStyle</a></li>
+<li><a href="https://developer.apple.com/library/mac/documentation/Carbon/Reference/CTRunRef/Reference/reference.html#//apple_ref/doc/uid/TP40005106">CTRun</a></li>
+<li><a href="https://developer.apple.com/library/mac/documentation/Carbon/Reference/CTTextTabRef/Reference/reference.html#//apple_ref/doc/uid/TP40005109">CTTextTab</a></li>
+<li><a href="https://developer.apple.com/library/mac/documentation/Carbon/Reference/CTTypesetterRef/Reference/reference.html#//apple_ref/doc/uid/TP40005112">CTTypesett</a></li>
+</ul>
+
+
+<p>下面是该框架的结构图</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/01/26/coretextji-chu/">阅读全文 &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
       <h1 class="entry-title"><a href="/blog/2016/01/18/cocoapod-version-update/">CocoaPod Version Update</a></h1>
     
     
@@ -181,7 +237,9 @@ var _hmt = _hmt || [];
   </header>
 
 
-  <div class="entry-content"><h2>使用 Run Loop 对象</h2>
+  <div class="entry-content"><p> 接<a href="http://superyang.gitcafe.io/blog/2016/01/08/runloopshen-du-tan-jiu-(4)/">RunLoop深度探究(四)</a></p>
+
+<h2>使用 Run Loop 对象</h2>
 
 <p>一个 run loop 对象提供了一些主要接口用于向你的 run loop 中添加 input source ，timers， 和run loop observer，并且运行它。每一条线程有且只有一个run loop 与他相关联。在 Cocoa 中，这个对象是 <a href="https://developer.apple.com/library/ios/documentation/Cocoa/Reference/Foundation/Classes/NSRunLoop_Class/index.html#//apple_ref/occ/cl/NSRunLoop">NSRunLoop</a> 类的一个实例。在底层的应用中，它是指向 <a href="https://developer.apple.com/library/ios/documentation/CoreFoundation/Reference/CFRunLoopRef/index.html#//apple_ref/c/tdef/CFRunLoopRef">CFRunLoopRef</a> 这种不透明类型的一个指针。</p>
 
@@ -719,40 +777,6 @@ var _hmt = _hmt || [];
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/01/02/happy-new-year/">Happy New Year</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-01-02T01:15:36+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>2</span><span class='date-suffix'>nd</span>, <span class='date-year'>2016</span></span> <span class='time'>1:15 am</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p><img src="https://github.com/yangchao0033/yangchao0033.github.io/blob/source/source/images/ios/2016/1/IMG_1433.jpg?raw=true" title="小雪人" alt="小雪人" /></p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/01/02/happy-new-year/">阅读全文 &rarr;</a>
-    </footer>
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/2">&larr; Older</a>
@@ -775,7 +799,7 @@ var _hmt = _hmt || [];
 <section>
   <h1>Categories</h1>
   <ul id="categories">
-    <li class='category'><a href='/blog/categories/ios/'>ios (12)</a></li>
+    <li class='category'><a href='/blog/categories/ios/'>ios (13)</a></li>
 <li class='category'><a href='/blog/categories/时光留声机/'>时光留声机 (1)</a></li>
 
   </ul>
@@ -783,6 +807,10 @@ var _hmt = _hmt || [];
 <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/01/26/coretextji-chu/">CoreText基础概念（扫盲篇）</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2016/01/18/cocoapod-version-update/">CocoaPod Version Update</a>
@@ -798,10 +826,6 @@ var _hmt = _hmt || [];
     
       <li class="post">
         <a href="/blog/2016/01/07/runloopshen-du-tan-jiu-(3)/">RunLoop深度探究（三）</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/01/07/runloopshen-du-tan-jiu-(er-)/">RunLoop深度探究（二）</a>
       </li>
     
   </ul>
