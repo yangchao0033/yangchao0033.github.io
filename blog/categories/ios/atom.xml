@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Ios | SuperYang`s Blog]]></title>
   <link href="http://yangchao0033.github.io/blog/categories/ios/atom.xml" rel="self"/>
   <link href="http://yangchao0033.github.io/"/>
-  <updated>2016-01-26T18:09:26+08:00</updated>
+  <updated>2016-01-29T18:46:33+08:00</updated>
   <id>http://yangchao0033.github.io/</id>
   <author>
     <name><![CDATA[Super Yang]]></name>
@@ -12,6 +12,249 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[HLS-ios视频播放架构深入探究（一）]]></title>
+    <link href="http://yangchao0033.github.io/blog/2016/01/29/hls-1/"/>
+    <updated>2016-01-29T18:10:36+08:00</updated>
+    <id>http://yangchao0033.github.io/blog/2016/01/29/hls-1</id>
+    <content type="html"><![CDATA[<h1>HLS-Demo</h1>
+
+<p>IOS 视屏直播样例</p>
+
+<p>主要展示 HLS 详细流程，用于iOS视屏直播。</p>
+
+<h1>HTTP Live Streaming (HLS)</h1>
+
+<p>苹果官方对于视频直播服务提出了 HLS 解决方案，该方案主要适用范围在于：</p>
+
+<ul>
+<li>使用 iPhone 、iPod touch、 iPad 以及 Apple TV 进行流媒体直播功能。（MAC 也能用）</li>
+<li>不使用特殊的服务软件进行流媒体直播。</li>
+<li>需要通过加密和鉴定（authentication）的视频点播服务。</li>
+</ul>
+
+
+<p>首先，需要大家先对 HLS 的概念进行预览。</p>
+
+<!--more-->
+
+
+<p>HLS 的目的在于，让用户可以在苹果设备（包括MAC OS X）上通过普通的网络服务完成流媒体的播放。 HLS 同时支持流媒体的<strong>实时广播</strong>和<strong>点播服务</strong>。同时也支持不同 bit 速率的<strong>多个备用流</strong>（平时根据当前网速去自适应视频的清晰度），这样客户端也好根据当前网络的带宽去只能调整当前使用的视频流。安全方面，HLS 提供了通过 HTTPS 加密对媒体文件进行加密 并 对用户进行验证，允许视频发布者去保护自己的网络。</p>
+
+<p>HLS 是苹果公司QuickTime X和iPhone软件系统的一部分。它的工作原理是把整个流分成一个个小的基于HTTP的文件来下载，每次只下载一些。当媒体流正在播放时，客户端可以选择从许多不同的备用源中以不同的速率下载同样的资源，允许流媒体会话适应不同的数据速率。在开始一个流媒体会话时，客户端会下载一个包含元数据的extended M3U (m3u8) playlist文件，用于寻找可用的媒体流。</p>
+
+<p>HLS只请求基本的HTTP报文，与实时传输协议（RTP)不同，HLS可以穿过任何允许HTTP数据通过的防火墙或者代理服务器。它也很容易使用内容分发网络来传输媒体流。</p>
+
+<p>苹果对于自家的 HLS 推广也是采取了强硬措施，当你的直播内容持续十分钟
+或者每五分钟内超过 5 MB 大小时，你的 APP 直播服务必须采用 HLS 架构，否则不允许上架。（<a href="https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/StreamingMediaGuide/UsingHTTPLiveStreaming/UsingHTTPLiveStreaming.html#//apple_ref/doc/uid/TP40008332-CH102-SW5">详情</a>）</p>
+
+<h1>相关服务支持环境 （重要组成）</h1>
+
+<ul>
+<li><code>Adobe Flash Media Server</code>：从4.5开始支持HLS、Protected HLS（PHLS）。5.0改名为Adobe Media Server</li>
+<li><a href="http://www.flussonic.com/">Flussonic Media Server</a>：2009年1月21日，版本3.0开始支持VOD、HLS、时移等。</li>
+<li>RealNetworks的 <code>Helix Universal Server</code> ：2010年4月，版本15.0开始支持iPhone, iPad和iPod的HTTP直播、点播H.264/AAC内容，最新更新在2012年11月。</li>
+<li>微软的IIS Media Services：从4.0开始支持HLS。</li>
+<li><code>Nginx RTMP Module</code>：支持直播模式的HLS。</li>
+<li><a href="https://wmspanel.com/nimble">Nimber Streamer</a></li>
+<li><a href="http://www.unified-streaming.com/">Unified Streaming Platform</a></li>
+<li><a href="https://zh.wikipedia.org/wiki/VLC_Media_Player">VLC Media Player</a>：从2.0开始支持直播和点播HLS。</li>
+<li>Wowza Media Server：2009年12月9日发布2.0，开始全面支持HLS。</li>
+<li>VODOBOX Live Server：始支持HLS。</li>
+<li><a href="http://github.com/i4tv/gstreamill">Gstreamill</a>是一个支持hls输出的，基于gstreamer的实时编码器。</li>
+</ul>
+
+
+<h1>相关客户端支持环境</h1>
+
+<ul>
+<li>iOS从3.0开始成为标准功能。</li>
+<li>Adobe Flash Player从11.0开始支持HLS。</li>
+<li>Google的Android自Honeycomb（3.0）开始支持HLS。</li>
+<li>VODOBOX HLS Player (Android,iOS, Adobe Flash Player)</li>
+<li>JW Player (Adobe Flash player)</li>
+<li>Windows 10 的 EDGE 浏览器开始支持HLS。</li>
+</ul>
+
+
+<p><img src="https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/StreamingMediaGuide/art/transport_stream_2x.png" alt="HLS架构" /></p>
+
+<p>其中输入视频源是由摄像机预先录制好的。之后这些源会被编码 <code>MPEG-4</code>（H.264 video 和 AAC audio）格式然后用硬件打包到 <code>MPEG-2</code> 的传输流中。<code>MPEG-2</code> 传输流会被分散为小片段然后保存为一个或多个系列的 .ts 格式的媒体文件。这个过程需要借助编码工具来完成，比如 Apple stream segmenter。</p>
+
+<p>纯音频会被编码为一些音频小片段，通常为 ADTS头的AAC、MP3、或者 AC-3格式。</p>
+
+<p>同时上面提到的那个切片器（segmenter）也会创建一个索引文件，通常会包含这些媒体文件的一个列表，也能包含元数据。他一般都是一个.M38U 个hi的列表。列表元素会关联一个 URL 用于客户端访问。然后按序去请求这些 URL。</p>
+
+<h3>服务器端</h3>
+
+<p>服务端可以采用硬件编码和软件编码两种形式，其功能都是按照上文描述的规则对现有的媒体文件进行切片并使用索引文件进行管理。而软件切片通常会使用 Apple 公司提供的工具或者第三方的集成工具。</p>
+
+<h4>媒体编码</h4>
+
+<p>媒体编码器获取到音视频设备的实时信号，将其编码后压缩用于传输。而编码格式必须配置为客户端所支持的格式，比如 H.264 视频和HE-AAC 音频。当前，支持 用于视频的 MPEG-2 传输流和 纯音频 MPEG 基本流。编码器通过本地网络将 MPEG-2 传输流分发出去，送到流切片器那里。标准传输流和压缩传输流无法混合使用。传输流可以被打包成很多种不同的压缩格式，这里有两个表详细列举了支持的压缩格式类型。
+* <a href="https://developer.apple.com/library/ios/documentation/Miscellaneous/Conceptual/iPhoneOSTechOverview/MediaLayer/MediaLayer.html#//apple_ref/doc/uid/TP40007898-CH9-SW2">Audio Technologies</a>
+* <a href="https://developer.apple.com/library/ios/documentation/Miscellaneous/Conceptual/iPhoneOSTechOverview/MediaLayer/MediaLayer.html#//apple_ref/doc/uid/TP40007898-CH9-SW6">Vedio Technologies</a></p>
+
+<h5>[重点]在编码中图，不要修改视频编码器的设置，比如视频大小或者编码解码器类型。如果避免不了，那修改动作必须发生在一个片段边界。并且需要早之后相连的片段上用 <code>EXT-X-DISCONTINUITY</code> 进行标记。</h5>
+
+<h4>流切片器</h4>
+
+<p>流切片器（通常是一个软件）会通过本地网络从上面的媒体编码器中读取数据，然后将着这些数据一组相等时间间隔的 <code>小</code> 媒体文件。虽然没一个片段都是一个单独的文件，但是他们的来源是一个连续的流，切完照样可以无缝重构回去。</p>
+
+<p>切片器在切片同时会创建一个索引文件，索引文件会包含这些切片文件的引用。每当一个切片文件生成后，索引文件都会进行更新。索引用于追踪切片文件的有效性和定位切片文件的位置。切片器同时也可以对你的媒体片段进行加密并且创建一个密钥文件作为整个过程的一部分。</p>
+
+<h4>文件切片器（相对于上面的流切片器）</h4>
+
+<p>如果已近有编码后的文件（而不是编码流），你可以使用文件切片器，通过它对编码后的媒体文件进行 MPEG-2 流的封装并且将它们分割为等长度的小片段。切片器允许你使用已经存在的音视频库用于 HLS 服务。它和流切片器的功能相似，但是处理的源从流替换流为了文件。</p>
+
+<h3>媒体片段文件</h3>
+
+<p>媒体片段是由切片器生成的，基于编码后的媒体源，并且是由一系列的 <code>.ts</code> 格式的文件组成，其中包含了你想通过 MPEG-2 传送流携带的 H.264 视频 和 AAC
+/MP3/AC-3 音频。对于纯音频的广播，切片器可以生产 MPEG 基础音频流，其中包含了 ADTS头的AAC、MP3、或者AC3等音频。</p>
+
+<h3>索引文件（PlayLists）</h3>
+
+<p>通常由切片器附带生成，保存为 <code>.M3U8</code> 格式，<code>.m3u</code> 一般用于 MP3 音频的索引文件。
+<a href="">Note</a>如果你的扩展名是.m3u,并且系统支持.mp3文件，那客户的软件可能要与典型的 MP3 playList 保持一致来完成 流网络音频的播放。</p>
+
+<p>下面是一个 <code>.M3U8</code> 的 playlist 文件样例，其中包含了三个没有加密的十秒钟的媒体文件：</p>
+
+<pre><code>#EXT-X-VERSION:3
+#EXTM3U
+#EXT-X-TARGETDURATION:10
+#EXT-X-MEDIA-SEQUENCE:1
+
+# Old-style integer duration; avoid for newer clients.
+#EXTINF:10,
+http://media.example.com/segment0.ts
+
+# New-style floating-point duration; use for modern clients.
+#EXTINF:10.0,
+http://media.example.com/segment1.ts
+#EXTINF:9.5,
+http://media.example.com/segment2.ts
+#EXT-X-ENDLIST
+</code></pre>
+
+<p>为了更精确，你可以在 version 3 或者之后的协议版本中使用 float 数来标记媒体片段的时长，并且要明确写明版本号，如果没有版本号，则必须与 version 1 协议保持一致。你可以使用官方提供的切片器去生产各种各样的 playlist 索引文件，详见 <a href="https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/StreamingMediaGuide/UsingHTTPLiveStreaming/UsingHTTPLiveStreaming.html#//apple_ref/doc/uid/TP40008332-CH102-SW7">媒体文件切片器</a></p>
+
+<h3>分布式部分</h3>
+
+<p>分布式系统是一个网络服务或者一个网络缓存系统，用于通过 HTTP 向客户端发送媒体文件和索引文件。不用自定义模块发送内容。通常仅仅需要很简单的网络配置即可使用。而且这种配置一般就是限制指定 .M38U 文件和 .ts 文件的 MIME 类型。详见 <a href="https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/StreamingMediaGuide/DeployingHTTPLiveStreaming/DeployingHTTPLiveStreaming.html#//apple_ref/doc/uid/TP40008332-CH2-SW3">部署 HTTP Live Streaming</a></p>
+
+<h3>客户端部分</h3>
+
+<p>客户端开始时回去抓取 索引文件(.m3u8/.m3u)，其中用URL来标记不同的流。索引文件可以指定可用媒体文件的位置，解密的密钥，以及任何可以切换的流。对于选中的流，客户端会有序的下载每一个可获得的文件。每一个文件都包含流中的连环碎片。一旦下载到足够量的数据，客户端会开始向用户展示重新装配好的媒体资源。</p>
+
+<p>客户端负责抓取任何解密密钥，认证或者展示一个用于认证的界面，之后再解密需要的文件。</p>
+
+<p>这个过程会一直持续知道出现 结束标记 <code>#EXT-X-ENDLIST</code>。如果结束标记不出现，该索引就是用于持续广播的。客户端会定期的加载一些新的索引文件。客户端会从新更新的索引文件中去查找加密密钥并且将关联的URL加入到请求队列中去。</p>
+
+<h3>HLS 的使用</h3>
+
+<p>使用 HLS 需要使用一些工具，当然大部分工具都是服务器端使用的，这里简单了解一下就行，包括 media stream segmenter, a media file segmenter, a stream validator, an id3 tag generator, a variant playlist generator.这些工具用英文注明是为了当你在<a href="https://developer.apple.com/">苹果开发中心</a>中寻找时方便一些。</p>
+
+<h3>会话模式</h3>
+
+<p>通常包含 Live 和 VOD （点播）两种</p>
+
+<p><strong>点播VOD</strong>的特点就是可以获取到一个静态的索引文件，其中那个包含一套完整的资源文件地址。这种模式允许客户端访问全部节目。VOD点播拥有先进的下载技术，包括加密认证技术和动态切换文件传输速率的功能（通常用于不同分辨率视频之间的切换）。</p>
+
+<p><strong>Live</strong> 会话就是实时事件的录制展示。它的索引文件一直处于动态变化的，你需要不断的更新索引文件 playlist 然后移除旧的索引文件。这种类型通过向索引文件添加媒体地址可以很容易的转化为VOD类型。在转化时不要移除原来旧的源，而是通过添加一个 <code>#ET-X-ENDLIST</code> 标记来终止实时事件。转化时如果你的索引文件中包含 <code>EXT-X-PLAYLIST-TYPE</code> 标签，你需要将值从 <code>EVENT</code> 改为 <code>VOD</code>。</p>
+
+<p>ps:自己抓了一个直播的源，从索引中看到的结果是第一次回抓到代表不同带宽的playList(抓取地址：<code>http://dlhls.cdn.zhanqi.tv/zqlive/34338_PVMT5.m3u8</code>)</p>
+
+<pre><code>#EXTM3U
+#EXT-X-VERSION:3
+#EXT-X-STREAM-INF:PROGRAM-ID=1,PUBLISHEDTIME=1453914627,CURRENTTIME=1454056509,BANDWIDTH=700000,RESOLUTION=1280x720
+34338_PVMT5_700/index.m3u8?Dnion_vsnae=34338_PVMT5
+#EXT-X-STREAM-INF:PROGRAM-ID=1,PUBLISHEDTIME=1453914627,CURRENTTIME=1454056535,BANDWIDTH=400000
+34338_PVMT5_400/index.m3u8?Dnion_vsnae=34338_PVMT5
+#EXT-X-STREAM-INF:PROGRAM-ID=1,PUBLISHEDTIME=1453914627,CURRENTTIME=1454056535,BANDWIDTH=1024000
+34338_PVMT5_1024/index.m3u8?Dnion_vsnae=34338_PVMT5
+</code></pre>
+
+<p>这里面的链接不是视频源URL，而是一个用于流切换的主索（下面会有介绍）引我猜想是需要对上一次的抓包地址做一个拼接</p>
+
+<p>组合的结果就是：<code>http://dlhls.cdn.zhanqi.tv/zqlive/34338_PVMT5_1024/index.m3u8?Dnion_vsnae=34338_PVMT5</code>(纯属小学智力题😂。。。)将它作为抓取地址再一次的结果</p>
+
+<pre><code>#EXTM3U
+#EXT-X-VERSION:3
+#EXT-X-MEDIA-SEQUENCE:134611
+#EXT-X-TARGETDURATION:10
+#EXTINF:9.960,
+35/1454056634183_128883.ts?Dnion_vsnae=34338_PVMT5
+#EXTINF:9.960,
+35/1454056644149_128892.ts?Dnion_vsnae=34338_PVMT5
+#EXTINF:9.960,
+35/1454056654075_128901.ts?Dnion_vsnae=34338_PVMT5
+</code></pre>
+
+<p>同理，继续向下抓：（拼接地址：<code>http://dlhls.cdn.zhanqi.tv/zqlive/34338_PVMT5_1024/index.m3u8?Dnion_vsnae=34338_PVMT5/35/1454056634183_128883.ts?Dnion_vsnae=34338_PVMT5/36/1454059958599_131904.ts?Dnion_vsnae=34338_PVMT5</code>）
+抓取结果：</p>
+
+<pre><code>#EXTM3U
+#EXT-X-VERSION:3
+#EXT-X-MEDIA-SEQUENCE:134984
+#EXT-X-TARGETDURATION:10
+#EXTINF:9.280,
+36/1454059988579_131931.ts?Dnion_vsnae=34338_PVMT5
+#EXTINF:9.960,
+36/1454059998012_131940.ts?Dnion_vsnae=34338_PVMT5
+#EXTINF:9.960,
+36/1454060007871_131949.ts?Dnion_vsnae=34338_PVMT5
+</code></pre>
+
+<p>相比于第二次又获取了一个片段的索引，而且只要是第二次之后，资源地址都会包含 <code>.ts</code>，说明里面是有视频资源URL的，不过具体的截取方法还是需要查看前面提到的IETF的那套标准的HLS的协议，利用里面的协议应该就能拼接出完整的资源路径进行下载。反正我用苹果自带的MPMoviePlayerController直接播放是没有问题的，的确是直播资源。与之前说过的苹果自带的QuickTime类似，都遵循了HLS协议用于流媒体播放。而每次通过拼接获取下一次的索引，符合协议里提到的不断的更替索引的动作。</p>
+
+<h3>内容加密</h3>
+
+<p>如果内容需要加密，你可以在索引文件中找到密钥的相关信息。如果索引文件中包含了一个密钥文件的信息，那接下来的媒体文件就必须使用密钥解密后才能解密打开了。当前的 HLS 支持使用16-octet 类型密钥的 AES-128 加密。这个密钥格式是一个由着在二进制格式中的16个八进制组的数组打包而成的。</p>
+
+<p>加密的配置模式通常包含三种：
+1. 模式一：允许你在磁盘上制定一个密钥文件路径，切片器会在索引文件中插入存在的密钥文件的 URL。所有的媒体文件都使用该密钥进行加密。
+2. 模式二：切片器会生成一个随机密钥文件，将它保存在指定的路径，并在索引文件中引用它。所有的媒体文件都会使用这个随机密钥进行加密。
+3. 模式三：每 n 个片段生成一个随机密钥文件，并保存到指定的位置，在索引中引用它。这个模式的密钥处于轮流加密状态。每一组 n 个片段文件会使用不同的密钥加密。</p>
+
+<blockquote><p>理论上，不定期的碎片个数生成密钥会更安全，但是定期的生成密钥不会对系统的性能产生太大的影响。</p></blockquote>
+
+<p>你可以通过 HTTP 或者 HTTPS 提供密钥。也可以选择使用你自己的基于会话的认证安排去保护发送的key。更多详情可以参考 <a href="https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/StreamingMediaGuide/DeployingHTTPLiveStreaming/DeployingHTTPLiveStreaming.html#//apple_ref/doc/uid/TP40008332-CH2-SW2">通过 HTTPS 安全的提供预约</a></p>
+
+<p>密钥文件需要一个 initialization vector (IV) 去解码加密的媒体文件。IV 可以随着密钥定期的改变。</p>
+
+<h3>缓存和发送协议</h3>
+
+<p>HTTPS通常用于发送密钥，同时，他也可以用于平时的媒体片段和索引文件的传输。但是当扩展性更重要时，这样做是不推荐的。HTTPS 请求通常都是绕开 web 服务缓存，导致所有内容请求都是通过你的服务进行转发，这有悖于分布式网络连接系统的目的。</p>
+
+<p>处于这个原因，确保你发送的网络内容都明白非常重要。当处于实况广播模式时索引文件不会像分片媒体文件一样长时间的被缓存，他会动态不停地变化。</p>
+
+<h3>流切换</h3>
+
+<p>如果你的视频具备流切换功能，这对于用户来说是一个非常棒的体验，处于不同的带宽、不同的网速播放不同清晰度的视频流，这样只能的流切换可以保证用户感觉到非常流畅的观影体验，同时不同的设备也可以作为选择的条件，比如视网膜屏可以再网速良好的情况下播放清晰度更高的视频流。</p>
+
+<p>这种功能的实现在于，索引文件的特殊结构</p>
+
+<p><img src="https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/StreamingMediaGuide/art/indexing_2x.png" alt="流切换索引文件结构" /></p>
+
+<p>有别于普通的索引，具备流热切换的索引通常由主索引和链接不同带宽速率的资源的子索引，由子索引再链接对引得.ts视频切片文件。其中主索引只下载一次，而子索引则会不停定期的下载，通常会先使用主索引中列出的第一个子索引，之后才会根据当时的网络情况去动态切换合适的流。客户端会在任何时间去切换不同的流。比如连入或者退出一个 wifi 热点。所有的切换都会使用相同的音频文件（换音频没多大意思相对于视频）在不同的流之间平滑的进行切换。
+这一套不同速率的视频都是有工具生成的，使用<code>variantplaylistcreator</code> 工具并且为 <code>mediafilesegmenter</code> 或者 <code>mediastreamsegmenter</code> 指定 -generate-variant-playlist 选项,详情参考 <a href="https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/StreamingMediaGuide/UsingHTTPLiveStreaming/UsingHTTPLiveStreaming.html#//apple_ref/doc/uid/TP40008332-CH102-SW3">下载工具</a></p>
+
+<p>概念先写到这吧，前面的知识够对HSL的整体结构做一个初步的了解。</p>
+
+<p>后面一篇博客会结合代码对整个流程进行说明。</p>
+
+<h4>参考文献：</h4>
+
+<p><a href="https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/StreamingMediaGuide/HTTPStreamingArchitecture/HTTPStreamingArchitecture.html#//apple_ref/doc/uid/TP40008332-CH101-SW4">苹果官方文档</a></p>
+
+<p><a href="https://zh.wikipedia.org/wiki/HTTP_Live_Streaming#.E5.AE.A2.E6.88.B7.E7.AB.AF.E6.94.AF.E6.8C.81">维基百科</a></p>
+
+<p><a href="http://my.oschina.net/CgShare/blog/302303">http://my.oschina.net/CgShare/blog/302303</a></p>
+
+<p><a href="http://blog.csdn.net/woaifen3344/article/details/40837803">http://blog.csdn.net/woaifen3344/article/details/40837803</a></p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[CoreText基础概念（扫盲篇）]]></title>
@@ -1447,412 +1690,6 @@ Note: modes 的区别取决于 event（事件） 的 source ，不是 event 的�
 
 
 <p>如果你选择使用 run loop，配置和建立它是非常简单的。如同所有的多线程编程一样，你需要有计划的在合适的情况下退出子线程。让它（run loop）更好的退出而不是迫使它终止永远都是更好的更干净的结束线程的方法。关于如何配置并且退出的方法将在<a href="https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/Multithreading/RunLoopManagement/RunLoopManagement.html#//apple_ref/doc/uid/10000057i-CH16-SW5">使用Run Loop对象</a>中向大家展示。</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[RunLoop深度探究（三）]]></title>
-    <link href="http://yangchao0033.github.io/blog/2016/01/07/runloopshen-du-tan-jiu-(3)/"/>
-    <updated>2016-01-07T11:54:24+08:00</updated>
-    <id>http://yangchao0033.github.io/blog/2016/01/07/runloopshen-du-tan-jiu-(3)</id>
-    <content type="html"><![CDATA[<h2>苹果用 RunLoop 实现的功能</h2>
-
-<p>首先我们可以看一下 App 启动后 RunLoop 的状态：</p>
-
-<pre><code class="objc">CFRunLoop {
-    current mode = kCFRunLoopDefaultMode
-    common modes = {
-        UITrackingRunLoopMode
-        kCFRunLoopDefaultMode
-    }
-
-    common mode items = {
-
-        // source0 (manual)
-        CFRunLoopSource {order =-1, {
-            callout = _UIApplicationHandleEventQueue}}
-        CFRunLoopSource {order =-1, {
-            callout = PurpleEventSignalCallback }}
-        CFRunLoopSource {order = 0, {
-            callout = FBSSerialQueueRunLoopSourceHandler}}
-
-        // source1 (mach port)
-        CFRunLoopSource {order = 0,  {port = 17923}}
-        CFRunLoopSource {order = 0,  {port = 12039}}
-        CFRunLoopSource {order = 0,  {port = 16647}}
-        CFRunLoopSource {order =-1, {
-            callout = PurpleEventCallback}}
-        CFRunLoopSource {order = 0, {port = 2407,
-            callout = _ZL20notify_port_callbackP12__CFMachPortPvlS1_}}
-        CFRunLoopSource {order = 0, {port = 1c03,
-            callout = __IOHIDEventSystemClientAvailabilityCallback}}
-        CFRunLoopSource {order = 0, {port = 1b03,
-            callout = __IOHIDEventSystemClientQueueCallback}}
-        CFRunLoopSource {order = 1, {port = 1903,
-            callout = __IOMIGMachPortPortCallback}}
-
-        // Ovserver
-        CFRunLoopObserver {order = -2147483647, activities = 0x1, // Entry
-            callout = _wrapRunLoopWithAutoreleasePoolHandler}
-        CFRunLoopObserver {order = 0, activities = 0x20,          // BeforeWaiting
-            callout = _UIGestureRecognizerUpdateObserver}
-        CFRunLoopObserver {order = 1999000, activities = 0xa0,    // BeforeWaiting | Exit
-            callout = _afterCACommitHandler}
-        CFRunLoopObserver {order = 2000000, activities = 0xa0,    // BeforeWaiting | Exit
-            callout = _ZN2CA11Transaction17observer_callbackEP19__CFRunLoopObservermPv}
-        CFRunLoopObserver {order = 2147483647, activities = 0xa0, // BeforeWaiting | Exit
-            callout = _wrapRunLoopWithAutoreleasePoolHandler}
-
-        // Timer
-        CFRunLoopTimer {firing = No, interval = 3.1536e+09, tolerance = 0,
-            next fire date = 453098071 (-4421.76019 @ 96223387169499),
-            callout = _ZN2CAL14timer_callbackEP16__CFRunLoopTimerPv (QuartzCore.framework)}
-    },
-
-    modes ＝ {
-        CFRunLoopMode  {
-            sources0 =  { /* same as 'common mode items' */ },
-            sources1 =  { /* same as 'common mode items' */ },
-            observers = { /* same as 'common mode items' */ },
-            timers =    { /* same as 'common mode items' */ },
-        },
-
-        CFRunLoopMode  {
-            sources0 =  { /* same as 'common mode items' */ },
-            sources1 =  { /* same as 'common mode items' */ },
-            observers = { /* same as 'common mode items' */ },
-            timers =    { /* same as 'common mode items' */ },
-        },
-
-        CFRunLoopMode  {
-            sources0 = {
-                CFRunLoopSource {order = 0, {
-                    callout = FBSSerialQueueRunLoopSourceHandler}}
-            },
-            sources1 = (null),
-            observers = {
-                CFRunLoopObserver &gt;{activities = 0xa0, order = 2000000,
-                    callout = _ZN2CA11Transaction17observer_callbackEP19__CFRunLoopObservermPv}
-            )},
-            timers = (null),
-        },
-
-        CFRunLoopMode  {
-            sources0 = {
-                CFRunLoopSource {order = -1, {
-                    callout = PurpleEventSignalCallback}}
-            },
-            sources1 = {
-                CFRunLoopSource {order = -1, {
-                    callout = PurpleEventCallback}}
-            },
-            observers = (null),
-            timers = (null),
-        },
-
-        CFRunLoopMode  {
-            sources0 = (null),
-            sources1 = (null),
-            observers = (null),
-            timers = (null),
-        }
-    }
-}
-</code></pre>
-
-<p>可以看到，系统默认注册了5个Mode:</p>
-
-<!--more-->
-
-
-<ol>
-<li>kCFRunLoopDefaultMode: App的默认 Mode，通常主线程是在这个 Mode 下运行的。</li>
-<li>UITrackingRunLoopMode: 界面跟踪 Mode，用于 ScrollView 追踪触摸滑动，保证界面滑动时不受其他 Mode 影响。</li>
-<li>UIInitializationRunLoopMode: 在刚启动 App 时第进入的第一个 Mode，启动完成后就不再使用。
-4: GSEventReceiveRunLoopMode: 接受系统事件的内部 Mode，通常用不到。
-5: kCFRunLoopCommonModes: 这是一个占位的 Mode，没有实际作用。</li>
-</ol>
-
-
-<p>你可以在<a href="http://iphonedevwiki.net/index.php/CFRunLoop">这里</a>看到更多的苹果内部的 Mode，但那些 Mode 在开发中就很难遇到了。</p>
-
-<p>当 RunLoop 进行回调时，一般都是通过一个很长的函数调用出去 (call out), 当你在你的代码中下断点调试时，通常能在调用栈上看到这些函数。下面是这几个函数的整理版本，如果你在调用栈中看到这些长函数名，在这里查找一下就能定位到具体的调用地点了：
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-<span class='line-number'>36</span>
-<span class='line-number'>37</span>
-<span class='line-number'>38</span>
-<span class='line-number'>39</span>
-<span class='line-number'>40</span>
-<span class='line-number'>41</span>
-<span class='line-number'>42</span>
-<span class='line-number'>43</span>
-<span class='line-number'>44</span>
-<span class='line-number'>45</span>
-</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="p">{</span>
-</span><span class='line'>    <span class="c1">/// 1. 通知Observers，即将进入RunLoop</span>
-</span><span class='line'>    <span class="c1">/// 此处有Observer会创建AutoreleasePool: _objc_autoreleasePoolPush();</span>
-</span><span class='line'>    <span class="o">&lt;</span><span class="k">strong</span><span class="o">&gt;</span><span class="n">CFRUNLOOP_IS_CALLING_OUT_TO_AN_OBSERVER_CALLBACK_FUNCTION</span><span class="o">&lt;/</span><span class="k">strong</span><span class="o">&gt;</span><span class="p">(</span><span class="n">kCFRunLoopEntry</span><span class="p">);</span>
-</span><span class='line'>    <span class="k">do</span> <span class="p">{</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span>    <span class="c1">/// 2. 通知 Observers: 即将触发 Timer 回调。</span>
-</span><span class='line'>    <span class="n">__CFRUNLOOP_IS_CALLING_OUT_TO_AN_OBSERVER_CALLBACK_FUNCTION__</span><span class="p">(</span><span class="n">kCFRunLoopBeforeTimers</span><span class="p">);</span>
-</span><span class='line'>    <span class="c1">/// 3. 通知 Observers: 即将触发 Source (非基于port的,Source0) 回调。</span>
-</span><span class='line'>    <span class="n">__CFRUNLOOP_IS_CALLING_OUT_TO_AN_OBSERVER_CALLBACK_FUNCTION__</span><span class="p">(</span><span class="n">kCFRunLoopBeforeSources</span><span class="p">);</span>
-</span><span class='line'>    <span class="n">__CFRUNLOOP_IS_CALLING_OUT_TO_A_BLOCK__</span><span class="p">(</span><span class="n">block</span><span class="p">);</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="c1">/// 4. 触发 Source0 (非基于port的) 回调。</span>
-</span><span class='line'>    <span class="n">__CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE0_PERFORM_FUNCTION__</span><span class="p">(</span><span class="n">source0</span><span class="p">);</span>
-</span><span class='line'>    <span class="n">__CFRUNLOOP_IS_CALLING_OUT_TO_A_BLOCK__</span><span class="p">(</span><span class="n">block</span><span class="p">);</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="c1">/// 6. 通知Observers，即将进入休眠</span>
-</span><span class='line'>    <span class="c1">/// 此处有Observer释放并新建AutoreleasePool: _objc_autoreleasePoolPop(); _objc_autoreleasePoolPush();</span>
-</span><span class='line'>    <span class="n">__CFRUNLOOP_IS_CALLING_OUT_TO_AN_OBSERVER_CALLBACK_FUNCTION__</span><span class="p">(</span><span class="n">kCFRunLoopBeforeWaiting</span><span class="p">);</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="c1">/// 7. sleep to wait msg.</span>
-</span><span class='line'>    <span class="n">mach_msg</span><span class="p">()</span> <span class="o">-&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="n">mach_msg_trap</span><span class="p">();</span>
-</span><span class='line'>
-</span><span class='line'>
-</span><span class='line'>    <span class="c1">/// 8. 通知Observers，线程被唤醒</span>
-</span><span class='line'>    <span class="n">__CFRUNLOOP_IS_CALLING_OUT_TO_AN_OBSERVER_CALLBACK_FUNCTION__</span><span class="p">(</span><span class="n">kCFRunLoopAfterWaiting</span><span class="p">);</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="c1">/// 9. 如果是被Timer唤醒的，回调Timer</span>
-</span><span class='line'>    <span class="n">__CFRUNLOOP_IS_CALLING_OUT_TO_A_TIMER_CALLBACK_FUNCTION__</span><span class="p">(</span><span class="n">timer</span><span class="p">);</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="c1">/// 9. 如果是被dispatch唤醒的，执行所有调用 dispatch_async 等方法放入main queue 的 block</span>
-</span><span class='line'>    <span class="n">__CFRUNLOOP_IS_SERVICING_THE_MAIN_DISPATCH_QUEUE__</span><span class="p">(</span><span class="n">dispatched_block</span><span class="p">);</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="c1">/// 9. 如果如果Runloop是被 Source1 (基于port的) 的事件唤醒了，处理这个事件</span>
-</span><span class='line'>    <span class="n">__CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE1_PERFORM_FUNCTION__</span><span class="p">(</span><span class="n">source1</span><span class="p">);</span>
-</span><span class='line'>
-</span><span class='line'>
-</span><span class='line'><span class="p">}</span> <span class="k">while</span> <span class="p">(...);</span>
-</span><span class='line'>
-</span><span class='line'><span class="c1">/// 10. 通知Observers，即将退出RunLoop</span>
-</span><span class='line'><span class="c1">/// 此处有Observer释放AutoreleasePool: _objc_autoreleasePoolPop();</span>
-</span><span class='line'><span class="n">__CFRUNLOOP_IS_CALLING_OUT_TO_AN_OBSERVER_CALLBACK_FUNCTION__</span><span class="p">(</span><span class="n">kCFRunLoopExit</span><span class="p">);</span>
-</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure></p>
-
-<h3>AutoreleasePool</h3>
-
-<p>App启动后，苹果在主线程 RunLoop 里注册了两个 Observer，其回调都是 _wrapRunLoopWithAutoreleasePoolHandler()。</p>
-
-<p>第一个 Observer 监视的事件是 Entry(即将进入Loop)，其回调内会调用 _objc_autoreleasePoolPush() 创建自动释放池。其 order 是-2147483647，优先级最高，保证创建释放池发生在其他所有回调之前。</p>
-
-<p>第二个 Observer 监视了两个事件： BeforeWaiting(准备进入休眠) 时调用<em>objc_autoreleasePoolPop() 和 </em>objc_autoreleasePoolPush() 释放旧的池并创建新池；Exit(即将退出Loop) 时调用 _objc_autoreleasePoolPop() 来释放自动释放池。这个 Observer 的 order 是 2147483647，优先级最低，保证其释放池子发生在其他所有回调之后。</p>
-
-<p>在主线程执行的代码，通常是写在诸如事件回调、Timer回调内的。这些回调会被 RunLoop 创建好的 AutoreleasePool 环绕着，所以不会出现内存泄漏，开发者也不必显示创建 Pool 了。</p>
-
-<h3>事件响应</h3>
-
-<p>苹果注册了一个 Source1 (基于 mach port 的) 用来接收系统事件，其回调函数为 __IOHIDEventSystemClientQueueCallback()。</p>
-
-<p>当一个硬件事件(触摸/锁屏/摇晃等)发生后，首先由 IOKit.framework 生成一个 IOHIDEvent 事件并由 SpringBoard 接收。这个过程的详细情况可以参考<a href="http://iphonedevwiki.net/index.php/IOHIDFamily">这里</a>。SpringBoard 只接收按键(锁屏/静音等)，触摸，加速，接近传感器等几种 Event，随后用 mach port 转发给需要的App进程。随后苹果注册的那个 Source1 就会触发回调，并调用 _UIApplicationHandleEventQueue() 进行应用内部的分发。</p>
-
-<p>_UIApplicationHandleEventQueue() 会把 IOHIDEvent 处理并包装成 UIEvent 进行处理或分发，其中包括识别 UIGesture/处理屏幕旋转/发送给 UIWindow 等。通常事件比如 UIButton 点击、touchesBegin/Move/End/Cancel 事件都是在这个回调中完成的。</p>
-
-<h3>手势识别</h3>
-
-<p>当上面的 _UIApplicationHandleEventQueue() 识别了一个手势时，其首先会调用 Cancel 将当前的 touchesBegin/Move/End 系列回调打断。随后系统将对应的 UIGestureRecognizer 标记为待处理。</p>
-
-<p>苹果注册了一个 Observer 监测 BeforeWaiting (Loop即将进入休眠) 事件，这个Observer的回调函数是 _UIGestureRecognizerUpdateObserver()，其内部会获取所有刚被标记为待处理的 GestureRecognizer，并执行GestureRecognizer的回调。</p>
-
-<p>当有 UIGestureRecognizer 的变化(创建/销毁/状态改变)时，这个回调都会进行相应处理。</p>
-
-<h3>界面更新</h3>
-
-<p>当在操作 UI 时，比如改变了 Frame、更新了 UIView/CALayer 的层次时，或者手动调用了 UIView/CALayer 的 setNeedsLayout/setNeedsDisplay方法后，这个 UIView/CALayer 就被标记为待处理，并被提交到一个全局的容器去。</p>
-
-<p>苹果注册了一个 Observer 监听 BeforeWaiting(即将进入休眠) 和 Exit (即将退出Loop) 事件，回调去执行一个很长的函数：
-_ZN2CA11Transaction17observer_callbackEP19__CFRunLoopObservermPv()。这个函数里会遍历所有待处理的 UIView/CAlayer 以执行实际的绘制和调整，并更新 UI 界面。</p>
-
-<p>这个函数内部的调用栈大概是这样的：</p>
-
-<pre><code class="objc">_ZN2CA11Transaction17observer_callbackEP19__CFRunLoopObservermPv()
-    QuartzCore:CA::Transaction::observer_callback:
-        CA::Transaction::commit();
-            CA::Context::commit_transaction();
-                CA::Layer::layout_and_display_if_needed();
-                    CA::Layer::layout_if_needed();
-                        [CALayer layoutSublayers];
-                            [UIView layoutSubviews];
-                    CA::Layer::display_if_needed();
-                        [CALayer display];
-                            [UIView drawRect];
-</code></pre>
-
-<h3>定时器</h3>
-
-<p>NSTimer 其实就是 CFRunLoopTimerRef，他们之间是 toll-free bridged 的。一个 NSTimer 注册到 RunLoop 后，RunLoop 会为其重复的时间点注册好事件。例如 10:00, 10:10, 10:20 这几个时间点。RunLoop为了节省资源，并不会在非常准确的时间点回调这个Timer。Timer 有个属性叫做 Tolerance (宽容度)，标示了当时间点到后，容许有多少最大误差。</p>
-
-<p>如果某个时间点被错过了，例如执行了一个很长的任务，则那个时间点的回调也会跳过去，不会延后执行。就比如等公交，如果 10:10 时我忙着玩手机错过了那个点的公交，那我只能等 10:20 这一趟了。</p>
-
-<p>CADisplayLink 是一个和屏幕刷新率一致的定时器（但实际实现原理更复杂，和 NSTimer 并不一样，其内部实际是操作了一个 Source）。如果在两次屏幕刷新之间执行了一个长任务，那其中就会有一帧被跳过去（和 NSTimer 相似），造成界面卡顿的感觉。在快速滑动TableView时，即使一帧的卡顿也会让用户有所察觉。Facebook 开源的 AsyncDisplayLink 就是为了解决界面卡顿的问题，其内部也用到了 RunLoop，这个稍后我会再单独写一页博客来分析。</p>
-
-<h3>PerformSelector</h3>
-
-<p>当调用 NSObject 的 performSelecter:afterDelay: 后，实际上其内部会创建一个 Timer 并添加到当前线程的 RunLoop 中。所以如果当前线程没有 RunLoop，则这个方法会失效。</p>
-
-<p>当调用 performSelector:onThread: 时，实际上其会创建一个 Timer 加到对应的线程去，同样的，如果对应线程没有 RunLoop 该方法也会失效。</p>
-
-<h3>关于GCD</h3>
-
-<p>实际上 RunLoop 底层也会用到 GCD 的东西。同时 GCD 提供的某些接口也用到了 RunLoop， 例如 dispatch_async()。</p>
-
-<p>当调用 dispatch_async(dispatch_get_main_queue(), block) 时，libDispatch 会向主线程的 RunLoop 发送消息，RunLoop会被唤醒，并从消息中取得这个 block，并在回调 <strong>CFRUNLOOP_IS_SERVICING_THE_MAIN_DISPATCH_QUEUE</strong>() 里执行这个 block。但这个逻辑仅限于 dispatch 到主线程，dispatch 到其他线程仍然是由 libDispatch 处理的。</p>
-
-<h3>关于网络请求</h3>
-
-<p>iOS 中，关于网络请求的接口自下至上有如下几层:
-<code>objc
-CFSocket
-CFNetwork       -&gt;ASIHttpRequest
-NSURLConnection -&gt;AFNetworking
-NSURLSession    -&gt;AFNetworking2, Alamofire
-</code>
-• CFSocket 是最底层的接口，只负责 socket 通信。
-• CFNetwork 是基于 CFSocket 等接口的上层封装，ASIHttpRequest 工作于这一层。
-• NSURLConnection 是基于 CFNetwork 的更高层的封装，提供面向对象的接口，AFNetworking 工作于这一层。
-• NSURLSession 是 iOS7 中新增的接口，表面上是和 NSURLConnection 并列的，但底层仍然用到了 NSURLConnection 的部分功能 (比如 com.apple.NSURLConnectionLoader 线程)，AFNetworking2 和 Alamofire 工作于这一层。</p>
-
-<p>下面主要介绍下 NSURLConnection 的工作过程。</p>
-
-<p>通常使用 NSURLConnection 时，你会传入一个 Delegate，当调用了 [connection start] 后，这个 Delegate 就会不停收到事件回调。实际上，start 这个函数的内部会会获取 CurrentRunLoop，然后在其中的 DefaultMode 添加了4个 Source0 (即需要手动触发的Source)。CFMultiplexerSource 是负责各种 Delegate 回调的，CFHTTPCookieStorage 是处理各种 Cookie 的。</p>
-
-<p>当开始网络传输时，我们可以看到 NSURLConnection 创建了两个新线程：com.apple.NSURLConnectionLoader 和 com.apple.CFSocket.private。其中 CFSocket 线程是处理底层 socket 连接的。NSURLConnectionLoader 这个线程内部会使用 RunLoop 来接收底层 socket 的事件，并通过之前添加的 Source0 通知到上层的 Delegate。
-<img src="https://github.com/yangchao0033/blog/blob/master/ios/2015/12/Image/RunLoop_network.png?raw=true" alt="NSURLConnection" /></p>
-
-<p>NSURLConnectionLoader 中的 RunLoop 通过一些基于 mach port 的 Source 接收来自底层 CFSocket 的通知。当收到通知后，其会在合适的时机向 CFMultiplexerSource 等 Source0 发送通知，同时唤醒 Delegate 线程的 RunLoop 来让其处理这些通知。CFMultiplexerSource 会在 Delegate 线程的 RunLoop 对 Delegate 执行实际的回调。</p>
-
-<h2>RunLoop 的实际应用举例</h2>
-
-<h3>AFNetworking</h3>
-
-<p><a href="https://github.com/AFNetworking/AFNetworking/blob/2.6.3/AFNetworking/AFURLConnectionOperation.m">AFURLConnectionOperation</a> 这个类是基于 NSURLConnection 构建的，其希望能在后台线程接收 Delegate 回调。为此 AFNetworking 单独创建了一个线程，并在这个线程中启动了一个 RunLoop：
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="p">+</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">networkRequestThreadEntryPoint:</span><span class="p">(</span><span class="kt">id</span><span class="p">)</span><span class="nv">__unused</span> <span class="n">object</span> <span class="p">{</span>
-</span><span class='line'>    <span class="k">@autoreleasepool</span> <span class="p">{</span>
-</span><span class='line'>        <span class="p">[[</span><span class="bp">NSThread</span> <span class="n">currentThread</span><span class="p">]</span> <span class="nl">setName</span><span class="p">:@</span><span class="o">&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="n">AFNetworking</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;];</span>
-</span><span class='line'>        <span class="bp">NSRunLoop</span> <span class="o">*</span><span class="n">runLoop</span> <span class="o">=</span> <span class="p">[</span><span class="bp">NSRunLoop</span> <span class="n">currentRunLoop</span><span class="p">];</span>
-</span><span class='line'>        <span class="p">[</span><span class="n">runLoop</span> <span class="nl">addPort</span><span class="p">:[</span><span class="bp">NSMachPort</span> <span class="n">port</span><span class="p">]</span> <span class="nl">forMode</span><span class="p">:</span><span class="n">NSDefaultRunLoopMode</span><span class="p">];</span>
-</span><span class='line'>        <span class="p">[</span><span class="n">runLoop</span> <span class="n">run</span><span class="p">];</span>
-</span><span class='line'>    <span class="p">}</span>
-</span><span class='line'><span class="p">}</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">ul</span><span class="o">&gt;</span>
-</span><span class='line'><span class="o">&lt;</span><span class="n">li</span><span class="o">&gt;</span><span class="p">(</span><span class="bp">NSThread</span> <span class="o">&lt;</span><span class="n">em</span><span class="o">&gt;</span><span class="p">)</span><span class="n">networkRequestThread</span> <span class="p">{</span>
-</span><span class='line'>  <span class="k">static</span> <span class="bp">NSThread</span> <span class="o">&lt;/</span><span class="n">em</span><span class="o">&gt;&lt;</span><span class="n">em</span><span class="o">&gt;</span><span class="n">networkRequestThread</span> <span class="o">=</span> <span class="nb">nil</span><span class="p">;</span>
-</span><span class='line'>  <span class="k">static</span> <span class="kt">dispatch_once_t</span> <span class="n">oncePredicate</span><span class="p">;</span>
-</span><span class='line'>  <span class="n">dispatch_once</span><span class="p">(</span><span class="o">&amp;</span><span class="n">amp</span><span class="p">;</span><span class="n">oncePredicate</span><span class="p">,</span> <span class="o">^</span><span class="p">{</span>
-</span><span class='line'>      <span class="o">&lt;/</span><span class="n">em</span><span class="o">&gt;</span><span class="n">networkRequestThread</span> <span class="o">=</span> <span class="p">[[</span><span class="bp">NSThread</span> <span class="n">alloc</span><span class="p">]</span> <span class="nl">initWithTarget</span><span class="p">:</span><span class="nb">self</span> <span class="nl">selector</span><span class="p">:</span><span class="k">@selector</span><span class="p">(</span><span class="nl">networkRequestThreadEntryPoint</span><span class="p">:)</span> <span class="nl">object</span><span class="p">:</span><span class="nb">nil</span><span class="p">];</span>
-</span><span class='line'>      <span class="p">[</span><span class="o">&lt;</span><span class="n">em</span><span class="o">&gt;</span><span class="n">networkRequestThread</span> <span class="n">start</span><span class="p">];</span>
-</span><span class='line'>  <span class="p">});</span>
-</span><span class='line'>  <span class="k">return</span> <span class="o">&lt;/</span><span class="n">em</span><span class="o">&gt;</span><span class="n">networkRequestThread</span><span class="p">;</span>
-</span></code></pre></td></tr></table></div></figure>
-RunLoop 启动前内部必须要有至少一个 Timer/Observer/Source，所以 AFNetworking 在 [runLoop run] 之前先创建了一个新的 NSMachPort 添加进去了。通常情况下，调用者需要持有这个 NSMachPort (mach_port) 并在外部线程通过这个 port 发送消息到 loop 内；但此处添加 port 只是为了让 RunLoop 不至于退出，并没有用于实际的发送消息。</li>
-</ul>
-
-
-<pre><code class="objc">- (void)start {
-    [self.lock lock];
-    if ([self isCancelled]) {
-        [self performSelector:@selector(cancelConnection) onThread:[[self class] networkRequestThread] withObject:nil waitUntilDone:NO modes:[self.runLoopModes allObjects]];
-    } else if ([self isReady]) {
-        self.state = AFOperationExecutingState;
-        [self performSelector:@selector(operationDidStart) onThread:[[self class] networkRequestThread] withObject:nil waitUntilDone:NO modes:[self.runLoopModes allObjects]];
-    }
-    [self.lock unlock];
-}
-</code></pre>
-
-<p>当需要这个后台线程执行任务时，AFNetworking 通过调用 [NSObject performSelector:onThread:..] 将这个任务扔到了后台线程的 RunLoop 中。</p>
-
-<h3>AsyncDisplayKit</h3>
-
-<p><a href="https://github.com/facebook/AsyncDisplayKit">AsyncDisplayKit</a> 是 Facebook 推出的用于保持界面流畅性的框架，其原理大致如下：</p>
-
-<p>UI 线程中一旦出现繁重的任务就会导致界面卡顿，这类任务通常分为3类：排版，绘制，UI对象操作。</p>
-
-<p>排版通常包括计算视图大小、计算文本高度、重新计算子式图的排版等操作。
-绘制一般有文本绘制 (例如 CoreText)、图片绘制 (例如预先解压)、元素绘制 (Quartz)等操作。
-UI对象操作通常包括 UIView/CALayer 等 UI 对象的创建、设置属性和销毁。</p>
-
-<p>其中前两类操作可以通过各种方法扔到后台线程执行，而最后一类操作只能在主线程完成，并且有时后面的操作需要依赖前面操作的结果 （例如TextView创建时可能需要提前计算出文本的大小）。ASDK 所做的，就是尽量将能放入后台的任务放入后台，不能的则尽量推迟 (例如视图的创建、属性的调整)。</p>
-
-<p>为此，ASDK 创建了一个名为 ASDisplayNode 的对象，并在内部封装了 UIView/CALayer，它具有和 UIView/CALayer 相似的属性，例如 frame、backgroundColor等。所有这些属性都可以在后台线程更改，开发者可以只通过 Node 来操作其内部的 UIView/CALayer，这样就可以将排版和绘制放入了后台线程。但是无论怎么操作，这些属性总需要在某个时刻同步到主线程的 UIView/CALayer 去。</p>
-
-<p>ASDK 仿照 QuartzCore/UIKit 框架的模式，实现了一套类似的界面更新的机制：即在主线程的 RunLoop 中添加一个 Observer，监听了 kCFRunLoopBeforeWaiting 和 kCFRunLoopExit 事件，在收到回调时，遍历所有之前放入队列的待处理的任务，然后一一执行。
-具体的代码可以看这里：<a href="https://github.com/facebook/AsyncDisplayKit/blob/master/AsyncDisplayKit%2FDetails%2FTransactions%2F_ASAsyncTransactionGroup.m">_ASAsyncTransactionGroup</a>。</p>
-
-<h4>特别致谢：</h4>
-
-<p><a href="http://blog.ibireme.com/2015/05/18/runloop/#more-41710">http://blog.ibireme.com/
-2015/05/18/runloop/#more-41710</a></p>
-
-<h4>参考文章</h4>
-
-<p>深入理解RunLoop(ibireme)：</p>
-
-<p><a href="http://blog.ibireme.com/2015/05/18/runloop/#more-41710">http://blog.ibireme.com/
-2015/05/18/runloop/#more-41710</a></p>
-
-<p>iPhoneDevWiki :</p>
-
-<p><a href="http://iphonedevwiki.net/index.php/CFRunLoop">iphonedevwiki.net/index.php/CFRunLoop</a>
-<a href="http://iphonedevwiki.net/index.php/IOHIDFamily">iphonedevwiki.net/index.php/IOHIDFamily</a></p>
 ]]></content>
   </entry>
   
