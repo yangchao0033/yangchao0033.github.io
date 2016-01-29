@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Ios | SuperYang`s Blog]]></title>
   <link href="http://yangchao0033.github.io/blog/categories/ios/atom.xml" rel="self"/>
   <link href="http://yangchao0033.github.io/"/>
-  <updated>2016-01-29T18:46:33+08:00</updated>
+  <updated>2016-01-29T18:49:51+08:00</updated>
   <id>http://yangchao0033.github.io/</id>
   <author>
     <name><![CDATA[Super Yang]]></name>
@@ -14,17 +14,11 @@
 
   
   <entry>
-    <title type="html"><![CDATA[HLS-ios视频播放架构深入探究（一）]]></title>
+    <title type="html"><![CDATA[HLS-iOS视频播放服务架构深入探究（一）]]></title>
     <link href="http://yangchao0033.github.io/blog/2016/01/29/hls-1/"/>
     <updated>2016-01-29T18:10:36+08:00</updated>
     <id>http://yangchao0033.github.io/blog/2016/01/29/hls-1</id>
-    <content type="html"><![CDATA[<h1>HLS-Demo</h1>
-
-<p>IOS 视屏直播样例</p>
-
-<p>主要展示 HLS 详细流程，用于iOS视屏直播。</p>
-
-<h1>HTTP Live Streaming (HLS)</h1>
+    <content type="html"><![CDATA[<h1>HTTP Live Streaming (HLS)</h1>
 
 <p>苹果官方对于视频直播服务提出了 HLS 解决方案，该方案主要适用范围在于：</p>
 
