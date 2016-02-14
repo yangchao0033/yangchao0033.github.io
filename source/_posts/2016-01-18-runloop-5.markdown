@@ -8,6 +8,8 @@ keywords: RunLoop, 官方译文, RunLoop深度探究
 Description: 对RunLoop的官方文档进行翻译并加以解释
 ---
 
+ 接[RunLoop深度探究(四)](http://superyang.gitcafe.io/blog/2016/01/08/runloopshen-du-tan-jiu-\(4\)/)
+
 ## 使用 Run Loop 对象
 一个 run loop 对象提供了一些主要接口用于向你的 run loop 中添加 input source ，timers， 和run loop observer，并且运行它。每一条线程有且只有一个run loop 与他相关联。在 Cocoa 中，这个对象是 [NSRunLoop](https://developer.apple.com/library/ios/documentation/Cocoa/Reference/Foundation/Classes/NSRunLoop_Class/index.html#//apple_ref/occ/cl/NSRunLoop) 类的一个实例。在底层的应用中，它是指向 [CFRunLoopRef](https://developer.apple.com/library/ios/documentation/CoreFoundation/Reference/CFRunLoopRef/index.html#//apple_ref/c/tdef/CFRunLoopRef) 这种不透明类型的一个指针。
 
@@ -550,9 +552,188 @@ NSString* localPortName = [NSString stringWithFormat:@"MyPortName"];
 name:localPortName];
 
 ```
+####在 Core Foundation 框架中配置一个基于端口的（Port-Based） input source
+
+这个小结描述了如歌使用 Core Foundation 框架在你的应用的主线程和辅助线程（worker thread）中创建一个双向通信信道。
+
+如表3-17 所示为应用主线程启动辅助线程所使用的代码。首先要做的是创建 [CFMessagePortRef](https://developer.apple.com/library/ios/documentation/CoreFoundation/Reference/CFMessagePortRef/index.html#//apple_ref/c/tdef/CFMessagePortRef) 不透明对象去监听从辅助线程发来的消息。辅助线程需要用来创建连接的端口名，以便于字符串值可以被发送到辅助线程的入口点函数。端口名在当前用户的上线文中通常必须是唯一的。否则，可能会出现运行冲突。
+
+表 3-17 给新线程关联一个 Core Foundation message port
+
+```objc
+#define kThreadStackSize        (8 *4096)
+ 
+OSStatus MySpawnThread()
+{
+    // 创建一个本地端口用于接受响应
+    CFStringRef myPortName;
+    CFMessagePortRef myPort;
+    CFRunLoopSourceRef rlSource;
+    CFMessagePortContext context = {0, NULL, NULL, NULL, NULL};
+    Boolean shouldFreeInfo;
+ 
+    // 用端口名 创建一个符合规范的字符串
+    myPortName = CFStringCreateWithFormat(NULL, NULL, CFSTR("com.myapp.MainThread"));
+ 
+    // 创建端口
+    myPort = CFMessagePortCreateLocal(NULL,
+                myPortName,
+                &MainThreadResponseHandler,
+                &context,
+                &shouldFreeInfo);
+ 
+    if (myPort != NULL)
+    {
+        // 端口已经被成功创建
+        // 现在为他创建 run loop source
+        rlSource = CFMessagePortCreateRunLoopSource(NULL, myPort, 0);
+ 
+        if (rlSource)
+        {
+            // 为当前 run loop 添加 source
+            CFRunLoopAddSource(CFRunLoopGetCurrent(), rlSource, kCFRunLoopDefaultMode);
+ 
+            // 一旦安装结束，这些资源需要被释放
+            CFRelease(myPort);
+            CFRelease(rlSource);
+        }
+    }
+ 
+    // 创建线程并且继续处理任务
+    MPTaskID        taskID;
+    return(MPCreateTask(&ServerThreadEntryPoint,
+                    (void*)myPortName,
+                    kThreadStackSize,
+                    NULL,
+                    NULL,
+                    NULL,
+                    0,
+                    &taskID));
+}
+```
+如果 port 端口已经被安装并且线程已经启动，主线程就可以继续定期的执行去等待辅助线程的 check-in 登记信息。一旦 check-in 登记信息到达，它将会被指派到主线程的 `MainThreadResponseHandler` 函数中，如表 3-18 所示，这个函数提取辅助线程的端口名并且创建通信管道。
+
+表 3-18 接收 check-in 登记信息
+
+```objc
+#define kCheckinMessage 100
+ 
+// 主线程端口信息处理函数
+CFDataRef MainThreadResponseHandler(CFMessagePortRef local,
+                    SInt32 msgid,
+                    CFDataRef data,
+                    void* info)
+{
+    if (msgid == kCheckinMessage)
+    {
+        CFMessagePortRef messagePort;
+        CFStringRef threadPortName;
+        CFIndex bufferLength = CFDataGetLength(data);
+        UInt8* buffer = CFAllocatorAllocate(NULL, bufferLength, 0);
+ 
+        CFDataGetBytes(data, CFRangeMake(0, bufferLength), buffer);
+        threadPortName = CFStringCreateWithBytes (NULL, buffer, bufferLength, kCFStringEncodingASCII, FALSE);
+ 
+        // 你必须通过一个 port 名获取远端信息
+        messagePort = CFMessagePortCreateRemote(NULL, (CFStringRef)threadPortName);
+ 
+        if (messagePort)
+        {
+	    // 保留并保存线程的 comm 端口 以备后用
+            AddPortToListOfActiveThreads(messagePort);
+ 
+            // 如果端口在先前的 函数 中保留了（retain），在这里释放资源
+            CFRelease(messagePort);
+        }
+ 
+        // 释放资源
+        CFRelease(threadPortName);
+        CFAllocatorDeallocate(NULL, buffer);
+    }
+    else
+    {
+        // 处理其他信息
+    }
+ 
+    return NULL;
+}
+```
+
+主线程配置完成后，唯一要做的就是为新创建的辅助线程创建它自己的 端口和 登记自己的 message。表 3-19 所示为辅助线程的入口点函数。函数提取了主线程的 port 名并且用它创建了一个远端的连接回复主线程。之后函数为自己创建一个本地端口，将端口 port 安装到线程的 runloop 中去，然后给主线程发送一个包含本地端口名的 check-in 登记信息。
+
+```objc
+OSStatus ServerThreadEntryPoint(void* param)
+{
+    // 创建连接到主线程的远端端口
+    CFMessagePortRef mainThreadPort;
+    CFStringRef portName = (CFStringRef)param;
+ 
+    mainThreadPort = CFMessagePortCreateRemote(NULL, portName);
+ 
+    // 释放被用于参数传递的字符串
+    CFRelease(portName);
+ 
+    // 为辅助才女创建一个本地端口
+    CFStringRef myPortName = CFStringCreateWithFormat(NULL, NULL, CFSTR("com.MyApp.Thread-%d"), MPCurrentTaskID());
+ 
+    // 保存线程上下文信息中的端口，以便之后使用。
+    CFMessagePortContext context = {0, mainThreadPort, NULL, NULL, NULL};
+    Boolean shouldFreeInfo;
+    Boolean shouldAbort = TRUE;
+ 
+    CFMessagePortRef myPort = CFMessagePortCreateLocal(NULL,
+                myPortName,
+                &ProcessClientRequest,
+                &context,
+                &shouldFreeInfo);
+ 
+    if (shouldFreeInfo)
+    {
+        // 如果不能创建本地端口，则杀死线程
+        MPExit(0);
+    }
+ 
+    CFRunLoopSourceRef rlSource = CFMessagePortCreateRunLoopSource(NULL, myPort, 0);
+    if (!rlSource)
+    {
+        // 如果不能创建本地端口，则杀死线程
+        MPExit(0);
+    }
+ 
+    // 给 runloop 添加source
+    CFRunLoopAddSource(CFRunLoopGetCurrent(), rlSource, kCFRunLoopDefaultMode);
+ 
+    // 一旦线程安装完毕，这些资源需要释放
+    CFRelease(myPort);
+    CFRelease(rlSource);
+ 
+    // 打包端口名，并发送 check-in 信息。
+    CFDataRef returnData = nil;
+    CFDataRef outData;
+    CFIndex stringLength = CFStringGetLength(myPortName);
+    UInt8* buffer = CFAllocatorAllocate(NULL, stringLength, 0);
+ 
+    CFStringGetBytes(myPortName,
+                CFRangeMake(0,stringLength),
+                kCFStringEncodingASCII,
+                0,
+                FALSE,
+                buffer,
+                stringLength,
+                NULL);
+ 
+    outData = CFDataCreate(NULL, buffer, stringLength);
+ 
+    CFMessagePortSendRequest(mainThreadPort, kCheckinMessage, outData, 0.1, 0.0, NULL, NULL);
+ 
+    // 清除线程数据结构
+    CFRelease(outData);
+    CFAllocatorDeallocate(NULL, buffer);
+ 
+    // 进入 runloop
+    CFRunLoopRun();
+}
+```
+一旦进入 runloop，所有发送给线程端口的事件会被 `ProcessClientRequest` 函数处理。该函数的实现依赖于工作线程的类型，这里暂不做介绍。
 
 
-
-
-
- (未完待续。。。)
