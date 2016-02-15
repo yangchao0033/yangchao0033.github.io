@@ -4,7 +4,7 @@
   <title><![CDATA[SuperYang`s Blog]]></title>
   <link href="http://yangchao0033.github.io/atom.xml" rel="self"/>
   <link href="http://yangchao0033.github.io/"/>
-  <updated>2016-02-14T17:28:56+08:00</updated>
+  <updated>2016-02-15T12:32:57+08:00</updated>
   <id>http://yangchao0033.github.io/</id>
   <author>
     <name><![CDATA[Super Yang]]></name>
@@ -12,6 +12,34 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[HLS-iOS视频播放服务架构深入探究（二）]]></title>
+    <link href="http://yangchao0033.github.io/blog/2016/02/14/hls-2/"/>
+    <updated>2016-02-14T18:51:24+08:00</updated>
+    <id>http://yangchao0033.github.io/blog/2016/02/14/hls-2</id>
+    <content type="html"><![CDATA[<p>HLS-Demo地址：<a href="https://github.com/yangchao0033/HLS-Demo">https://github.com/yangchao0033/HLS-Demo</a></p>
+
+<p>Demo配置原理：</p>
+
+<p>1、 需要导入第三方库：ASIHttpRequest，CocoaHTTPServer，m3u8（其中ASI用于网络请求，CocoaHTTPServer用于在ios端搭建服务器使用，m3u8是用来对返回的索引文件进行解析的）</p>
+
+<p><img src="https://github.com/yangchao0033/HLS-Demo/blob/master/%E9%85%8D%E7%BD%AE%E7%8E%AF%E5%A2%831.png?raw=true" alt="ASI配置注意事项" /></p>
+
+<p><img src="https://github.com/yangchao0033/HLS-Demo/blob/master/%E9%85%8D%E7%BD%AE%E7%8E%AF%E5%A2%832.png?raw=true" alt="MRC报错处理" /></p>
+
+<p>2、导入系统库：libsqlite3.dylib、libz.dylib、libxml2.dylib、CoreTelephony.framework、SystemConfiguration.framework、MobileCoreServices.framework、Security.framework、CFNetwork.framework、MediaPlayer.framework</p>
+
+<p>3、添加头文件</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='c'><span class='line'><span class="n">YCHLS</span><span class="o">-</span><span class="n">Demo</span><span class="p">.</span><span class="n">h</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>4、demo介绍</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[HLS-iOS视频播放服务架构深入探究（一）]]></title>

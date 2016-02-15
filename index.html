@@ -9,8 +9,7 @@
   <meta name="author" content="Super Yang">
 
   
-  <meta name="description" content="HTTP Live Streaming (HLS) 苹果官方对于视频直播服务提出了 HLS 解决方案，该方案主要适用范围在于： 使用 iPhone 、iPod touch、 iPad 以及 Apple TV 进行流媒体直播功能。（MAC 也能用）
-不使用特殊的服务软件进行流媒体直播。 &hellip;">
+  <meta name="description" content="HLS-Demo地址：https://github.com/yangchao0033/HLS-Demo Demo配置原理： 1、 需要导入第三方库：ASIHttpRequest，CocoaHTTPServer，m3u8（其中ASI用于网络请求， &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -118,6 +117,54 @@ var _hmt = _hmt || [];
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/02/14/hls-2/">HLS-iOS视频播放服务架构深入探究（二）</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-02-14T18:51:24+08:00'><span class='date'><span class='date-month'>Feb</span> <span class='date-day'>14</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>6:51 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>HLS-Demo地址：<a href="https://github.com/yangchao0033/HLS-Demo">https://github.com/yangchao0033/HLS-Demo</a></p>
+
+<p>Demo配置原理：</p>
+
+<p>1、 需要导入第三方库：ASIHttpRequest，CocoaHTTPServer，m3u8（其中ASI用于网络请求，CocoaHTTPServer用于在ios端搭建服务器使用，m3u8是用来对返回的索引文件进行解析的）</p>
+
+<p><img src="https://github.com/yangchao0033/HLS-Demo/blob/master/%E9%85%8D%E7%BD%AE%E7%8E%AF%E5%A2%831.png?raw=true" alt="ASI配置注意事项" /></p>
+
+<p><img src="https://github.com/yangchao0033/HLS-Demo/blob/master/%E9%85%8D%E7%BD%AE%E7%8E%AF%E5%A2%832.png?raw=true" alt="MRC报错处理" /></p>
+
+<p>2、导入系统库：libsqlite3.dylib、libz.dylib、libxml2.dylib、CoreTelephony.framework、SystemConfiguration.framework、MobileCoreServices.framework、Security.framework、CFNetwork.framework、MediaPlayer.framework</p>
+
+<p>3、添加头文件</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='c'><span class='line'><span class="n">YCHLS</span><span class="o">-</span><span class="n">Demo</span><span class="p">.</span><span class="n">h</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>4、demo介绍</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -716,59 +763,6 @@ var _hmt = _hmt || [];
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/01/04/guan-yu-blockshi-yong-de-5dian-zhu-yi-shi-xiang-d/">关于block使用的5点注意事项</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-01-04T11:24:25+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>4</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>11:24 am</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p><div class="post">
-        <div class="clear"></div>
-        <div class="postBody">
-            <div id="cnblogs_post_body"><div id="main-content" class="wiki-content">
-<p>1、在使用block前需要对block指针做判空处理。</p>
-<p>不判空直接使用，一旦指针为空直接产生崩溃。</p>
-</div>
-<div class="wiki-content">
-<pre><span style="color: #0000ff;">if</span> (!<span style="color: #000000;">self.isOnlyNet) {
-    </span><span style="color: #0000ff;">if</span> (succBlock == NULL) { <span style="color: #008000;">//</span><span style="color: #008000;">后面使用block之前要先做判空处理</span>
-        <span style="color: #0000ff;">return</span><span style="color: #000000;">;
-    }
-    </span><span style="color: #0000ff;">id</span> data =<span style="color: #000000;"> [NSKeyedUnarchiver unarchiveObjectWithFile:[self favoriteFile]];
-    </span><span style="color: #0000ff;">if</span> ([data isKindOfClass:[NSMutableArray <span style="color: #0000ff;">class</span><span style="color: #000000;">]]) {
-        succBlock(data,YES);
-    }</span><span style="color: #0000ff;">else</span><span style="color: #000000;">{
-        succBlock(nil,YES);
-    }
-}</span></pre>
-<p>&nbsp;</p>
-</div>
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/01/04/guan-yu-blockshi-yong-de-5dian-zhu-yi-shi-xiang-d/">阅读全文 &rarr;</a>
-    </footer>
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/2">&larr; Older</a>
@@ -800,7 +794,7 @@ var _hmt = _hmt || [];
 <section>
   <h1>Categories</h1>
   <ul id="categories">
-    <li class='category'><a href='/blog/categories/ios/'>ios (14)</a></li>
+    <li class='category'><a href='/blog/categories/ios/'>ios (15)</a></li>
 <li class='category'><a href='/blog/categories/时光留声机/'>时光留声机 (1)</a></li>
 
   </ul>
@@ -808,6 +802,10 @@ var _hmt = _hmt || [];
 <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/02/14/hls-2/">HLS-iOS视频播放服务架构深入探究（二）</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2016/01/29/hls-1/">HLS-iOS视频播放服务架构深入探究（一）</a>
@@ -823,10 +821,6 @@ var _hmt = _hmt || [];
     
       <li class="post">
         <a href="/blog/2016/01/18/runloop-5/">RunLoop深度探究（五）</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/01/08/runloopshen-du-tan-jiu-(4)/">RunLoop深度探究（四）</a>
       </li>
     
   </ul>
