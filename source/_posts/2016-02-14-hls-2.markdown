@@ -42,9 +42,11 @@ YCHLS-Demo.h
 4. 设置播放器直播链接为本地服务器地址，直接播放，由于播放器遵守HLS协议，所以能够解析我们之前使用HLS协议搭建的本地服务器地址。
 5. 点击在线播放，校验是否与本地播放效果一致。
 
-![HLS协议文件存储结构](https://github.com/yangchao0033/HLS-Demo/blob/master/%E9%85%8D%E7%BD%AE%E7%8E%AF%E5%A2%832.png?raw=true)
+![HLS协议文件存储结构](https://github.com/yangchao0033/yangchao0033.github.io/blob/source/images/ios/2016/2/HLS%E5%8D%8F%E8%AE%AE%E6%96%87%E4%BB%B6%E5%AD%98%E5%82%A8%E7%BB%93%E6%9E%84.png?raw=true)
 
-整个流程就是：
+上面是HLS中服务器存储视频文件切片和索引文件的结构图
+
+整个操作流程就是：
 
 1. 先点击下载，通过解析m3u8的第三方库解析资源。（m3u8的那个库只能解析一种特定格式的m3u8文件，代码里会有标注）
 2. 点击播放本地视频播放下载好的资源。
