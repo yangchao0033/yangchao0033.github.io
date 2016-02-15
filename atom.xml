@@ -4,7 +4,7 @@
   <title><![CDATA[SuperYang`s Blog]]></title>
   <link href="http://yangchao0033.github.io/atom.xml" rel="self"/>
   <link href="http://yangchao0033.github.io/"/>
-  <updated>2016-02-15T13:13:02+08:00</updated>
+  <updated>2016-02-15T13:30:02+08:00</updated>
   <id>http://yangchao0033.github.io/</id>
   <author>
     <name><![CDATA[Super Yang]]></name>
@@ -61,7 +61,11 @@
 </ol>
 
 
-<p>整个流程就是：</p>
+<p><img src="https://github.com/yangchao0033/yangchao0033.github.io/blob/source/images/ios/2016/2/HLS%E5%8D%8F%E8%AE%AE%E6%96%87%E4%BB%B6%E5%AD%98%E5%82%A8%20.png?raw=true" alt="HLS协议文件存储结构" /></p>
+
+<p>上面是HLS中服务器存储视频文件切片和索引文件的结构图</p>
+
+<p>整个操作流程就是：</p>
 
 <ol>
 <li>先点击下载，通过解析m3u8的第三方库解析资源。（m3u8的那个库只能解析一种特定格式的m3u8文件，代码里会有标注）</li>
