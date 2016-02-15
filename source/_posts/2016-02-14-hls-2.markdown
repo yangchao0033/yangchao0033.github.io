@@ -1,0 +1,27 @@
+---
+layout: post
+title: "HLS-iOS视频播放服务架构深入探究（二）"
+date: 2016-02-14 18:51:24 +0800
+comments: true
+categories: ios
+---
+
+HLS-Demo地址：[https://github.com/yangchao0033/HLS-Demo](https://github.com/yangchao0033/HLS-Demo)
+
+Demo配置原理：
+
+1、 需要导入第三方库：ASIHttpRequest，CocoaHTTPServer，m3u8（其中ASI用于网络请求，CocoaHTTPServer用于在ios端搭建服务器使用，m3u8是用来对返回的索引文件进行解析的）
+
+![ASI配置注意事项](https://github.com/yangchao0033/HLS-Demo/blob/master/%E9%85%8D%E7%BD%AE%E7%8E%AF%E5%A2%831.png?raw=true)
+
+![MRC报错处理](https://github.com/yangchao0033/HLS-Demo/blob/master/%E9%85%8D%E7%BD%AE%E7%8E%AF%E5%A2%832.png?raw=true)
+
+2、导入系统库：libsqlite3.dylib、libz.dylib、libxml2.dylib、CoreTelephony.framework、SystemConfiguration.framework、MobileCoreServices.framework、Security.framework、CFNetwork.framework、MediaPlayer.framework
+
+3、添加头文件
+
+```c
+YCHLS-Demo.h
+```
+
+4、demo介绍
