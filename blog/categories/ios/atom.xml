@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Ios | SuperYang`s Blog]]></title>
   <link href="http://yangchao0033.github.io/blog/categories/ios/atom.xml" rel="self"/>
   <link href="http://yangchao0033.github.io/"/>
-  <updated>2016-02-15T12:32:57+08:00</updated>
+  <updated>2016-02-15T13:13:02+08:00</updated>
   <id>http://yangchao0033.github.io/</id>
   <author>
     <name><![CDATA[Super Yang]]></name>
@@ -19,6 +19,8 @@
     <updated>2016-02-14T18:51:24+08:00</updated>
     <id>http://yangchao0033.github.io/blog/2016/02/14/hls-2</id>
     <content type="html"><![CDATA[<p>HLS-Demo地址：<a href="https://github.com/yangchao0033/HLS-Demo">https://github.com/yangchao0033/HLS-Demo</a></p>
+
+<p>如果觉得文章有用的话，请读者在github上点个star😁，或者在简书上点个赞。</p>
 
 <p>Demo配置原理：</p>
 
@@ -35,7 +37,125 @@
 <pre><code class="c">YCHLS-Demo.h
 </code></pre>
 
-<p>4、demo介绍</p>
+<p>4、demo介绍
+<img src="https://github.com/yangchao0033/yangchao0033.github.io/blob/source/images/ios/2016/2/HLS_demo_UI.png?raw=true" alt="demo样式" /></p>
+
+<ul>
+<li><strong>播放：</strong>直接播放在线的直播链接，是由系统的MPMoviePlayer完成的，它自带解析HLS直播链的功能。</li>
+<li><strong>下载：</strong>遵循HLS的协议，通过索引文件的资源路径下载相关的视频切片并保存到手机本地。</li>
+<li><strong>播放本地视频：</strong>使用下载好的视频文件片段进行连续播放。</li>
+<li><strong>清除缓存：</strong>删除下载好的视频片段</li>
+</ul>
+
+
+<p>原理：</p>
+
+<ol>
+<li>通过ASI请求链接，通过m3u8库解析返回的m3u8索引文件。</li>
+<li>再通过ASI下载解析出的视频资源地址，仿照HLS中文件存储路径存储。</li>
+<li>利用CocoaHTTPServer在iOS端搭建本地服务器，并开启服务，端口号为：12345（高位端口即可）。配置服务器路径与步骤二存储路径一致。</li>
+<li>设置播放器直播链接为本地服务器地址，直接播放，由于播放器遵守HLS协议，所以能够解析我们之前使用HLS协议搭建的本地服务器地址。</li>
+<li>点击在线播放，校验是否与本地播放效果一致。</li>
+</ol>
+
+
+<p>整个流程就是：</p>
+
+<ol>
+<li>先点击下载，通过解析m3u8的第三方库解析资源。（m3u8的那个库只能解析一种特定格式的m3u8文件，代码里会有标注）</li>
+<li>点击播放本地视频播放下载好的资源。</li>
+<li>点击播放是用来预览直播的效果，与整个流程无关。</li>
+<li>其中进度条用来显示下载进度。</li>
+</ol>
+
+
+<blockquote><p>总结：
+整个Demo并不只是让我们搭建一个Hls服务器或者一个支持Hls的播放器。目的在于了解Hls协议的具体实现，以及服务器端的一些物理架构。通过Demo的学习，可以详细的了解Hls直播具体的实现流程。</p></blockquote>
+
+<p>部分源码贴出：</p>
+
+<p>开启本地服务器：</p>
+
+<pre><code class="objc">- (void)openHttpServer
+{
+    self.httpServer = [[HTTPServer alloc] init];
+    [self.httpServer setType:@"_http._tcp."];  // 设置服务类型
+    [self.httpServer setPort:12345]; // 设置服务器端口
+
+    // 获取本地Library/Cache路径下downloads路径
+    NSString *webPath = [kLibraryCache stringByAppendingPathComponent:kPathDownload];
+    NSLog(@"-------------\nSetting document root: %@\n", webPath);
+    // 设置服务器路径
+    [self.httpServer setDocumentRoot:webPath];
+    NSError *error;
+    if(![self.httpServer start:&amp;error])
+    {
+        NSLog(@"-------------\nError starting HTTP Server: %@\n", error);
+    }
+</code></pre>
+
+<p>视频下载：</p>
+
+<pre><code class="objc">- (IBAction)downloadStreamingMedia:(id)sender {
+
+    UIButton *downloadButton = sender;
+    // 获取本地Library/Cache路径
+    NSString *localDownloadsPath = [kLibraryCache stringByAppendingPathComponent:kPathDownload];
+
+    // 获取视频本地路径
+    NSString *filePath = [localDownloadsPath stringByAppendingPathComponent:@"XNjUxMTE4NDAw/movie.m3u8"];
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    // 判断视频是否缓存完成，如果完成则播放本地缓存
+    if ([fileManager fileExistsAtPath:filePath]) {
+        [downloadButton setTitle:@"已完成" forState:UIControlStateNormal];
+        downloadButton.enabled = NO;
+    }else{
+        M3U8Handler *handler = [[M3U8Handler alloc] init];
+        handler.delegate = self;
+        // 解析m3u8视频地址
+        [handler praseUrl:TEST_HLS_URL];
+        // 开启网络指示器
+        [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
+    }
+}
+</code></pre>
+
+<p>播放本地视频：</p>
+
+<pre><code class="objc">- (IBAction)playVideoFromLocal:(id)sender {
+
+    NSString * playurl = [NSString stringWithFormat:@"http://127.0.0.1:12345/XNjUxMTE4NDAw/movie.m3u8"];
+    NSLog(@"本地视频地址-----%@", playurl);
+
+    // 获取本地Library/Cache路径
+    NSString *localDownloadsPath = [kLibraryCache stringByAppendingPathComponent:kPathDownload];
+    // 获取视频本地路径
+    NSString *filePath = [localDownloadsPath stringByAppendingPathComponent:@"XNjUxMTE4NDAw/movie.m3u8"];
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+
+    // 判断视频是否缓存完成，如果完成则播放本地缓存
+    if ([fileManager fileExistsAtPath:filePath]) {
+        MPMoviePlayerViewController *playerViewController =[[MPMoviePlayerViewController alloc]initWithContentURL:[NSURL URLWithString: playurl]];
+        [self presentMoviePlayerViewControllerAnimated:playerViewController];
+    }
+    else{
+        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Sorry" message:@"当前视频未缓存" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+        [alertView show];
+    }
+}
+</code></pre>
+
+<p>播放在线视频</p>
+
+<pre><code class="objc">- (IBAction)playLiveStreaming {
+
+    NSURL *url = [[NSURL alloc] initWithString:TEST_HLS_URL];
+    MPMoviePlayerViewController *player = [[MPMoviePlayerViewController alloc] initWithContentURL:url];
+    [self presentMoviePlayerViewControllerAnimated:player];
+}
+</code></pre>
+
+<p>当然，《芈月传》的直播链接到现在也还没有找到，各位热心读者如果有链接的话可以留言给我，也让这篇文章能实至名归了，能对得文章的标题了😁。</p>
 ]]></content>
   </entry>
   

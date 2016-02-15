@@ -9,7 +9,7 @@
   <meta name="author" content="Super Yang">
 
   
-  <meta name="description" content="HLS-Demo地址：https://github.com/yangchao0033/HLS-Demo Demo配置原理： 1、 需要导入第三方库：ASIHttpRequest，CocoaHTTPServer，m3u8（其中ASI用于网络请求， &hellip;">
+  <meta name="description" content="HLS-Demo地址：https://github.com/yangchao0033/HLS-Demo 如果觉得文章有用的话，请读者在github上点个star😁，或者在简书上点个赞。 Demo配置原理： 1、 需要导入第三方库：ASIHttpRequest，CocoaHTTPServer， &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -141,6 +141,8 @@ var _hmt = _hmt || [];
 
   <div class="entry-content"><p>HLS-Demo地址：<a href="https://github.com/yangchao0033/HLS-Demo">https://github.com/yangchao0033/HLS-Demo</a></p>
 
+<p>如果觉得文章有用的话，请读者在github上点个star😁，或者在简书上点个赞。</p>
+
 <p>Demo配置原理：</p>
 
 <p>1、 需要导入第三方库：ASIHttpRequest，CocoaHTTPServer，m3u8（其中ASI用于网络请求，CocoaHTTPServer用于在ios端搭建服务器使用，m3u8是用来对返回的索引文件进行解析的）</p>
@@ -158,7 +160,194 @@ var _hmt = _hmt || [];
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>4、demo介绍</p>
+<p>4、demo介绍
+<img src="https://github.com/yangchao0033/yangchao0033.github.io/blob/source/images/ios/2016/2/HLS_demo_UI.png?raw=true" alt="demo样式" /></p>
+
+<ul>
+<li><strong>播放：</strong>直接播放在线的直播链接，是由系统的MPMoviePlayer完成的，它自带解析HLS直播链的功能。</li>
+<li><strong>下载：</strong>遵循HLS的协议，通过索引文件的资源路径下载相关的视频切片并保存到手机本地。</li>
+<li><strong>播放本地视频：</strong>使用下载好的视频文件片段进行连续播放。</li>
+<li><strong>清除缓存：</strong>删除下载好的视频片段</li>
+</ul>
+
+
+<p>原理：</p>
+
+<ol>
+<li>通过ASI请求链接，通过m3u8库解析返回的m3u8索引文件。</li>
+<li>再通过ASI下载解析出的视频资源地址，仿照HLS中文件存储路径存储。</li>
+<li>利用CocoaHTTPServer在iOS端搭建本地服务器，并开启服务，端口号为：12345（高位端口即可）。配置服务器路径与步骤二存储路径一致。</li>
+<li>设置播放器直播链接为本地服务器地址，直接播放，由于播放器遵守HLS协议，所以能够解析我们之前使用HLS协议搭建的本地服务器地址。</li>
+<li>点击在线播放，校验是否与本地播放效果一致。</li>
+</ol>
+
+
+<p>整个流程就是：</p>
+
+<ol>
+<li>先点击下载，通过解析m3u8的第三方库解析资源。（m3u8的那个库只能解析一种特定格式的m3u8文件，代码里会有标注）</li>
+<li>点击播放本地视频播放下载好的资源。</li>
+<li>点击播放是用来预览直播的效果，与整个流程无关。</li>
+<li>其中进度条用来显示下载进度。</li>
+</ol>
+
+
+<blockquote><p>总结：
+整个Demo并不只是让我们搭建一个Hls服务器或者一个支持Hls的播放器。目的在于了解Hls协议的具体实现，以及服务器端的一些物理架构。通过Demo的学习，可以详细的了解Hls直播具体的实现流程。</p></blockquote>
+
+<p>部分源码贴出：</p>
+
+<p>开启本地服务器：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">openHttpServer</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="nb">self</span><span class="p">.</span><span class="n">httpServer</span> <span class="o">=</span> <span class="p">[[</span><span class="n">HTTPServer</span> <span class="n">alloc</span><span class="p">]</span> <span class="n">init</span><span class="p">];</span>
+</span><span class='line'>    <span class="p">[</span><span class="nb">self</span><span class="p">.</span><span class="n">httpServer</span> <span class="nl">setType</span><span class="p">:</span><span class="s">@&quot;_http._tcp.&quot;</span><span class="p">];</span>  <span class="c1">// 设置服务类型</span>
+</span><span class='line'>    <span class="p">[</span><span class="nb">self</span><span class="p">.</span><span class="n">httpServer</span> <span class="nl">setPort</span><span class="p">:</span><span class="mi">12345</span><span class="p">];</span> <span class="c1">// 设置服务器端口</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// 获取本地Library/Cache路径下downloads路径</span>
+</span><span class='line'>    <span class="bp">NSString</span> <span class="o">*</span><span class="n">webPath</span> <span class="o">=</span> <span class="p">[</span><span class="n">kLibraryCache</span> <span class="nl">stringByAppendingPathComponent</span><span class="p">:</span><span class="n">kPathDownload</span><span class="p">];</span>
+</span><span class='line'>    <span class="n">NSLog</span><span class="p">(</span><span class="s">@&quot;-------------</span><span class="se">\n</span><span class="s">Setting document root: %@</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">webPath</span><span class="p">);</span>
+</span><span class='line'>    <span class="c1">// 设置服务器路径</span>
+</span><span class='line'>    <span class="p">[</span><span class="nb">self</span><span class="p">.</span><span class="n">httpServer</span> <span class="nl">setDocumentRoot</span><span class="p">:</span><span class="n">webPath</span><span class="p">];</span>
+</span><span class='line'>    <span class="bp">NSError</span> <span class="o">*</span><span class="n">error</span><span class="p">;</span>
+</span><span class='line'>    <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="p">[</span><span class="nb">self</span><span class="p">.</span><span class="n">httpServer</span> <span class="nl">start</span><span class="p">:</span><span class="o">&amp;</span><span class="n">error</span><span class="p">])</span>
+</span><span class='line'>    <span class="p">{</span>
+</span><span class='line'>        <span class="n">NSLog</span><span class="p">(</span><span class="s">@&quot;-------------</span><span class="se">\n</span><span class="s">Error starting HTTP Server: %@</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">error</span><span class="p">);</span>
+</span><span class='line'>    <span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>视频下载：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="p">-</span> <span class="p">(</span><span class="kt">IBAction</span><span class="p">)</span><span class="nf">downloadStreamingMedia:</span><span class="p">(</span><span class="kt">id</span><span class="p">)</span><span class="nv">sender</span> <span class="p">{</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="bp">UIButton</span> <span class="o">*</span><span class="n">downloadButton</span> <span class="o">=</span> <span class="n">sender</span><span class="p">;</span>
+</span><span class='line'>    <span class="c1">// 获取本地Library/Cache路径</span>
+</span><span class='line'>    <span class="bp">NSString</span> <span class="o">*</span><span class="n">localDownloadsPath</span> <span class="o">=</span> <span class="p">[</span><span class="n">kLibraryCache</span> <span class="nl">stringByAppendingPathComponent</span><span class="p">:</span><span class="n">kPathDownload</span><span class="p">];</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// 获取视频本地路径</span>
+</span><span class='line'>    <span class="bp">NSString</span> <span class="o">*</span><span class="n">filePath</span> <span class="o">=</span> <span class="p">[</span><span class="n">localDownloadsPath</span> <span class="nl">stringByAppendingPathComponent</span><span class="p">:</span><span class="s">@&quot;XNjUxMTE4NDAw/movie.m3u8&quot;</span><span class="p">];</span>
+</span><span class='line'>    <span class="bp">NSFileManager</span> <span class="o">*</span><span class="n">fileManager</span> <span class="o">=</span> <span class="p">[</span><span class="bp">NSFileManager</span> <span class="n">defaultManager</span><span class="p">];</span>
+</span><span class='line'>    <span class="c1">// 判断视频是否缓存完成，如果完成则播放本地缓存</span>
+</span><span class='line'>    <span class="k">if</span> <span class="p">([</span><span class="n">fileManager</span> <span class="nl">fileExistsAtPath</span><span class="p">:</span><span class="n">filePath</span><span class="p">])</span> <span class="p">{</span>
+</span><span class='line'>        <span class="p">[</span><span class="n">downloadButton</span> <span class="nl">setTitle</span><span class="p">:</span><span class="s">@&quot;已完成&quot;</span> <span class="nl">forState</span><span class="p">:</span><span class="n">UIControlStateNormal</span><span class="p">];</span>
+</span><span class='line'>        <span class="n">downloadButton</span><span class="p">.</span><span class="n">enabled</span> <span class="o">=</span> <span class="nb">NO</span><span class="p">;</span>
+</span><span class='line'>    <span class="p">}</span><span class="k">else</span><span class="p">{</span>
+</span><span class='line'>        <span class="n">M3U8Handler</span> <span class="o">*</span><span class="n">handler</span> <span class="o">=</span> <span class="p">[[</span><span class="n">M3U8Handler</span> <span class="n">alloc</span><span class="p">]</span> <span class="n">init</span><span class="p">];</span>
+</span><span class='line'>        <span class="n">handler</span><span class="p">.</span><span class="n">delegate</span> <span class="o">=</span> <span class="nb">self</span><span class="p">;</span>
+</span><span class='line'>        <span class="c1">// 解析m3u8视频地址</span>
+</span><span class='line'>        <span class="p">[</span><span class="n">handler</span> <span class="nl">praseUrl</span><span class="p">:</span><span class="n">TEST_HLS_URL</span><span class="p">];</span>
+</span><span class='line'>        <span class="c1">// 开启网络指示器</span>
+</span><span class='line'>        <span class="p">[[</span><span class="bp">UIApplication</span> <span class="n">sharedApplication</span><span class="p">]</span> <span class="nl">setNetworkActivityIndicatorVisible</span><span class="p">:</span><span class="nb">YES</span><span class="p">];</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>播放本地视频：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="p">-</span> <span class="p">(</span><span class="kt">IBAction</span><span class="p">)</span><span class="nf">playVideoFromLocal:</span><span class="p">(</span><span class="kt">id</span><span class="p">)</span><span class="nv">sender</span> <span class="p">{</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="bp">NSString</span> <span class="o">*</span> <span class="n">playurl</span> <span class="o">=</span> <span class="p">[</span><span class="bp">NSString</span> <span class="nl">stringWithFormat</span><span class="p">:</span><span class="s">@&quot;http://127.0.0.1:12345/XNjUxMTE4NDAw/movie.m3u8&quot;</span><span class="p">];</span>
+</span><span class='line'>    <span class="n">NSLog</span><span class="p">(</span><span class="s">@&quot;本地视频地址-----%@&quot;</span><span class="p">,</span> <span class="n">playurl</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// 获取本地Library/Cache路径</span>
+</span><span class='line'>    <span class="bp">NSString</span> <span class="o">*</span><span class="n">localDownloadsPath</span> <span class="o">=</span> <span class="p">[</span><span class="n">kLibraryCache</span> <span class="nl">stringByAppendingPathComponent</span><span class="p">:</span><span class="n">kPathDownload</span><span class="p">];</span>
+</span><span class='line'>    <span class="c1">// 获取视频本地路径</span>
+</span><span class='line'>    <span class="bp">NSString</span> <span class="o">*</span><span class="n">filePath</span> <span class="o">=</span> <span class="p">[</span><span class="n">localDownloadsPath</span> <span class="nl">stringByAppendingPathComponent</span><span class="p">:</span><span class="s">@&quot;XNjUxMTE4NDAw/movie.m3u8&quot;</span><span class="p">];</span>
+</span><span class='line'>    <span class="bp">NSFileManager</span> <span class="o">*</span><span class="n">fileManager</span> <span class="o">=</span> <span class="p">[</span><span class="bp">NSFileManager</span> <span class="n">defaultManager</span><span class="p">];</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// 判断视频是否缓存完成，如果完成则播放本地缓存</span>
+</span><span class='line'>    <span class="k">if</span> <span class="p">([</span><span class="n">fileManager</span> <span class="nl">fileExistsAtPath</span><span class="p">:</span><span class="n">filePath</span><span class="p">])</span> <span class="p">{</span>
+</span><span class='line'>        <span class="bp">MPMoviePlayerViewController</span> <span class="o">*</span><span class="n">playerViewController</span> <span class="o">=</span><span class="p">[[</span><span class="bp">MPMoviePlayerViewController</span> <span class="n">alloc</span><span class="p">]</span><span class="nl">initWithContentURL</span><span class="p">:[</span><span class="bp">NSURL</span> <span class="nl">URLWithString</span><span class="p">:</span> <span class="n">playurl</span><span class="p">]];</span>
+</span><span class='line'>        <span class="p">[</span><span class="nb">self</span> <span class="nl">presentMoviePlayerViewControllerAnimated</span><span class="p">:</span><span class="n">playerViewController</span><span class="p">];</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>    <span class="k">else</span><span class="p">{</span>
+</span><span class='line'>        <span class="bp">UIAlertView</span> <span class="o">*</span><span class="n">alertView</span> <span class="o">=</span> <span class="p">[[</span><span class="bp">UIAlertView</span> <span class="n">alloc</span><span class="p">]</span> <span class="nl">initWithTitle</span><span class="p">:</span><span class="s">@&quot;Sorry&quot;</span> <span class="nl">message</span><span class="p">:</span><span class="s">@&quot;当前视频未缓存&quot;</span> <span class="nl">delegate</span><span class="p">:</span><span class="nb">self</span> <span class="nl">cancelButtonTitle</span><span class="p">:</span><span class="s">@&quot;确定&quot;</span> <span class="nl">otherButtonTitles</span><span class="p">:</span><span class="nb">nil</span><span class="p">,</span> <span class="nb">nil</span><span class="p">];</span>
+</span><span class='line'>        <span class="p">[</span><span class="n">alertView</span> <span class="n">show</span><span class="p">];</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>播放在线视频</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="p">-</span> <span class="p">(</span><span class="kt">IBAction</span><span class="p">)</span><span class="nf">playLiveStreaming</span> <span class="p">{</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="bp">NSURL</span> <span class="o">*</span><span class="n">url</span> <span class="o">=</span> <span class="p">[[</span><span class="bp">NSURL</span> <span class="n">alloc</span><span class="p">]</span> <span class="nl">initWithString</span><span class="p">:</span><span class="n">TEST_HLS_URL</span><span class="p">];</span>
+</span><span class='line'>    <span class="bp">MPMoviePlayerViewController</span> <span class="o">*</span><span class="n">player</span> <span class="o">=</span> <span class="p">[[</span><span class="bp">MPMoviePlayerViewController</span> <span class="n">alloc</span><span class="p">]</span> <span class="nl">initWithContentURL</span><span class="p">:</span><span class="n">url</span><span class="p">];</span>
+</span><span class='line'>    <span class="p">[</span><span class="nb">self</span> <span class="nl">presentMoviePlayerViewControllerAnimated</span><span class="p">:</span><span class="n">player</span><span class="p">];</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>当然，《芈月传》的直播链接到现在也还没有找到，各位热心读者如果有链接的话可以留言给我，也让这篇文章能实至名归了，能对得文章的标题了😁。</p>
 </div>
   
   
