@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Ios | SuperYang`s Blog]]></title>
   <link href="http://yangchao0033.github.io/blog/categories/ios/atom.xml" rel="self"/>
   <link href="http://yangchao0033.github.io/"/>
-  <updated>2016-02-15T18:48:50+08:00</updated>
+  <updated>2016-02-17T20:12:34+08:00</updated>
   <id>http://yangchao0033.github.io/</id>
   <author>
     <name><![CDATA[Super Yang]]></name>
@@ -19,6 +19,21 @@
     <updated>2016-02-14T18:51:24+08:00</updated>
     <id>http://yangchao0033.github.io/blog/2016/02/14/hls-2</id>
     <content type="html"><![CDATA[<p>HLS-Demo地址：<a href="https://github.com/yangchao0033/HLS-Demo">https://github.com/yangchao0033/HLS-Demo</a></p>
+
+<p><strong>使用demo前请注意下面的问题，我在代码中也做了注释。</strong></p>
+
+<pre><code class="objc">//#warning 注意，不要直接使用切换流的主索引，当前代码的协议只提供对.ts定位的子索引的下载和播放，而且其中只有点播协议那一小段是可以下载的，直播协议只能播放，无法下载，无法下载的原因是因为m3u8的那个库中只对特定的一种m3u8的格式做了解析，而m3u8的格式有很多种，所以无法加息出来，该demo只做演示，不会对所有格式进行全解析，如果大家感兴趣的话可以对m3u8的库进行扩展，在github 上 pull request 我做一个补充扩展😁，我会及时在博客中进行更新。博客地址：superyang.gitcafe.io或yangchao0033.github.io 同简书：http://www.jianshu.com/users/f37a8f0ba6f8/latest_articles
+
+/** 点播协议 (只有这个是可以下载的，但是苦于太短，没办法播放出来，正在寻找可以下载并播放的新的点播或直播源,希望有读者可以帮忙提供哈，不甚感激~)*/
+//#define TEST_HLS_URL @"http://m3u8.tdimg.com/147/806/921/3.m3u8"
+/** 视频直播协议 */
+/** 父索引(无法下载，只作为结构分析) */
+//#define TEST_HLS_URL @"http://dlhls.cdn.zhanqi.tv/zqlive/34338_PVMT5.m3u8"
+/** 子索引(无法下载，只作为结构分析) */
+//#define TEST_HLS_URL @"http://dlhls.cdn.zhanqi.tv/zqlive/34338_PVMT5_1024/index.m3u8?Dnion_vsnae=34338_PVMT5"
+/** wwcd视频，果然苹果自己就用这个协议(无法下载，只作为结构分析) */
+//#define TEST_HLS_URL @"http://devstreaming.apple.com/videos/wwdc/2015/413eflf3lrh1tyo/413/hls_vod_mvp.m3u8"
+</code></pre>
 
 <p>如果觉得文章有用的话，请读者在github上点个star😁，或者在<a href="http://www.jianshu.com/users/f37a8f0ba6f8/latest_articles">简书</a>上点个赞。</p>
 
