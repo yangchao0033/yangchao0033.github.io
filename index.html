@@ -9,18 +9,7 @@
   <meta name="author" content="Super Yang">
 
   
-  <meta name="description" content="HLS-Demo地址：https://github.com/yangchao0033/HLS-Demo 使用demo前请注意下面的问题，我在代码中也做了注释。 1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
-//#warning 注意，不要直接使用切换流的主索引，当前代码的协议只提供对. &hellip;">
+  <meta name="description" content="原因：在与服务器联调接口之后，所有的API都能正常跑通，但是涉及到具体的业务逻辑时，比如界面遇到不同的数据做出特定的布局操作或弹框提示，再或者只有当数据字段符合特定的值时才能做出更多复杂的逻辑操作。如果依赖于服务器或者数据库，那么需要他们去帮你制造假数据来检测你的代码的正确性，这样是一次两次没问题 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -128,6 +117,46 @@ var _hmt = _hmt || [];
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/03/05/develop-moblie-api-with-charles-and-server-data-with-charles/">让 iOS/Android 网络API开发更加自由-charles模拟服务器返回本地数据</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-03-05T14:52:25+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>5</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>2:52 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><blockquote><p><strong>原因：</strong>在与服务器联调接口之后，所有的API都能正常跑通，但是涉及到具体的业务逻辑时，比如界面遇到不同的数据做出特定的布局操作或弹框提示，再或者只有当数据字段符合特定的值时才能做出更多复杂的逻辑操作。如果依赖于服务器或者数据库，那么需要他们去帮你制造假数据来检测你的代码的正确性，这样是一次两次没问题，但是量大的时候，会影响双方的开发进度。能不能采取解耦的思想让移动端和服务端分隔开，在移动端测试开发阶段，自己根据接口文档制造自己需要的特定的返回数据呢？</p></blockquote>
+
+<p><strong>解决方案：</strong>这时候我们需要自己的代理服务器来实现&ndash;使用 Charles 制作代理服务器。</p>
+
+<p><strong>具体需求：</strong>当API有所改动时，服务器正在开发相应功能，但是还没有部署到服务器上去，只是在原接口的返回数据中多加了一个字段“id”。现在移动端的业务逻辑写好了，就等数据测试了。</p>
+
+<p><strong>具体操作步骤：</strong></p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/03/05/develop-moblie-api-with-charles-and-server-data-with-charles/">阅读全文 &rarr;</a>
+    </footer>
+  
+
+
+    </article>
   
   
     <article>
@@ -749,50 +778,6 @@ var _hmt = _hmt || [];
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/01/04/definede-gao-ji-yong-fa/">宏定义的高级用法</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-01-04T11:44:51+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>4</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>11:44 am</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>1、# （stringizing）字符串化操作符。其作用是：将宏定义中的传入参数名转换成用一对双引号括起来参数名字符串。其只能用于有传入参数的宏定义中，且必须置于宏定义体中的参数名前。
-如：</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='c'><span class='line'><span class="cp">#define example(instr) printf(&quot;the input string is:\t%s\n&quot;,#instr)</span>
-</span><span class='line'><span class="cp">#define example1(instr) #instr</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>当使用该宏定义时：</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/01/04/definede-gao-ji-yong-fa/">阅读全文 &rarr;</a>
-    </footer>
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/2">&larr; Older</a>
@@ -824,7 +809,7 @@ var _hmt = _hmt || [];
 <section>
   <h1>Categories</h1>
   <ul id="categories">
-    <li class='category'><a href='/blog/categories/ios/'>ios (15)</a></li>
+    <li class='category'><a href='/blog/categories/ios/'>ios (16)</a></li>
 <li class='category'><a href='/blog/categories/时光留声机/'>时光留声机 (1)</a></li>
 
   </ul>
@@ -832,6 +817,10 @@ var _hmt = _hmt || [];
 <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/03/05/develop-moblie-api-with-charles-and-server-data-with-charles/">让 iOS/Android 网络API开发更加自由-charles模拟服务器返回本地数据</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2016/02/14/hls-2/">HLS-iOS视频播放服务架构深入探究（二）</a>
@@ -847,10 +836,6 @@ var _hmt = _hmt || [];
     
       <li class="post">
         <a href="/blog/2016/01/18/cocoapod-version-update/">CocoaPod Version Update</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/01/18/runloop-5/">RunLoop深度探究（五）</a>
       </li>
     
   </ul>
