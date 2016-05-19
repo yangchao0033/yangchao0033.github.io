@@ -9,4 +9,10 @@ fileSequence0.ts
 fileSequence1.ts
 #EXTINF:30.00000,	
 fileSequence2.ts
+#EXTINF:30.00000,	
+fileSequence3.ts
+#EXTINF:30.00000,	
+fileSequence4.ts
+#EXTINF:30.00000,	
+fileSequence5.ts
 #EXT-X-ENDLIST
