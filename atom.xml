@@ -4,7 +4,7 @@
   <title><![CDATA[SuperYang`s Blog]]></title>
   <link href="http://yangchao0033.github.io/atom.xml" rel="self"/>
   <link href="http://yangchao0033.github.io/"/>
-  <updated>2016-03-07T12:19:48+08:00</updated>
+  <updated>2017-07-26T00:55:56+08:00</updated>
   <id>http://yangchao0033.github.io/</id>
   <author>
     <name><![CDATA[Super Yang]]></name>
@@ -12,6 +12,121 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[JavaScript 骨骼动画 (DragonBones) 在 iOS 端截屏功能]]></title>
+    <link href="http://yangchao0033.github.io/blog/2017/07/25/js-gu-ge-dong-hua-dragonbones-zai-ios-duan-jie-ping-gong-neng/"/>
+    <updated>2017-07-25T23:30:10+08:00</updated>
+    <id>http://yangchao0033.github.io/blog/2017/07/25/js-gu-ge-dong-hua-dragonbones-zai-ios-duan-jie-ping-gong-neng</id>
+    <content type="html"><![CDATA[<h3>需求背景：</h3>
+
+<p>使用 DragonBones 在 Webview 中绘制骨骼动画，并对当前的骨骼页面进行图层截取，实现保存本地和分享功能。</p>
+
+<h3>问题：</h3>
+
+<p>使用 DragonBones 制作骨骼动画时遇到一个问题，使用 WKWebView 加载骨骼动画正常，再对 WKWebView 的父容器 view （控制器 view ）进行截图是出现空白。</p>
+
+<h4>解决思路及方案一：</h4>
+
+<!--more-->
+
+
+<p>通过资料查阅，发现 WKWebView 在截图时比较特殊,需要调用 UIView 的分类，也就是</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="p">-</span> <span class="p">(</span><span class="n">nullable</span> <span class="bp">UIView</span> <span class="o">*</span><span class="p">)</span><span class="nf">snapshotViewAfterScreenUpdates:</span><span class="p">(</span><span class="kt">BOOL</span><span class="p">)</span><span class="nv">afterUpdates</span> <span class="n">NS_AVAILABLE_IOS</span><span class="p">(</span><span class="mi">7</span><span class="n">_0</span><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>进行View图层的快照获取，推测和 WKWebView 的渲染原理相关。因为正常流程都是通过 UIGraphics 去捕捉 UIView 的上下文来生成 UIImage 对象，进而分享或保存到本地。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="p">+</span> <span class="p">(</span><span class="bp">UIImage</span> <span class="o">*</span><span class="p">)</span><span class="nf">getSharingImageWithView:</span><span class="p">(</span><span class="bp">UIView</span> <span class="o">*</span><span class="p">)</span><span class="nv">originView</span> <span class="p">{</span>
+</span><span class='line'>    <span class="bp">UIImage</span> <span class="o">*</span><span class="n">snapshotImage</span> <span class="o">=</span> <span class="nb">nil</span><span class="p">;</span>
+</span><span class='line'>    <span class="n">UIGraphicsBeginImageContextWithOptions</span><span class="p">(</span><span class="n">originView</span><span class="p">.</span><span class="n">bounds</span><span class="p">.</span><span class="n">size</span><span class="p">,</span> <span class="nb">NO</span><span class="p">,</span> <span class="p">[</span><span class="bp">UIScreen</span> <span class="n">mainScreen</span><span class="p">].</span><span class="n">scale</span><span class="p">);</span>
+</span><span class='line'>    <span class="p">[</span><span class="n">originView</span><span class="p">.</span><span class="n">layer</span> <span class="nl">renderInContext</span><span class="p">:</span><span class="n">UIGraphicsGetCurrentContext</span><span class="p">()];</span>
+</span><span class='line'>    <span class="n">snapshotImage</span> <span class="o">=</span> <span class="n">UIGraphicsGetImageFromCurrentImageContext</span><span class="p">();</span>
+</span><span class='line'>    <span class="n">UIGraphicsEndImageContext</span><span class="p">();</span>
+</span><span class='line'>    <span class="k">return</span> <span class="n">snapshotImage</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>对 WkWebView、TableView 等滚动视图循环截屏可参考 <a href="https://github.com/TonyReet/TYSnapshotScroll">TYSnapshotScroll</a>。
+当然，例如 TYSnapshotScroll 提供的 WKWebView 截图方式（snapshotViewAfterScreenUpdates）截取方式对类似 github、google 等首页的截取非常完美。</p>
+
+<p>但是，在加载骨骼动画时只有动画背景，没有任务形象。</p>
+
+<h4>解决思路及方案二：</h4>
+
+<p>根据从安卓和前端收集的信息来看:
+1. h5 骨骼动画底层使用了 canvas 绘图(一个类似于 iOS CoreGraphic 的库，专门负责绘制复杂图形。)
+2. JavaScript 使用 canvas 绘图时，会存在这样的关系，直接上图</p>
+
+<p><img src="http://upload-images.jianshu.io/upload_images/1445110-6f6cd7e375e337f5.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="canvas 的七大姑八大姨" /></p>
+
+<ol>
+<li>上图中最有价值的线索是，canvas 会调用 webGL 进行渲染，同时会调用硬件加速功能</li>
+<li>安卓端在手动关闭硬件加速后，该页面截屏恢复正常。</li>
+</ol>
+
+
+<p>然鹅，只有 Safari 中有对 WebGL 有控制权，WKWebView 并不能通过代码关闭硬件加速。
+所以只能放弃使用 canvas 动态绘制的 webView 进行图像提取。</p>
+
+<p>所以，我们采取了采取了双端结合的思路：
+* 由 JavaScript 通过 canvas 输出 base64 图片字符串，以及人物背景图片的URL
+JavaScript生成图片：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='js'><span class='line'><span class="kd">var</span> <span class="nx">fullQuality</span> <span class="o">=</span> <span class="nx">canvas</span><span class="p">.</span><span class="nx">toDataURL</span><span class="p">(</span><span class="s1">&#39;image/jpeg&#39;</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">);</span> <span class="c1">// 参数二控制图片质量</span>
+</span><span class='line'><span class="c1">// data:image/jpeg;base64,/9j/4AAQSkZJRgABAQ...9oADAMBAAIRAxEAPwD/AD/6AP/Z&quot;</span>
+</span><span class='line'><span class="kd">var</span> <span class="nx">mediumQuality</span> <span class="o">=</span> <span class="nx">canvas</span><span class="p">.</span><span class="nx">toDataURL</span><span class="p">(</span><span class="s1">&#39;image/jpeg&#39;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">);</span>
+</span><span class='line'><span class="kd">var</span> <span class="nx">lowQuality</span> <span class="o">=</span> <span class="nx">canvas</span><span class="p">.</span><span class="nx">toDataURL</span><span class="p">(</span><span class="s1">&#39;image/jpeg&#39;</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Native 解析图片：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="bp">NSData</span> <span class="o">*</span><span class="n">decodedImageData</span> <span class="o">=</span> <span class="p">[</span><span class="bp">NSData</span> <span class="nl">dataWithContentsOfURL</span><span class="p">:[</span><span class="bp">NSURL</span> <span class="nl">URLWithString</span><span class="p">:</span><span class="n">base64String</span><span class="p">]];</span>
+</span><span class='line'><span class="bp">UIImage</span> <span class="o">*</span><span class="n">decodedImage</span> <span class="o">=</span> <span class="p">[</span><span class="bp">UIImage</span> <span class="nl">imageWithData</span><span class="p">:</span><span class="n">decodedImageData</span>
+</span><span class='line'>                                         <span class="nl">scale</span><span class="p">:[</span><span class="bp">UIScreen</span> <span class="n">mainScreen</span><span class="p">].</span><span class="n">scale</span><span class="p">];</span>
+</span><span class='line'><span class="n">personImageView</span><span class="p">.</span><span class="n">image</span> <span class="o">=</span> <span class="n">decodedImage</span><span class="p">;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<ul>
+<li>由 Native 对使用这些资源进行布局渲染，并且控制截屏时用户信息、二维码等元素的展示，效果如图：</li>
+</ul>
+
+
+<p><img src="http://upload-images.jianshu.io/upload_images/1445110-9d3101208a5f022e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="骨骼动画截屏" /></p>
+
+<h3>总结</h3>
+
+<p>对于部分特殊控件的图像处理可能要会出现位置的异常，需要对对应的底层实现技术点进行剖析，倒推引起的原因。</p>
+
+<h4>参考：</h4>
+
+<p><a href="http://www.zhangxinxu.com/wordpress/2011/10/html5-canvas-webgl-css-shaders-glsl%E7%9A%84%E6%9A%A7%E6%98%A7%E5%85%B3%E7%B3%BB/">HTML5 Canvas,WebGL,CSS Shaders,GLSL的暧昧关系</a>
+<a href="https://www.egret.com/">egret</a>
+<a href="http://dragonbones.com/cn/index.html">dragonBone</a></p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[让 iOS/Android 网络API开发更加自由-charles模拟服务器返回本地数据]]></title>

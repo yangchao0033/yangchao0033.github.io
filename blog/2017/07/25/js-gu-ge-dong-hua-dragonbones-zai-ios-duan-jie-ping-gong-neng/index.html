@@ -5,12 +5,12 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>让 iOS/Android 网络API开发更加自由-charles模拟服务器返回本地数据 - SuperYang`s Blog</title>
+  <title>JavaScript 骨骼动画 (DragonBones) 在 iOS 端截屏功能 - SuperYang`s Blog</title>
   <meta name="author" content="Super Yang">
 
   
-  <meta name="description" content="原因：在与服务器联调接口之后，所有的API都能正常跑通，但是涉及到具体的业务逻辑时，比如界面遇到不同的数据做出特定的布局操作或弹框提示，再或者只有当数据字段符合特定的值时才能做出更多复杂的逻辑操作。如果依赖于服务器或者数据库，那么需要他们去帮你制造假数据来检测你的代码的正确性，这样是一次两次没问题 &hellip;">
-  
+  <meta name="description" content="需求背景： 使用 DragonBones 在 Webview 中绘制骨骼动画，并对当前的骨骼页面进行图层截取，实现保存本地和分享功能。 问题： 使用 DragonBones 制作骨骼动画时遇到一个问题，使用 WKWebView 加载骨骼动画正常，再对 WKWebView 的父容器 view （ &hellip;">
+  <meta name="keywords" content="DragonBones, JavaScript, 骨骼动画, iOS 截屏功能">
 
   <!-- http://t.co/dKP3o1e -->
   <meta name="HandheldFriendly" content="True">
@@ -18,7 +18,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://yangchao0033.github.io/blog/2016/03/05/develop-moblie-api-with-charles-and-server-data-with-charles/">
+  <link rel="canonical" href="http://yangchao0033.github.io/blog/2017/07/25/js-gu-ge-dong-hua-dragonbones-zai-ios-duan-jie-ping-gong-neng/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="SuperYang`s Blog" type="application/atom+xml">
@@ -120,7 +120,7 @@ var _hmt = _hmt || [];
   
   <header>
     
-      <h1 class="entry-title">让 iOS/Android 网络API开发更加自由-charles模拟服务器返回本地数据</h1>
+      <h1 class="entry-title">JavaScript 骨骼动画 (DragonBones) 在 iOS 端截屏功能</h1>
     
     
       <p class="meta">
@@ -129,104 +129,34 @@ var _hmt = _hmt || [];
 
 
 
-<time class='entry-date' datetime='2016-03-05T14:52:25+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>5</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>2:52 pm</span></time>
+<time class='entry-date' datetime='2017-07-25T23:30:10+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>25</span><span class='date-suffix'>th</span>, <span class='date-year'>2017</span></span> <span class='time'>11:30 pm</span></time>
         
       </p>
     
   </header>
 
 
-<div class="entry-content"><blockquote><p><strong>原因：</strong>在与服务器联调接口之后，所有的API都能正常跑通，但是涉及到具体的业务逻辑时，比如界面遇到不同的数据做出特定的布局操作或弹框提示，再或者只有当数据字段符合特定的值时才能做出更多复杂的逻辑操作。如果依赖于服务器或者数据库，那么需要他们去帮你制造假数据来检测你的代码的正确性，这样是一次两次没问题，但是量大的时候，会影响双方的开发进度。能不能采取解耦的思想让移动端和服务端分隔开，在移动端测试开发阶段，自己根据接口文档制造自己需要的特定的返回数据呢？</p></blockquote>
+<div class="entry-content"><h3>需求背景：</h3>
 
-<p><strong>解决方案：</strong>这时候我们需要自己的代理服务器来实现&ndash;使用 Charles 制作代理服务器。</p>
+<p>使用 DragonBones 在 Webview 中绘制骨骼动画，并对当前的骨骼页面进行图层截取，实现保存本地和分享功能。</p>
 
-<p><strong>具体需求：</strong>当API有所改动时，服务器正在开发相应功能，但是还没有部署到服务器上去，只是在原接口的返回数据中多加了一个字段“id”。现在移动端的业务逻辑写好了，就等数据测试了。</p>
+<h3>问题：</h3>
 
-<p><strong>具体操作步骤：</strong></p>
+<p>使用 DragonBones 制作骨骼动画时遇到一个问题，使用 WKWebView 加载骨骼动画正常，再对 WKWebView 的父容器 view （控制器 view ）进行截图是出现空白。</p>
+
+<h4>解决思路及方案一：</h4>
 
 <!--more-->
 
 
-<p><strong>一、</strong>首先你需要下载一个 Charles，并且安装起来，具体的使用方法这里不做赘述。可以移步<a href="http://www.infoq.com/cn/articles/network-packet-analysis-tool-charles">这里</a>学习。
-<strong>二、</strong>抓取你需要修改的接口
-<img src="https://github.com/yangchao0033/yangchao0033.github.io/blob/source/images/ios/2016/3/%E6%8A%93%E5%8F%96%E4%B8%80%E4%B8%AA%E6%8E%A5%E5%8F%A3.png?raw=true" alt="抓取一个接口.png" />
-大家可以看到，这个接口返回的是一个json串。这个请求是手机发起的，我们看到的只是软件抓到的包数据。那么如何加入新的“id”字段呢？)
-大家可以看到，这个接口返回的是一个json串。这个请求是手机发起的，我们看到的只是软件抓到的包数据。那么如何加入新的“id”字段呢？</p>
-
-<p><strong>三、</strong>使用 Charles 的 local map 功能</p>
-
-<p><img src="https://github.com/yangchao0033/yangchao0033.github.io/blob/source/images/ios/2016/3/%E4%BF%9D%E5%AD%98response%E6%95%B0%E6%8D%AE.png?raw=true" alt="保存response数据.png" /></p>
-
-<p>保存 response 数据到本地电脑上去</p>
-
-<p><img src="https://github.com/yangchao0033/yangchao0033.github.io/blob/source/images/ios/2016/3/%E9%80%89%E6%8B%A9localmap.png?raw=true" alt="选择localmap.png" /></p>
-
-<p>选择local map</p>
-
-<p><img src="https://github.com/yangchao0033/yangchao0033.github.io/blob/source/images/ios/2016/3/%E6%B7%BB%E5%8A%A0%E9%9C%80%E8%A6%81map%E7%9A%84%E6%8E%A5%E5%8F%A3.png?raw=true" alt="添加需要map的接口.png" /></p>
-
-<p>点击 Add 添加 map 规则</p>
-
-<p><img src="https://github.com/yangchao0033/yangchao0033.github.io/blob/source/images/ios/2016/3/map%E8%A7%84%E5%88%99.png?raw=true" alt="map规则.png" />
-这些地方填入你的API信息，以及刚才保存的 response 文件地址</p>
-
-<p><img src="https://github.com/yangchao0033/yangchao0033.github.io/blob/source/images/ios/2016/3/%E7%82%B9%E5%87%BB%E4%BF%9D%E5%AD%98map.png?raw=true" alt="点击保存map.png" />
-点击ok保存map规则。之后，只要是从你手机通过 Charles 代理发出的这个接口的请求，都会被重定向到你电脑上本地的 response 文件中。</p>
-
-<p>现在，我们在通过手机调用一下之前的接口，结果呢？结果是还不如原来的，呵呵哒。。。</p>
-
-<p>之前我们还能获取到 title、content和type三个字段以及他们的值，现在直接返回的数据为nil。</p>
-
-<p>找了半天原因，最终通过对比发现了一个问题，两种请求的响应头不一样</p>
-
-<p><img src="https://github.com/yangchao0033/yangchao0033.github.io/blob/source/images/ios/2016/3/%E4%BB%8E%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%8F%96%E5%88%B0%E7%9A%84%E6%95%B0%E6%8D%AE.png?raw=true" alt="从服务器取到的数据.png" /></p>
-
-<p><img src="https://github.com/yangchao0033/yangchao0033.github.io/blob/source/images/ios/2016/3/%E6%9C%AC%E5%9C%B0map%E7%9A%84%E6%95%B0%E6%8D%AE.png?raw=true" alt="本地map的数据.png" /></p>
-
-<p>所以怎么修改 response 的 content type 类型为 json/application 呢？</p>
-
-<p><strong>三、</strong>使用 Rewrite 替换特定接口的响应头参数</p>
-
-<p><img src="https://github.com/yangchao0033/yangchao0033.github.io/blob/source/images/ios/2016/3/%E6%89%93%E5%BC%80rewrite.png?raw=true" alt="打开rewrite.png" /></p>
-
-<p>打开 Rewrite</p>
-
-<p><img src="https://github.com/yangchao0033/yangchao0033.github.io/blob/source/images/ios/2016/3/rewrite%E9%85%8D%E7%BD%AE%E9%A1%B5%E9%9D%A2.png?raw=true" alt="rewrite配置页面.png" /></p>
-
-<p>Rewrite 配置页面简介</p>
-
-<p>1、首先创建一个规则集</p>
-
-<p><img src="https://github.com/yangchao0033/yangchao0033.github.io/blob/source/images/ios/2016/3/%E6%B7%BB%E5%8A%A0%E6%8E%A5%E5%8F%A3%E9%9B%86%E5%90%88%E5%92%8C%E9%80%82%E7%94%A8%E8%8C%83%E5%9B%B4.png?raw=true" alt="添加接口集合和适用范围.png" /></p>
-
-<p>添加 Rewrite 替换规则</p>
-
-<p><img src="https://github.com/yangchao0033/yangchao0033.github.io/blob/source/images/ios/2016/3/%E4%B9%A6%E5%86%99rewrite%E6%9B%BF%E6%8D%A2%E8%A7%84%E5%88%99.png?raw=true" alt="书写rewrite替换规则.png" /></p>
-
-<p>这里相当于是在响应回来之前，通过字段的匹配，替换掉原有的响应头中的Content-Type 类型为 json/application</p>
-
-<p>所有的对话框都点击 ok 或者 apply 确定保存</p>
-
-<p>现在我们开始测试啦，继续调用该接口。</p>
-
-<p>四、根据需求修改数据</p>
-
-<p>数据修改前刚才看过了，只有 title/content/type 三个字段</p>
+<p>通过资料查阅，发现 WKWebView 在截图时比较特殊,需要调用 UIView 的分类，也就是</p>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class='json'><span class='line'><span class="p">{</span>
-</span><span class='line'><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="s2">&quot;标题&quot;</span><span class="p">,</span>
-</span><span class='line'><span class="nt">&quot;content&quot;</span><span class="p">:</span><span class="s2">&quot;内容正文&quot;</span><span class="p">,</span>
-</span><span class='line'><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="s2">&quot;类型&quot;</span>
-</span><span class='line'><span class="p">}</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="p">-</span> <span class="p">(</span><span class="n">nullable</span> <span class="bp">UIView</span> <span class="o">*</span><span class="p">)</span><span class="nf">snapshotViewAfterScreenUpdates:</span><span class="p">(</span><span class="kt">BOOL</span><span class="p">)</span><span class="nv">afterUpdates</span> <span class="n">NS_AVAILABLE_IOS</span><span class="p">(</span><span class="mi">7</span><span class="n">_0</span><span class="p">);</span>
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>而现在需要添加 “id” 字段。所以，用 vim 或者其他文本编辑器打开刚才保存的 response 文件，将他修改成这样</p>
+<p>进行View图层的快照获取，推测和 WKWebView 的渲染原理相关。因为正常流程都是通过 UIGraphics 去捕捉 UIView 的上下文来生成 UIImage 对象，进而分享或保存到本地。</p>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -234,39 +164,85 @@ var _hmt = _hmt || [];
 <span class='line-number'>4</span>
 <span class='line-number'>5</span>
 <span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class='json'><span class='line'><span class="p">{</span>
-</span><span class='line'><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="s2">&quot;00000001&quot;</span><span class="p">,</span>
-</span><span class='line'><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="s2">&quot;标题&quot;</span><span class="p">,</span>
-</span><span class='line'><span class="nt">&quot;content&quot;</span><span class="p">:</span><span class="s2">&quot;内容正文&quot;</span><span class="p">,</span>
-</span><span class='line'><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="s2">&quot;类型&quot;</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="p">+</span> <span class="p">(</span><span class="bp">UIImage</span> <span class="o">*</span><span class="p">)</span><span class="nf">getSharingImageWithView:</span><span class="p">(</span><span class="bp">UIView</span> <span class="o">*</span><span class="p">)</span><span class="nv">originView</span> <span class="p">{</span>
+</span><span class='line'>    <span class="bp">UIImage</span> <span class="o">*</span><span class="n">snapshotImage</span> <span class="o">=</span> <span class="nb">nil</span><span class="p">;</span>
+</span><span class='line'>    <span class="n">UIGraphicsBeginImageContextWithOptions</span><span class="p">(</span><span class="n">originView</span><span class="p">.</span><span class="n">bounds</span><span class="p">.</span><span class="n">size</span><span class="p">,</span> <span class="nb">NO</span><span class="p">,</span> <span class="p">[</span><span class="bp">UIScreen</span> <span class="n">mainScreen</span><span class="p">].</span><span class="n">scale</span><span class="p">);</span>
+</span><span class='line'>    <span class="p">[</span><span class="n">originView</span><span class="p">.</span><span class="n">layer</span> <span class="nl">renderInContext</span><span class="p">:</span><span class="n">UIGraphicsGetCurrentContext</span><span class="p">()];</span>
+</span><span class='line'>    <span class="n">snapshotImage</span> <span class="o">=</span> <span class="n">UIGraphicsGetImageFromCurrentImageContext</span><span class="p">();</span>
+</span><span class='line'>    <span class="n">UIGraphicsEndImageContext</span><span class="p">();</span>
+</span><span class='line'>    <span class="k">return</span> <span class="n">snapshotImage</span><span class="p">;</span>
 </span><span class='line'><span class="p">}</span>
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>修改后记得保存一下，现在重新开始请求该接口，查看log日志。</p>
+<p>对 WkWebView、TableView 等滚动视图循环截屏可参考 <a href="https://github.com/TonyReet/TYSnapshotScroll">TYSnapshotScroll</a>。
+当然，例如 TYSnapshotScroll 提供的 WKWebView 截图方式（snapshotViewAfterScreenUpdates）截取方式对类似 github、google 等首页的截取非常完美。</p>
+
+<p>但是，在加载骨骼动画时只有动画背景，没有任务形象。</p>
+
+<h4>解决思路及方案二：</h4>
+
+<p>根据从安卓和前端收集的信息来看:
+1. h5 骨骼动画底层使用了 canvas 绘图(一个类似于 iOS CoreGraphic 的库，专门负责绘制复杂图形。)
+2. JavaScript 使用 canvas 绘图时，会存在这样的关系，直接上图</p>
+
+<p><img src="http://upload-images.jianshu.io/upload_images/1445110-6f6cd7e375e337f5.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="canvas 的七大姑八大姨" /></p>
+
+<ol>
+<li>上图中最有价值的线索是，canvas 会调用 webGL 进行渲染，同时会调用硬件加速功能</li>
+<li>安卓端在手动关闭硬件加速后，该页面截屏恢复正常。</li>
+</ol>
+
+
+<p>然鹅，只有 Safari 中有对 WebGL 有控制权，WKWebView 并不能通过代码关闭硬件加速。
+所以只能放弃使用 canvas 动态绘制的 webView 进行图像提取。</p>
+
+<p>所以，我们采取了采取了双端结合的思路：
+* 由 JavaScript 通过 canvas 输出 base64 图片字符串，以及人物背景图片的URL
+JavaScript生成图片：</p>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class='json'><span class='line'><span class="p">{</span>
-</span><span class='line'><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="s2">&quot;00000001&quot;</span><span class="p">,</span>
-</span><span class='line'><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="s2">&quot;标题&quot;</span><span class="p">,</span>
-</span><span class='line'><span class="nt">&quot;content&quot;</span><span class="p">:</span><span class="s2">&quot;内容正文&quot;</span><span class="p">,</span>
-</span><span class='line'><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="s2">&quot;类型&quot;</span>
-</span><span class='line'><span class="p">}</span>
+</pre></td><td class='code'><pre><code class='js'><span class='line'><span class="kd">var</span> <span class="nx">fullQuality</span> <span class="o">=</span> <span class="nx">canvas</span><span class="p">.</span><span class="nx">toDataURL</span><span class="p">(</span><span class="s1">&#39;image/jpeg&#39;</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">);</span> <span class="c1">// 参数二控制图片质量</span>
+</span><span class='line'><span class="c1">// data:image/jpeg;base64,/9j/4AAQSkZJRgABAQ...9oADAMBAAIRAxEAPwD/AD/6AP/Z&quot;</span>
+</span><span class='line'><span class="kd">var</span> <span class="nx">mediumQuality</span> <span class="o">=</span> <span class="nx">canvas</span><span class="p">.</span><span class="nx">toDataURL</span><span class="p">(</span><span class="s1">&#39;image/jpeg&#39;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">);</span>
+</span><span class='line'><span class="kd">var</span> <span class="nx">lowQuality</span> <span class="o">=</span> <span class="nx">canvas</span><span class="p">.</span><span class="nx">toDataURL</span><span class="p">(</span><span class="s1">&#39;image/jpeg&#39;</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">);</span>
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>完美！下面开始愉快的测试我们自己的代码吧~</p>
+<p>Native 解析图片：</p>
 
-<hr />
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="bp">NSData</span> <span class="o">*</span><span class="n">decodedImageData</span> <span class="o">=</span> <span class="p">[</span><span class="bp">NSData</span> <span class="nl">dataWithContentsOfURL</span><span class="p">:[</span><span class="bp">NSURL</span> <span class="nl">URLWithString</span><span class="p">:</span><span class="n">base64String</span><span class="p">]];</span>
+</span><span class='line'><span class="bp">UIImage</span> <span class="o">*</span><span class="n">decodedImage</span> <span class="o">=</span> <span class="p">[</span><span class="bp">UIImage</span> <span class="nl">imageWithData</span><span class="p">:</span><span class="n">decodedImageData</span>
+</span><span class='line'>                                         <span class="nl">scale</span><span class="p">:[</span><span class="bp">UIScreen</span> <span class="n">mainScreen</span><span class="p">].</span><span class="n">scale</span><span class="p">];</span>
+</span><span class='line'><span class="n">personImageView</span><span class="p">.</span><span class="n">image</span> <span class="o">=</span> <span class="n">decodedImage</span><span class="p">;</span>
+</span></code></pre></td></tr></table></div></figure>
 
-<h2>总结：</h2>
 
-<h2>本文的目的主要是为了提高客户端和服务器各自独立开发的能力，像制造特定的假数据这种很简单的需求，如果不借助 Charles 代理去自己制造，恐怕你需要自己搭建一个服务器去各种恶补服务器的知识了。其实我们的原理十分简单，就是通过代理软件对网络请求进行拦截，并且返回我们想要的数据。这样做的好处就是，大大加强了客户端的自主开发能力，不需要依赖服务器对我们的特定逻辑进行开发，缩短开发周期。节约大家的时间，试想如果我们自己制造的数据如果在app中能跑通，即便服务器开发出来，如果出现跑不通的错误，那问题最有可能出现在服务器端，当然还要看具体的反馈信息。Charles 还有很多强大的功能，有待大家慢慢探索，祝大家玩得开心~</h2>
+<ul>
+<li>由 Native 对使用这些资源进行布局渲染，并且控制截屏时用户信息、二维码等元素的展示，效果如图：</li>
+</ul>
+
+
+<p><img src="http://upload-images.jianshu.io/upload_images/1445110-9d3101208a5f022e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="骨骼动画截屏" /></p>
+
+<h3>总结</h3>
+
+<p>对于部分特殊控件的图像处理可能要会出现位置的异常，需要对对应的底层实现技术点进行剖析，倒推引起的原因。</p>
+
+<h4>参考：</h4>
+
+<p><a href="http://www.zhangxinxu.com/wordpress/2011/10/html5-canvas-webgl-css-shaders-glsl%E7%9A%84%E6%9A%A7%E6%98%A7%E5%85%B3%E7%B3%BB/">HTML5 Canvas,WebGL,CSS Shaders,GLSL的暧昧关系</a>
+<a href="https://www.egret.com/">egret</a>
+<a href="http://dragonbones.com/cn/index.html">dragonBone</a></p>
 </div>
 
 
@@ -282,7 +258,7 @@ var _hmt = _hmt || [];
 
 
 
-<time class='entry-date' datetime='2016-03-05T14:52:25+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>5</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>2:52 pm</span></time>
+<time class='entry-date' datetime='2017-07-25T23:30:10+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>25</span><span class='date-suffix'>th</span>, <span class='date-year'>2017</span></span> <span class='time'>11:30 pm</span></time>
       
 
 <span class="categories">
@@ -318,10 +294,8 @@ var _hmt = _hmt || [];
     
     <p class="meta">
       
-        <a class="basic-alignment left" href="/blog/2016/02/14/hls-2/" title="Previous Post: HLS-iOS视频播放服务架构深入探究（二）">&laquo; HLS-iOS视频播放服务架构深入探究（二）</a>
+        <a class="basic-alignment left" href="/blog/2016/03/05/develop-moblie-api-with-charles-and-server-data-with-charles/" title="Previous Post: 让 iOS/Android 网络API开发更加自由-charles模拟服务器返回本地数据">&laquo; 让 iOS/Android 网络API开发更加自由-charles模拟服务器返回本地数据</a>
       
-      
-        <a class="basic-alignment right" href="/blog/2017/07/25/js-gu-ge-dong-hua-dragonbones-zai-ios-duan-jie-ping-gong-neng/" title="Next Post: JavaScript 骨骼动画 (DragonBones) 在 iOS 端截屏功能">JavaScript 骨骼动画 (DragonBones) 在 iOS 端截屏功能 &raquo;</a>
       
     </p>
   </footer>
