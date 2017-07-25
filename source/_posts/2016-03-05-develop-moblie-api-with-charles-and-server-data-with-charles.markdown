@@ -19,28 +19,28 @@ categories: ios
 
 **一、**首先你需要下载一个 Charles，并且安装起来，具体的使用方法这里不做赘述。可以移步[这里](http://www.infoq.com/cn/articles/network-packet-analysis-tool-charles)学习。
 **二、**抓取你需要修改的接口
-![抓取一个接口.png](抓取一个接口.png)
+![抓取一个接口.png](https://github.com/yangchao0033/yangchao0033.github.io/blob/source/images/ios/2016/3/%E6%8A%93%E5%8F%96%E4%B8%80%E4%B8%AA%E6%8E%A5%E5%8F%A3.png?raw=true)
 大家可以看到，这个接口返回的是一个json串。这个请求是手机发起的，我们看到的只是软件抓到的包数据。那么如何加入新的“id”字段呢？)
 大家可以看到，这个接口返回的是一个json串。这个请求是手机发起的，我们看到的只是软件抓到的包数据。那么如何加入新的“id”字段呢？
 
 **三、**使用 Charles 的 local map 功能
 
-![保存response数据.png](http://upload-images.jianshu.io/upload_images/1445110-6f4e156cec8977aa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![保存response数据.png](https://github.com/yangchao0033/yangchao0033.github.io/blob/source/images/ios/2016/3/%E4%BF%9D%E5%AD%98response%E6%95%B0%E6%8D%AE.png?raw=true)
 
 保存 response 数据到本地电脑上去
 
-![选择localmap.png](http://upload-images.jianshu.io/upload_images/1445110-aad32dcbfbdb5a95.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![选择localmap.png](https://github.com/yangchao0033/yangchao0033.github.io/blob/source/images/ios/2016/3/%E9%80%89%E6%8B%A9localmap.png?raw=true)
 
 选择local map
 
-![添加需要map的接口.png](http://upload-images.jianshu.io/upload_images/1445110-d52e6534b924049e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![添加需要map的接口.png](https://github.com/yangchao0033/yangchao0033.github.io/blob/source/images/ios/2016/3/%E6%B7%BB%E5%8A%A0%E9%9C%80%E8%A6%81map%E7%9A%84%E6%8E%A5%E5%8F%A3.png?raw=true)
 
 点击 Add 添加 map 规则
 
-![map规则.png](http://upload-images.jianshu.io/upload_images/1445110-f4812476a660fc69.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![map规则.png](https://github.com/yangchao0033/yangchao0033.github.io/blob/source/images/ios/2016/3/map%E8%A7%84%E5%88%99.png?raw=true)
 这些地方填入你的API信息，以及刚才保存的 response 文件地址
 
-![点击保存map.png](http://upload-images.jianshu.io/upload_images/1445110-d6ec588fb2029af4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![点击保存map.png](https://github.com/yangchao0033/yangchao0033.github.io/blob/source/images/ios/2016/3/%E7%82%B9%E5%87%BB%E4%BF%9D%E5%AD%98map.png?raw=true)
 点击ok保存map规则。之后，只要是从你手机通过 Charles 代理发出的这个接口的请求，都会被重定向到你电脑上本地的 response 文件中。
 
 现在，我们在通过手机调用一下之前的接口，结果呢？结果是还不如原来的，呵呵哒。。。
@@ -50,33 +50,34 @@ categories: ios
 找了半天原因，最终通过对比发现了一个问题，两种请求的响应头不一样
 
 
-![从服务器取到的数据.png](http://upload-images.jianshu.io/upload_images/1445110-4b4c32ac51e3ba6a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![从服务器取到的数据.png](https://github.com/yangchao0033/yangchao0033.github.io/blob/source/images/ios/2016/3/%E4%BB%8E%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%8F%96%E5%88%B0%E7%9A%84%E6%95%B0%E6%8D%AE.png?raw=true)
 
-![本地map的数据.png](http://upload-images.jianshu.io/upload_images/1445110-2a2a2d5e280c4eae.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![本地map的数据.png](https://github.com/yangchao0033/yangchao0033.github.io/blob/source/images/ios/2016/3/%E6%9C%AC%E5%9C%B0map%E7%9A%84%E6%95%B0%E6%8D%AE.png?raw=true)
+
 
 所以怎么修改 response 的 content type 类型为 json/application 呢？
 
 **三、**使用 Rewrite 替换特定接口的响应头参数
 
 
-![打开rewrite.png](http://upload-images.jianshu.io/upload_images/1445110-447880c3c6009b8d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![打开rewrite.png](https://github.com/yangchao0033/yangchao0033.github.io/blob/source/images/ios/2016/3/%E6%89%93%E5%BC%80rewrite.png?raw=true)
 
 打开 Rewrite
 
 
-![rewrite配置页面.png](http://upload-images.jianshu.io/upload_images/1445110-7434a6160598b193.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![rewrite配置页面.png](https://github.com/yangchao0033/yangchao0033.github.io/blob/source/images/ios/2016/3/rewrite%E9%85%8D%E7%BD%AE%E9%A1%B5%E9%9D%A2.png?raw=true)
 
 Rewrite 配置页面简介
 
 1、首先创建一个规则集
 
 
-![添加接口集合和适用范围.png](http://upload-images.jianshu.io/upload_images/1445110-9d417c2fdd967f19.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![添加接口集合和适用范围.png](https://github.com/yangchao0033/yangchao0033.github.io/blob/source/images/ios/2016/3/%E6%B7%BB%E5%8A%A0%E6%8E%A5%E5%8F%A3%E9%9B%86%E5%90%88%E5%92%8C%E9%80%82%E7%94%A8%E8%8C%83%E5%9B%B4.png?raw=true)
 
 添加 Rewrite 替换规则
 
 
-![书写rewrite替换规则.png](http://upload-images.jianshu.io/upload_images/1445110-38946ceab5ba8be0.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![书写rewrite替换规则.png](https://github.com/yangchao0033/yangchao0033.github.io/blob/source/images/ios/2016/3/%E4%B9%A6%E5%86%99rewrite%E6%9B%BF%E6%8D%A2%E8%A7%84%E5%88%99.png?raw=true)
 
 这里相当于是在响应回来之前，通过字段的匹配，替换掉原有的响应头中的Content-Type 类型为 json/application 
 
