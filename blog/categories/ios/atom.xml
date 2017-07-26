@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Ios | SuperYang`s Blog]]></title>
   <link href="http://yangchao0033.github.io/blog/categories/ios/atom.xml" rel="self"/>
   <link href="http://yangchao0033.github.io/"/>
-  <updated>2017-07-26T00:55:56+08:00</updated>
+  <updated>2017-07-27T00:06:30+08:00</updated>
   <id>http://yangchao0033.github.io/</id>
   <author>
     <name><![CDATA[Super Yang]]></name>
@@ -383,7 +383,14 @@ personImageView.image = decodedImage;
 }
 </code></pre>
 
-<p>当然，《芈月传》的直播链接到现在也还没有找到，各位热心读者如果有链接的话可以留言给我，也让这篇文章能实至名归了，能对得文章的标题了😁。</p>
+<p><del>当然，《芈月传》的直播链接到现在也还没有找到，各位热心读者如果有链接的话可以留言给我，也让这篇文章能实至名归了，能对得文章的标题了😁。</del></p>
+
+<p>同志们，找到了官方的切片工具，已将《芈月传》切片放到了服务器上，1080P高清无码，敬请观看😁
+具体代码我也做了更新，请大家更新代码后测试<a href="https://github.com/yangchao0033/HLS-Demo">Demo</a>~</p>
+
+<p>具体播放地址为:<a href="http://yangchao0033.github.io/hlsSegement/0640.m3u8">http://yangchao0033.github.io/hlsSegement/0640.m3u8</a>(可在safari中直接观看)
+切片工具博客：<a href="http://www.henishuo.com/hls-streaming-tool/">http://www.henishuo.com/hls-streaming-tool/</a>
+总算不用做标题党了，摔🤓~</p>
 ]]></content>
   </entry>
   
