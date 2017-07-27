@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>http://yangchao0033.github.io/blog/2017/07/27/reactivecocoa-she-ji-gui-fan/</loc>
+    <lastmod>2017-07-27T00:36:48+08:00</lastmod>
+  </url>
+  <url>
     <loc>http://yangchao0033.github.io/blog/2017/07/25/js-gu-ge-dong-hua-dragonbones-zai-ios-duan-jie-ping-gong-neng/</loc>
     <lastmod>2017-07-25T23:30:10+08:00</lastmod>
   </url>
@@ -90,6 +94,9 @@
   </url>
   <url>
     <loc>http://yangchao0033.github.io/blog/categories/shi-guang-liu-sheng-ji/</loc>
+  </url>
+  <url>
+    <loc>http://yangchao0033.github.io/posts/2/</loc>
   </url>
   <url>
     <loc>http://yangchao0033.github.io/blog/index.html</loc>
